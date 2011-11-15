@@ -28,6 +28,6 @@ public class Part {
 	
 	@Override
 	public String toString() {
-		return "Part ID=" + id + ", DEFECT=" + isDefect;
+		return "Part TYPE=" + this.getClass().getSimpleName() + ", ID=" + id + ", DEFECT=" + isDefect;
 	}
 }

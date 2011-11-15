@@ -1,9 +1,9 @@
 package at.ac.tuwien.complang.sbc11.workers;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
+import at.ac.tuwien.complang.sbc11.factory.Factory;
+import at.ac.tuwien.complang.sbc11.factory.MozartFactory;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 
@@ -12,18 +12,16 @@ public class Producer extends Worker {
 	private long producedSoFar;
 	private double errorRate;
 	private Class<?> partClass;
-	
-	// for testing purpose only:
-	private List<Part> partsProduced;
+	private Factory factory;
 	private Logger logger;
 	
-	public Producer(long productionLimit, double errorRate, Class<?> partClass) {
+	public Producer(long productionLimit, double errorRate, Class<?> partClass, Factory factory) {
 		this.productionLimit = productionLimit;
 		this.errorRate = errorRate;
 		this.partClass = partClass;
+		this.factory = factory;
 		this.producedSoFar = 0;
 		
-		partsProduced = new ArrayList<Part>();
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.workers.Producer");
 	}
 	
@@ -34,14 +32,14 @@ public class Producer extends Worker {
 			long duration = (long)((Math.random() * 10000)%2000 + 1000);
 			try {
 				logger.info("Producing part " + (producedSoFar + 1) + " of " + productionLimit + "...");
-				Thread.sleep(duration);
+				//Thread.sleep(duration);
 				Part part = (Part)partClass.newInstance();
 				logger.info("Done. Production took " + duration + " milliseconds.");
 				
 				// TODO how to get a system wide identifier for a part?
 				// rmi: server has to provide a function getNextId()
 				// mozart: take id from a container?
-				//part.setId(id)
+				part.setId(factory.getNextPartId());
 				
 				// part is defect with probabilty errorRate
 				// Math.random() returns a double between 0.0 an 1.0
@@ -52,9 +50,9 @@ public class Producer extends Worker {
 				else
 					part.setDefect(false);
 				
-				partsProduced.add(part);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+				factory.addPart(part);
+			/*} catch (InterruptedException e) {
+				e.printStackTrace();*/
 			} catch (InstantiationException e) {
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
@@ -63,17 +61,16 @@ public class Producer extends Worker {
 			producedSoFar++;
 		}
 		logger.info("Production finished.");
-		printProducedParts();
-	}
-	
-	private void printProducedParts() {
-		for(Part p:partsProduced) {
-			System.out.println(p);
+		
+		for(Part p:factory.getAvailableParts()) {
+			logger.info(p.toString());
 		}
 	}
 	
 	public static void main(String args[]) {
-		new Producer((long)10, 0.2, Mainboard.class).produce();
+		// produce 10 Mainboards, error rate is 20%, use the MozartFactory
+		Producer producer = new Producer((long)10, 0.2, Mainboard.class, new MozartFactory());
+		producer.produce();
 	}
 	
 	// getters and setters
