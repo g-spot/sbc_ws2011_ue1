@@ -21,7 +21,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
-import at.ac.tuwien.complang.sbc11.factory.MozartFactory;
+import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
+import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
@@ -36,11 +37,16 @@ public class Factory extends JFrame {
 	private JTextField textErrorRate;
 	private JTextArea textAreaLog;
 	
-	private MozartFactory factory;
+	private SharedWorkspace factory;
 
 	public Factory() {
 		this.initUI();
-		factory = new MozartFactory();
+		
+		// initializes the mozart implementation of the shared workspace
+		factory = new SharedWorkspaceMozartImpl();
+		
+		// initializes an alternative implementation of the shared workspace
+		//factory = new SharedWorkspaceAlternativeImpl();
 	}
 	
 	private void addProducer(Class<?> partType, long partCount, double errorRate) {

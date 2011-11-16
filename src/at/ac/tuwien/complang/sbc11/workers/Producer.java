@@ -2,8 +2,8 @@ package at.ac.tuwien.complang.sbc11.workers;
 
 import java.util.logging.Logger;
 
-import at.ac.tuwien.complang.sbc11.factory.Factory;
-import at.ac.tuwien.complang.sbc11.factory.MozartFactory;
+import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
+import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 
@@ -12,10 +12,10 @@ public class Producer extends Worker {
 	private long producedSoFar;
 	private double errorRate;
 	private Class<?> partClass;
-	private Factory factory;
+	private SharedWorkspace factory;
 	private Logger logger;
 	
-	public Producer(long productionLimit, double errorRate, Class<?> partClass, Factory factory) {
+	public Producer(long productionLimit, double errorRate, Class<?> partClass, SharedWorkspace factory) {
 		this.productionLimit = productionLimit;
 		this.errorRate = errorRate;
 		this.partClass = partClass;
@@ -69,7 +69,7 @@ public class Producer extends Worker {
 	
 	public static void main(String args[]) {
 		// produce 10 Mainboards, error rate is 20%, use the MozartFactory
-		Producer producer = new Producer((long)10, 0.2, Mainboard.class, new MozartFactory());
+		Producer producer = new Producer((long)10, 0.2, Mainboard.class, new SharedWorkspaceMozartImpl());
 		producer.produce();
 	}
 	
