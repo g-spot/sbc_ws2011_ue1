@@ -1,5 +1,6 @@
 package at.ac.tuwien.complang.sbc11.parts;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,10 @@ import at.ac.tuwien.complang.sbc11.workers.Tester;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 import at.ac.tuwien.complang.sbc11.workers.Worker;
 
-public class Computer {
+public class Computer implements Serializable {
+
+	private static final long serialVersionUID = 4357416927653129937L;
+
 	// general information
 	private Boolean haveTestsFailed[];
 	

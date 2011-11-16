@@ -111,7 +111,8 @@ public class Factory extends JFrame {
 					}
 					addProducer(partTypeClass, partCount, errorRate);
 				} catch(Exception ex) {
-					JOptionPane.showMessageDialog(null, ex.getMessage());
+					JOptionPane.showMessageDialog(null, "hier fehler: " + ex.getMessage());
+					ex.printStackTrace();
 				}
 			}
 		});

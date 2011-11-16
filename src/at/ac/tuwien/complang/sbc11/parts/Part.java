@@ -1,8 +1,18 @@
 package at.ac.tuwien.complang.sbc11.parts;
 
+import java.io.Serializable;
+
+import org.mozartspaces.capi3.Index;
+import org.mozartspaces.capi3.Queryable;
+
 import at.ac.tuwien.complang.sbc11.workers.Producer;
 
-public class Part {
+@Queryable
+public class Part implements Serializable {
+
+	private static final long serialVersionUID = 7132593689392643018L;
+	
+	@Index
 	private long id;
 	private Producer producer;
 	private boolean isDefect;
