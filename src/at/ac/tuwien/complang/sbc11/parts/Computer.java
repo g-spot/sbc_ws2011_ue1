@@ -1,5 +1,6 @@
 package at.ac.tuwien.complang.sbc11.parts;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.complang.sbc11.workers.Tester;
@@ -8,8 +9,6 @@ import at.ac.tuwien.complang.sbc11.workers.Worker;
 
 public class Computer {
 	// general information
-	private boolean isCompletelyTested;
-	private boolean isComplete;
 	private Boolean haveTestsFailed[];
 	
 	// parts
@@ -22,6 +21,7 @@ public class Computer {
 	private List<Worker> workers;
 	
 	public Computer() {
+		ramModules = new ArrayList<RAM>();
 		/* haveTestsFailed is an array of type Boolean
 		 * for each test of the enumeration TestType
 		 * the value in the array can either be
@@ -55,5 +55,48 @@ public class Computer {
 				return false;
 		}
 		return true;
+	}
+	
+	public boolean isComplete() {
+		// returns true if the computer has been assigned
+		// a cpu, a mainboard and at least one ram module
+		return (cpu != null && mainboard != null && ramModules != null && ramModules.size() > 0);
+	}
+
+	// getters and setters
+	public CPU getCpu() {
+		return cpu;
+	}
+
+	public void setCpu(CPU cpu) {
+		this.cpu = cpu;
+	}
+
+	public Mainboard getMainboard() {
+		return mainboard;
+	}
+
+	public void setMainboard(Mainboard mainboard) {
+		this.mainboard = mainboard;
+	}
+
+	public GraphicBoard getGraphicBoard() {
+		return graphicBoard;
+	}
+
+	public void setGraphicBoard(GraphicBoard graphicBoard) {
+		this.graphicBoard = graphicBoard;
+	}
+
+	public List<Worker> getWorkers() {
+		return workers;
+	}
+
+	public void setWorkers(List<Worker> workers) {
+		this.workers = workers;
+	}
+
+	public List<RAM> getRamModules() {
+		return ramModules;
 	}
 }
