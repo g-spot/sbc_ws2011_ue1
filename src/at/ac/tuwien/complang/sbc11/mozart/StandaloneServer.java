@@ -4,7 +4,7 @@ import org.mozartspaces.core.Server;
 
 public class StandaloneServer {
 
-	public static final long SERVER_PORT = 1234;
+	public static final int SERVER_PORT = 1234;
 	/**
 	 * @param args
 	 */

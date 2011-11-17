@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.Executors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -23,6 +24,7 @@ import javax.swing.border.TitledBorder;
 
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl;
+import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
@@ -37,29 +39,41 @@ public class Factory extends JFrame {
 	private JTextField textErrorRate;
 	private JTextArea textAreaLog;
 	
+	private int producerCount = 0;
+	
 	private SharedWorkspace factory;
 
 	public Factory() {
 		this.initUI();
 		
 		// initializes the mozart implementation of the shared workspace
-		factory = new SharedWorkspaceMozartImpl();
+		try {
+			factory = new SharedWorkspaceMozartImpl(this);
+		} catch (SharedWorkspaceException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
 		
 		// initializes an alternative implementation of the shared workspace
 		//factory = new SharedWorkspaceAlternativeImpl();
 	}
 	
-	private void addProducer(Class<?> partType, long partCount, double errorRate) {
-		//JOptionPane.showMessageDialog(this, "Type=" + partType + ", Count=" + partCount + ", errorRate=" + errorRate);
-		// TODO run as thread - non blocking
-		Producer producer = new Producer(partCount, errorRate, partType, factory);
-		producer.produce();
-		
-		// TODO append text when notification arrives
+	public void updateBlackboard() {
 		textAreaLog.setText("");
-		for(Part p:factory.getAvailableParts()) {
-			textAreaLog.append(p.toString() + "\n");
+		try {
+			for(Part p:factory.getAvailableParts()) {
+				textAreaLog.append(p.toString() + "\n");
+			}
+		} catch (SharedWorkspaceException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
 		}
+	}
+	
+	private void addProducer(Class<?> partType, long partCount, double errorRate) {
+		Producer producer = new Producer(partCount, errorRate, partType, factory);
+		producer.setId(++producerCount);
+		Executors.defaultThreadFactory().newThread(producer).start();
 	}
 	
 	private void initUI() {

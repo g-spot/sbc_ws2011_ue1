@@ -4,6 +4,7 @@ import java.util.List;
 
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.Part;
+import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
 /* Implements the shared workspace with an alternative technology.
@@ -15,7 +16,12 @@ import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
  * TODO Shorty: rename class to e.g. "SharedWorkspaceJMSImpl"
  * 
  */
-public class SharedWorkspaceAlternativeImpl implements SharedWorkspace {
+public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
+
+	public SharedWorkspaceAlternativeImpl(Factory factory) {
+		super(factory);
+		// TODO Auto-generated constructor stub
+	}
 
 	@Override
 	public List<Part> getAvailableParts() {

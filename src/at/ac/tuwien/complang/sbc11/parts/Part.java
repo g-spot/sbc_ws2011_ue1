@@ -38,6 +38,6 @@ public class Part implements Serializable {
 	
 	@Override
 	public String toString() {
-		return "Part TYPE=" + this.getClass().getSimpleName() + ", ID=" + id + ", DEFECT=" + isDefect;
+		return "Part TYPE=" + this.getClass().getSimpleName() + ", ID=" + id + ", DEFECT=" + isDefect + ", PRODUCER=" + producer.getId();
 	}
 }
