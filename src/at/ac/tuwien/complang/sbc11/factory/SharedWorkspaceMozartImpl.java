@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.mozartspaces.capi3.AnyCoordinator;
+import org.mozartspaces.capi3.FifoCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.capi3.Selector;
 import org.mozartspaces.core.Capi;
@@ -32,19 +33,23 @@ import at.ac.tuwien.complang.sbc11.mozart.SpaceUtils;
 import at.ac.tuwien.complang.sbc11.mozart.StandaloneServer;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
+import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
+import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
+import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
 public class SharedWorkspaceMozartImpl extends SharedWorkspace implements NotificationListener {
 
-	private ContainerReference workspaceContainer;
 	private URI spaceURI;
 	private MzsCore core;
 	private Capi capi;
 	private NotificationManager notificationManager;
 	
 	private ContainerReference partIdContainer;
+	private ContainerReference partContainer;
+	private ContainerReference mainboardContainer;
 	private Logger logger;
 	
 	public SharedWorkspaceMozartImpl(Factory factory) throws SharedWorkspaceException {
@@ -52,21 +57,26 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 		logger = Logger.getAnonymousLogger();
 		try {
 			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
-			//core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
-			core = DefaultMzsCore.newInstance(0);
-			capi = new Capi(core);
-			notificationManager = new NotificationManager(core);
-			workspaceContainer = SpaceUtils.getOrCreateNamedFIFOContainer("FactoryWorkspace", spaceURI, capi);
+			core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
 			
+			// uses external standalone server:
+			//core = DefaultMzsCore.newInstance(0);
+			
+			capi = new Capi(core);
+			
+			// create container
+			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
+			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
+			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
+			
+			// init notifications
+			notificationManager = new NotificationManager(core);
 			HashSet<Operation> operations = new HashSet<Operation>();
 			operations.add(Operation.WRITE);
 			operations.add(Operation.TAKE);
 			operations.add(Operation.DELETE);
-			notificationManager.createNotification(workspaceContainer, this, operations, null, null);
-			
-			// create ID container for system wide part identifiers
-			// the container is initially filled with the number 1 = first part ID
-			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
+			notificationManager.createNotification(partContainer, this, operations, null, null);
+			notificationManager.createNotification(mainboardContainer, this, operations, null, null);
 			
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error in MzsCore (" + e.getMessage() + ")");
@@ -128,7 +138,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 	@Override
 	public void addPart(Part part) throws SharedWorkspaceException {
 		try {
-			capi.write(workspaceContainer, new Entry(part, LindaCoordinator.newCoordinationData()));
+			// if part is a mainboard, insert into mainboardContainer
+			if(part.getClass().equals(Mainboard.class))
+				capi.write(mainboardContainer, new Entry(part, FifoCoordinator.newCoordinationData()));
+			else
+				capi.write(partContainer, new Entry(part, LindaCoordinator.newCoordinationData()));
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Part could not be written: Error in MzsCore (" + e.getMessage() + ")");
 		}
@@ -136,12 +150,40 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 
 	@Override
 	public List<Part> getAvailableParts() throws SharedWorkspaceException {
-		Selector partSelector = LindaCoordinator.newSelector(new CPU(), Selecting.COUNT_ALL);
+		List<Part> result = new ArrayList<Part>();
+		List<CPU> cpuList = null;
+		List<RAM> ramList = null;
+		List<GraphicBoard> graphicBoardList = null;
+		List<Mainboard> mainboardList = null;
+		// did not find out how to get all part types at once if there is one part type where no part exists
+		// workaround: one request per part type
+		Selector cpuSelector = LindaCoordinator.newSelector(new CPU(), Selecting.COUNT_MAX);
+		Selector ramSelector = LindaCoordinator.newSelector(new RAM(), Selecting.COUNT_MAX);
+		Selector graphicBoardSelector = LindaCoordinator.newSelector(new GraphicBoard(), Selecting.COUNT_MAX);
+		Selector mainboardSelector = FifoCoordinator.newSelector(Selecting.COUNT_MAX);
+		
+		TransactionReference transaction = null;
 		try {
-			return capi.read(workspaceContainer, partSelector, RequestTimeout.TRY_ONCE, null);
+			transaction = capi.createTransaction(RequestTimeout.INFINITE, spaceURI);
+			cpuList = capi.read(partContainer, cpuSelector, RequestTimeout.TRY_ONCE, transaction);
+			ramList = capi.read(partContainer, ramSelector, RequestTimeout.TRY_ONCE, transaction);
+			graphicBoardList = capi.read(partContainer, graphicBoardSelector, RequestTimeout.TRY_ONCE, transaction);
+			mainboardList = capi.read(mainboardContainer, mainboardSelector, RequestTimeout.TRY_ONCE, transaction);
+			result.addAll(cpuList);
+			result.addAll(ramList);
+			result.addAll(graphicBoardList);
+			result.addAll(mainboardList);
+			
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Parts could not be read: Error in MzsCore (" + e.getMessage() + ")");
+		} finally {
+			try {
+				capi.commitTransaction(transaction);
+			} catch (MzsCoreException e) {
+				throw new SharedWorkspaceException("Parts could not be read: Error with transaction (" + e.getMessage() + ")");
+			}
 		}
+		return result;
 	}
 
 	@Override

@@ -35,7 +35,9 @@ public class Factory extends JFrame {
 	private JTextField textPartCount;
 	private JTextField textErrorRate;
 	private JTextArea textAreaLog;
+	private JButton buttonAddProducer;
 	
+	private int workerCount = 0;
 	private int producerCount = 0;
 	
 	private SharedWorkspace factory;
@@ -69,7 +71,9 @@ public class Factory extends JFrame {
 	
 	private void addProducer(Class<?> partType, long partCount, double errorRate) {
 		Producer producer = new Producer(partCount, errorRate, partType, factory);
-		producer.setId(++producerCount);
+		producer.setId(++workerCount);
+		producerCount++;
+		buttonAddProducer.setText("Add Producer (currently: " + producerCount + ")");
 		Executors.defaultThreadFactory().newThread(producer).start();
 	}
 	
@@ -97,13 +101,14 @@ public class Factory extends JFrame {
 		topPanel.add(labelPartErrorRate);
 		textErrorRate = new JTextField("0.1");
 		topPanel.add(textErrorRate);
-		//topPanel.add(new JLabel());
-		JButton buttonTestNewId = new JButton("Test id retrieval");
-		topPanel.add(buttonTestNewId);
-		JButton buttonAddProducer = new JButton("Add Producer");
+		topPanel.add(new JLabel());
+		/*JButton buttonTestNewId = new JButton("Test id retrieval");
+		topPanel.add(buttonTestNewId);*/
+		buttonAddProducer = new JButton("Add Producer (currently: " + producerCount + ")");
 		topPanel.add(buttonAddProducer);
 		
-		buttonTestNewId.addActionListener(new ActionListener() {
+		// TODO remove test code
+		/*buttonTestNewId.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					long nextID = factory.getNextPartId();
@@ -112,7 +117,7 @@ public class Factory extends JFrame {
 					JOptionPane.showMessageDialog(null, e1.getMessage());
 				}
 			}
-		});
+		});*/
 		
 		buttonAddProducer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

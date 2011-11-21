@@ -1,18 +1,21 @@
 package at.ac.tuwien.complang.sbc11.workers;
 
+import java.io.Serializable;
 import java.util.logging.Logger;
 
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 
-public class Producer extends Worker implements Runnable {
+public class Producer extends Worker implements Runnable, Serializable {
+	private static final long serialVersionUID = -6198419403429038567L;
+	
 	private long productionLimit;
 	private long producedSoFar;
 	private double errorRate;
 	private Class<?> partClass;
-	private SharedWorkspace sharedWorkspace;
-	private Logger logger;
+	transient private SharedWorkspace sharedWorkspace; // should not be serializable = written to space
+	transient private Logger logger;
 	
 	public Producer(long productionLimit, double errorRate, Class<?> partClass, SharedWorkspace sharedWorkspace) {
 		this.productionLimit = productionLimit;

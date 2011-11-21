@@ -1,6 +1,10 @@
 package at.ac.tuwien.complang.sbc11.workers;
 
-public class Worker {
+import java.io.Serializable;
+
+public class Worker implements Serializable {
+	private static final long serialVersionUID = 7942975756141820329L;
+	
 	private long id;
 
 	public long getId() {
