@@ -2,7 +2,6 @@ package at.ac.tuwien.complang.sbc11.mozart;
 
 import java.net.URI;
 
-import org.mozartspaces.capi3.FifoCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.core.Capi;
 import org.mozartspaces.core.ContainerReference;

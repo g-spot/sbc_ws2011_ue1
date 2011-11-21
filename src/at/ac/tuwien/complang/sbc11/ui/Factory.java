@@ -1,11 +1,7 @@
 package at.ac.tuwien.complang.sbc11.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.GraphicsConfiguration;
 import java.awt.GridLayout;
-import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.Executors;
@@ -32,6 +28,7 @@ import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.workers.Producer;
 
+@SuppressWarnings("serial")
 public class Factory extends JFrame {
 	
 	private JComboBox comboPartType;
@@ -148,6 +145,7 @@ public class Factory extends JFrame {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		@SuppressWarnings("unused")
 		Factory factory = new Factory();
 	}
 

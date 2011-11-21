@@ -2,8 +2,6 @@ package at.ac.tuwien.complang.sbc11.factory;
 
 import java.util.List;
 
-import org.mozartspaces.notifications.NotificationListener;
-
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.Part;
@@ -20,6 +18,7 @@ public abstract class SharedWorkspace {
 	}
 	
 	// hide default constructor
+	@SuppressWarnings("unused")
 	private SharedWorkspace() {}
 	
 	// general methods

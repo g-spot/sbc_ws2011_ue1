@@ -3,7 +3,6 @@ package at.ac.tuwien.complang.sbc11.factory;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -32,9 +31,7 @@ import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
 public class SharedWorkspaceMozartImpl extends SharedWorkspace implements NotificationListener {
-	
-	// TODO replace List with space
-	private List<Part> parts;
+
 	private ContainerReference workspaceContainer;
 	private URI spaceURI;
 	private MzsCore core;
@@ -43,7 +40,6 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 	
 	public SharedWorkspaceMozartImpl(Factory factory) throws SharedWorkspaceException {
 		super(factory);
-		parts = new ArrayList<Part>();
 		try {
 			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
 			core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
