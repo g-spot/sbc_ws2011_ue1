@@ -2,6 +2,7 @@ package at.ac.tuwien.complang.sbc11.ui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.Executors;
@@ -22,6 +23,7 @@ import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
+import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
@@ -34,7 +36,10 @@ public class Factory extends JFrame {
 	private JComboBox comboPartType;
 	private JTextField textPartCount;
 	private JTextField textErrorRate;
-	private JTextArea textAreaLog;
+	private JTextArea textAreaLogParts;
+	private JTextArea textAreaLogComputers;
+	private JTextArea textAreaLogTrashBin;
+	private JTextArea textAreaLogShipped;
 	private JButton buttonAddProducer;
 	
 	private int workerCount = 0;
@@ -53,20 +58,49 @@ public class Factory extends JFrame {
 			e.printStackTrace();
 		}
 		
+		this.updatePartList();
+		this.updateComputerList();
+		this.updateTrashBinList();
+		this.updateShippedList();
+		
 		// initializes an alternative implementation of the shared workspace
 		//factory = new SharedWorkspaceAlternativeImpl();
 	}
 	
-	public void updateBlackboard() {
-		textAreaLog.setText("");
+	public void updatePartList() {
+		textAreaLogParts.setText("Unused parts in workspace\n");
+		textAreaLogParts.append("-------------------------\n");
 		try {
 			for(Part p:factory.getAvailableParts()) {
-				textAreaLog.append(p.toString() + "\n");
+				textAreaLogParts.append(p.toString() + "\n");
 			}
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
+	}
+	
+	public void updateComputerList() {
+		textAreaLogComputers.setText("Untested computers in workspace\n");
+		textAreaLogComputers.append("-------------------------------\n");
+		try {
+			for(Computer c:factory.getUntestedComputers()) {
+				textAreaLogComputers.append(c.toString() + "\n");
+			}
+		} catch (SharedWorkspaceException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+	}
+	
+	public void updateTrashBinList() {
+		textAreaLogTrashBin.setText("Computers in trash bin\n");
+		textAreaLogTrashBin.append("----------------------\n");
+	}
+	
+	public void updateShippedList() {
+		textAreaLogShipped.setText("Shipped computers\n");
+		textAreaLogShipped.append("-----------------\n");
 	}
 	
 	private void addProducer(Class<?> partType, long partCount, double errorRate) {
@@ -78,7 +112,8 @@ public class Factory extends JFrame {
 	}
 	
 	private void initUI() {
-		this.setSize(800, 600);
+		//this.setSize(800, 600);
+		this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
 		this.setTitle("MozartFactory");
 		
 		JPanel mainPanel = new JPanel(new BorderLayout());
@@ -151,9 +186,25 @@ public class Factory extends JFrame {
 		
 		mainPanel.add(topPanel, BorderLayout.PAGE_START);
 		
-		textAreaLog = new JTextArea();
-		JScrollPane scrollPaneLog = new JScrollPane(textAreaLog);
-		mainPanel.add(scrollPaneLog, BorderLayout.CENTER);
+		JPanel centerPanel = new JPanel(new GridLayout(1, 4));
+		
+		textAreaLogParts = new JTextArea();
+		JScrollPane scrollPaneLogParts = new JScrollPane(textAreaLogParts);
+		centerPanel.add(scrollPaneLogParts);
+		
+		textAreaLogComputers = new JTextArea();
+		JScrollPane scrollPangeLogUntested = new JScrollPane(textAreaLogComputers);
+		centerPanel.add(scrollPangeLogUntested);
+		
+		textAreaLogTrashBin = new JTextArea();
+		JScrollPane scrollPaneLogTrashBin = new JScrollPane(textAreaLogTrashBin);
+		centerPanel.add(scrollPaneLogTrashBin);
+		
+		textAreaLogShipped = new JTextArea();
+		JScrollPane scrollPaneLogShipped = new JScrollPane(textAreaLogShipped);
+		centerPanel.add(scrollPaneLogShipped);
+		
+		mainPanel.add(centerPanel, BorderLayout.CENTER);
 		
 		this.setContentPane(mainPanel);
 		this.setVisible(true);

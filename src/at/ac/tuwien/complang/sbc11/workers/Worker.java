@@ -2,8 +2,12 @@ package at.ac.tuwien.complang.sbc11.workers;
 
 import java.io.Serializable;
 
+import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
+
 public class Worker implements Serializable {
 	private static final long serialVersionUID = 7942975756141820329L;
+	
+	transient protected SharedWorkspace sharedWorkspace; // should not be serializable = written to space
 	
 	private long id;
 

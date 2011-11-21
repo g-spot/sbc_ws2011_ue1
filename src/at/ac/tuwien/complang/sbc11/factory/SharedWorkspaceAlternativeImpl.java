@@ -2,6 +2,7 @@ package at.ac.tuwien.complang.sbc11.factory;
 
 import java.util.List;
 
+import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
@@ -54,13 +55,13 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 	}
 
 	@Override
-	public Part takePart(Class<?> partType) {
+	public List<Part> takeParts(Class<?> partType, boolean blocking, int partCount) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void addComputer(Computer computer) {
+	public void addUntestedComputer(Computer computer) {
 		// TODO Auto-generated method stub
 
 	}
@@ -81,6 +82,13 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 	public void addComputerToTrash(Computer computer) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public List<Computer> getUntestedComputers()
+			throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

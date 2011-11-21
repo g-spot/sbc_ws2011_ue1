@@ -1,6 +1,7 @@
 package at.ac.tuwien.complang.sbc11.mozart;
 
 import java.net.URI;
+import java.util.logging.Logger;
 
 import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.FifoCoordinator;
@@ -36,7 +37,7 @@ public class SpaceUtils {
 		return container;
 	}
 	
-	public static final ContainerReference getOrCreateLindaContainer(String containerName, URI spaceURI, Capi capi) throws MzsCoreException {
+	public static final ContainerReference getOrCreateAnyContainer(String containerName, URI spaceURI, Capi capi) throws MzsCoreException {
 		ContainerReference container = null;
 		
 		try
@@ -45,7 +46,25 @@ public class SpaceUtils {
 		}
 		catch(MzsCoreException e)
 		{
+			container = capi.createContainer(containerName, spaceURI, Container.UNBOUNDED, null, new AnyCoordinator());
+		}
+		return container;
+	}
+	
+	public static final ContainerReference getOrCreateLindaContainer(String containerName, URI spaceURI, Capi capi) throws MzsCoreException {
+		ContainerReference container = null;
+		Logger logger = Logger.getAnonymousLogger();
+		try
+		{
+			logger.info("Looking up Linda container...");
+			container = capi.lookupContainer(containerName, spaceURI, RequestTimeout.DEFAULT, null);
+			logger.info("Found Linda container.");
+		}
+		catch(MzsCoreException e)
+		{
+			logger.info("Trying to create Linda container...");
 			container = capi.createContainer(containerName, spaceURI, Container.UNBOUNDED, null, new LindaCoordinator());
+			logger.info("Created Linda container");
 		}
 		return container;
 	}

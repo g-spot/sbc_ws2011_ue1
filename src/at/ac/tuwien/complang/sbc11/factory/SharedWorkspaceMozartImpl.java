@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.mozartspaces.capi3.AnyCoordinator;
+import org.mozartspaces.capi3.CountNotMetException;
 import org.mozartspaces.capi3.FifoCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.capi3.Selector;
@@ -29,8 +30,10 @@ import org.mozartspaces.notifications.NotificationManager;
 import org.mozartspaces.notifications.Operation;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
+import at.ac.tuwien.complang.sbc11.mozart.PartNotificationListener;
 import at.ac.tuwien.complang.sbc11.mozart.SpaceUtils;
 import at.ac.tuwien.complang.sbc11.mozart.StandaloneServer;
+import at.ac.tuwien.complang.sbc11.mozart.UntestedComputerNotificationListener;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
@@ -40,7 +43,7 @@ import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
-public class SharedWorkspaceMozartImpl extends SharedWorkspace implements NotificationListener {
+public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 
 	private URI spaceURI;
 	private MzsCore core;
@@ -50,8 +53,31 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 	private ContainerReference partIdContainer;
 	private ContainerReference partContainer;
 	private ContainerReference mainboardContainer;
+	private ContainerReference untestedContainer;
 	private Logger logger;
 	
+	// default constructor is used by assemblers, testers and logisticians only
+	public SharedWorkspaceMozartImpl() throws SharedWorkspaceException {
+		super(null);
+		try {
+			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
+			core = DefaultMzsCore.newInstance(0);
+			capi = new Capi(core);
+			
+			// get container
+			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
+			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
+			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
+			untestedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_UNTESTED, spaceURI, capi);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error in MzsCore (" + e.getMessage() + ")");
+		} catch (URISyntaxException e) {
+			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error with URI (" + e.getMessage() + ")");
+		}
+	}
+	
+	// create the factory instance of the shared workspace
+	// can be called only once in the system - by the ui
 	public SharedWorkspaceMozartImpl(Factory factory) throws SharedWorkspaceException {
 		super(factory);
 		logger = Logger.getAnonymousLogger();
@@ -68,6 +94,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
 			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
 			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
+			untestedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_UNTESTED, spaceURI, capi);
 			
 			// init notifications
 			notificationManager = new NotificationManager(core);
@@ -75,8 +102,9 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 			operations.add(Operation.WRITE);
 			operations.add(Operation.TAKE);
 			operations.add(Operation.DELETE);
-			notificationManager.createNotification(partContainer, this, operations, null, null);
-			notificationManager.createNotification(mainboardContainer, this, operations, null, null);
+			notificationManager.createNotification(partContainer, new PartNotificationListener(factory), operations, null, null);
+			notificationManager.createNotification(mainboardContainer, new PartNotificationListener(factory), operations, null, null);
+			notificationManager.createNotification(untestedContainer, new UntestedComputerNotificationListener(factory), operations, null, null);
 			
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error in MzsCore (" + e.getMessage() + ")");
@@ -185,6 +213,21 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 		}
 		return result;
 	}
+	
+	/**
+	 * returns all untested computers in the shared workspace
+	 * @return list of computers
+	 */
+	@Override
+	public List<Computer> getUntestedComputers()
+			throws SharedWorkspaceException {
+		Selector computerSelector = AnyCoordinator.newSelector(Selecting.COUNT_MAX);
+		try {
+			return capi.read(untestedContainer, computerSelector, RequestTimeout.TRY_ONCE, null);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Parts could not be read: Error in MzsCore (" + e.getMessage() + ")");
+		}
+	}
 
 	@Override
 	public List<Computer> getAvailableComputers() throws SharedWorkspaceException {
@@ -198,16 +241,77 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 		return null;
 	}
 
+	/**
+	 * takes a part from the shared workspace, i.e. returns the object and removes it
+	 * @param partType
+	 * 				class type of the part
+	 * @param blocking
+	 * 				if true, takePart() waits until a part can be found and returned
+	 * 				if false, takePart() tries only once to get the part
+	 * @param partCount
+	 * 				specifies the number of parts to be taken
+	 * @return a part of type @partType, null if @blocking = false and no @partCount parts can be found
+	 */
 	@Override
-	public Part takePart(Class<?> partType) throws SharedWorkspaceException {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Part> takeParts(Class<?> partType, boolean blocking, int partCount) throws SharedWorkspaceException {
+		List<Part> result = null;
+		Selector partSelector = null;
+		ContainerReference container = null;
+		
+		if(partType.equals(Mainboard.class))
+		{
+			partSelector = FifoCoordinator.newSelector(partCount);
+			container = mainboardContainer;
+		}
+		else
+		{
+			try {
+				partSelector = LindaCoordinator.newSelector((Part)partType.newInstance(), partCount);
+			} catch (InstantiationException e) {
+				throw new SharedWorkspaceException("Part could not be taken: Part Type could not be instantiated (" + e.getMessage() + ")");
+			} catch (IllegalAccessException e) {
+				throw new SharedWorkspaceException("Part could not be taken: Part Type could not be instantiated (" + e.getMessage() + ")");
+			}
+			container = partContainer;
+		}
+		
+		try {
+			if(blocking)
+				result = capi.take(container, partSelector, RequestTimeout.INFINITE, null);
+			else
+			{
+				try {
+					result = capi.take(container, partSelector, RequestTimeout.TRY_ONCE, null);
+				} catch(CountNotMetException e) {
+					// ok with that, return null
+					return null;
+				}
+			}
+			
+			if(result.isEmpty())
+				return null;
+			
+		} catch (MzsCoreException e) {
+			e.printStackTrace();
+			throw new SharedWorkspaceException("Part could not be taken: Error in MzsCore (" + e.getMessage() + ")");
+		} catch (IndexOutOfBoundsException e) {
+			throw new SharedWorkspaceException("Part could not be taken: Index out of bounds (" + e.getMessage() + ")");
+		}
+		return result;
 	}
 
+	/**
+	 * adds a fresh new computer to the workspace
+	 * @param computer
+	 * 				the computer to add
+	 */
 	@Override
-	public void addComputer(Computer computer) throws SharedWorkspaceException {
-		// TODO Auto-generated method stub
-		
+	public void addUntestedComputer(Computer computer) throws SharedWorkspaceException {
+		try {
+			capi.write(untestedContainer, new Entry(computer, AnyCoordinator.newCoordinationData()));
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Computer could not be written: Error in MzsCore (" + e.getMessage() + ")");
+		}
 	}
 
 	@Override
@@ -226,13 +330,6 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 	public void addComputerToTrash(Computer computer) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		
-	}
-
-	@Override
-	public void entryOperationFinished(Notification source, Operation operation,
-			List<? extends Serializable> entries) {
-		// notify ui about update
-		factory.updateBlackboard();
 	}
 
 }

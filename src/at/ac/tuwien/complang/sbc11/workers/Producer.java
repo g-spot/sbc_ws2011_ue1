@@ -14,7 +14,6 @@ public class Producer extends Worker implements Runnable, Serializable {
 	private long producedSoFar;
 	private double errorRate;
 	private Class<?> partClass;
-	transient private SharedWorkspace sharedWorkspace; // should not be serializable = written to space
 	transient private Logger logger;
 	
 	public Producer(long productionLimit, double errorRate, Class<?> partClass, SharedWorkspace sharedWorkspace) {

@@ -17,12 +17,9 @@ public abstract class SharedWorkspace {
 		this.factory = factory;
 	}
 	
-	// hide default constructor
-	@SuppressWarnings("unused")
-	private SharedWorkspace() {}
-	
 	// general methods
 	public abstract List<Part> getAvailableParts() throws SharedWorkspaceException;
+	public abstract List<Computer> getUntestedComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getAvailableComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getTrashedComputers() throws SharedWorkspaceException;
 	
@@ -31,8 +28,8 @@ public abstract class SharedWorkspace {
 	public abstract void addPart(Part part) throws SharedWorkspaceException;
 	
 	// methods for assembling computers (tasks of the assembler)
-	public abstract Part takePart(Class<?> partType) throws SharedWorkspaceException;
-	public abstract void addComputer(Computer computer) throws SharedWorkspaceException;
+	public abstract List<Part> takeParts(Class<?> partType, boolean blocking, int partCount) throws SharedWorkspaceException;
+	public abstract void addUntestedComputer(Computer computer) throws SharedWorkspaceException;
 	
 	// methods for testing computers (tasks of the tester)
 	public abstract Computer takeUntestedComputer(TestType untestedFor) throws SharedWorkspaceException;

@@ -37,6 +37,7 @@ public class Computer implements Serializable {
 		for(TestType testType:Tester.TestType.values()) {
 			haveTestsFailed[testType.ordinal()] = null;
 		}
+		workers = new ArrayList<Worker>();
 	}
 	
 	public void setTested(TestType testType, boolean wasSuccessful) {
@@ -46,7 +47,7 @@ public class Computer implements Serializable {
 	public boolean isDefect() {
 		// returns true if at least one test has failed
 		for(Boolean testFailed:haveTestsFailed) {
-			if(testFailed)
+			if(testFailed != null && testFailed)
 				return true;
 		}
 		return false;
@@ -96,11 +97,38 @@ public class Computer implements Serializable {
 		return workers;
 	}
 
-	public void setWorkers(List<Worker> workers) {
-		this.workers = workers;
-	}
-
 	public List<RAM> getRamModules() {
 		return ramModules;
+	}
+	
+	@Override
+	public String toString() {
+		String result = "COMPUTER CPU=";
+		if(cpu != null)
+			result += "[" + cpu.getId() + "]";
+		else
+			result += "n.a.";
+		result += ", MAINBOARD=";
+		if(mainboard != null)
+			result += "[" + mainboard.getId() + "]";
+		else
+			result += "n.a.";
+		result += ", GRAPHICS=";
+		if(graphicBoard != null)
+			result += "[" + graphicBoard.getId() + "]";
+		else
+			result += "n.a.";
+		result += ", RAM=";
+		if(ramModules != null) {
+			result +="[";
+			for(RAM ram:ramModules) {
+				result += ram.getId() + ",";
+			}
+			result = result.substring(0, result.length() - 1);
+			result += "], ";
+		}
+		result += "TESTED=" + isCompletelyTested() + ", DEFECT=" + isDefect();
+		
+		return result;
 	}
 }
