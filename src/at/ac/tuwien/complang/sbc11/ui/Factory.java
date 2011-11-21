@@ -81,7 +81,7 @@ public class Factory extends JFrame {
 	}
 	
 	public void updateComputerList() {
-		textAreaLogComputers.setText("Untested computers in workspace\n");
+		textAreaLogComputers.setText("Unused computers in workspace\n");
 		textAreaLogComputers.append("-------------------------------\n");
 		try {
 			for(Computer c:factory.getUntestedComputers()) {
