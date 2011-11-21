@@ -23,6 +23,11 @@ public abstract class SharedWorkspace {
 	public abstract List<Computer> getAvailableComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getTrashedComputers() throws SharedWorkspaceException;
 	
+	// simple transaction control
+	public abstract void startTransaction() throws SharedWorkspaceException;
+	public abstract void commitTransaction() throws SharedWorkspaceException;
+	public abstract void rollbackTransaction() throws SharedWorkspaceException;
+	
 	// methods for dealing with parts (tasks of the producer)
 	public abstract long getNextPartId() throws SharedWorkspaceException;
 	public abstract void addPart(Part part) throws SharedWorkspaceException;

@@ -5,6 +5,7 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import javax.swing.BorderFactory;
@@ -17,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
@@ -46,6 +48,7 @@ public class Factory extends JFrame {
 	private int producerCount = 0;
 	
 	private SharedWorkspace factory;
+	private List<Part> partList = null;
 
 	public Factory() {
 		this.initUI();
@@ -58,26 +61,38 @@ public class Factory extends JFrame {
 			e.printStackTrace();
 		}
 		
-		this.updatePartList();
-		this.updateComputerList();
-		this.updateTrashBinList();
-		this.updateShippedList();
+		updateAllLists();
 		
 		// initializes an alternative implementation of the shared workspace
 		//factory = new SharedWorkspaceAlternativeImpl();
 	}
 	
+	public void updateAllLists() {
+		updatePartList();
+		updateComputerList();
+		updateTrashBinList();
+		updateShippedList();
+	}
+	
 	public void updatePartList() {
-		textAreaLogParts.setText("Unused parts in workspace\n");
-		textAreaLogParts.append("-------------------------\n");
+		partList = null;
 		try {
-			for(Part p:factory.getAvailableParts()) {
-				textAreaLogParts.append(p.toString() + "\n");
-			}
+			partList = factory.getAvailableParts();
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			
 		}
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				textAreaLogParts.setText("Unused parts in workspace\n");
+				textAreaLogParts.append("-------------------------\n");
+				if(partList != null)
+					for(Part p:partList) {
+						textAreaLogParts.append(p.toString() + "\n");
+					}
+			}
+		});
+		
 	}
 	
 	public void updateComputerList() {
@@ -136,23 +151,18 @@ public class Factory extends JFrame {
 		topPanel.add(labelPartErrorRate);
 		textErrorRate = new JTextField("0.1");
 		topPanel.add(textErrorRate);
-		topPanel.add(new JLabel());
-		/*JButton buttonTestNewId = new JButton("Test id retrieval");
-		topPanel.add(buttonTestNewId);*/
+		//topPanel.add(new JLabel());
+		JButton buttonTest = new JButton("Update blackboard manually");
+		topPanel.add(buttonTest);
 		buttonAddProducer = new JButton("Add Producer (currently: " + producerCount + ")");
 		topPanel.add(buttonAddProducer);
 		
 		// TODO remove test code
-		/*buttonTestNewId.addActionListener(new ActionListener() {
+		buttonTest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					long nextID = factory.getNextPartId();
-					JOptionPane.showMessageDialog(null, "Next id: " + nextID);
-				} catch (SharedWorkspaceException e1) {
-					JOptionPane.showMessageDialog(null, e1.getMessage());
-				}
+				updateAllLists();
 			}
-		});*/
+		});
 		
 		buttonAddProducer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

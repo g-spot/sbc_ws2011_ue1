@@ -50,21 +50,27 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	private Capi capi;
 	private NotificationManager notificationManager;
 	
+	// containers
 	private ContainerReference partIdContainer;
 	private ContainerReference partContainer;
 	private ContainerReference mainboardContainer;
 	private ContainerReference untestedContainer;
 	private Logger logger;
 	
+	// for transaction purposes
+	private TransactionReference currentTransaction = null;
+	
 	// default constructor is used by assemblers, testers and logisticians only
 	public SharedWorkspaceMozartImpl() throws SharedWorkspaceException {
 		super(null);
+		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl");
 		try {
 			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
 			core = DefaultMzsCore.newInstance(0);
 			capi = new Capi(core);
 			
 			// get container
+			logger.info("Retrieving containers...");
 			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
 			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
 			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
@@ -80,7 +86,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	// can be called only once in the system - by the ui
 	public SharedWorkspaceMozartImpl(Factory factory) throws SharedWorkspaceException {
 		super(factory);
-		logger = Logger.getAnonymousLogger();
+		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl");
 		try {
 			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
 			core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
@@ -91,12 +97,14 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			capi = new Capi(core);
 			
 			// create container
+			logger.info("Retrieving containers...");
 			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
 			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
 			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
 			untestedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_UNTESTED, spaceURI, capi);
 			
 			// init notifications
+			logger.info("Registering notifications...");
 			notificationManager = new NotificationManager(core);
 			HashSet<Operation> operations = new HashSet<Operation>();
 			operations.add(Operation.WRITE);
@@ -115,8 +123,15 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		}
 	}
 
+	/**
+	 * gets the next system wide identifier for parts
+	 * uses an autonomous transaction (i.e. this method is not affected by
+	 * the built-in simple transaction control of the class)
+	 * @return the next part id
+	 */
 	@Override
 	public long getNextPartId() throws SharedWorkspaceException {
+		logger.info("Starting getNextPartId()...");
 		long nextID = 0;
 		TransactionReference transaction = null;
 		try {
@@ -131,6 +146,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 				nextID = 1;
 				capi.write(new Entry(new Long(1)), partIdContainer, RequestTimeout.TRY_ONCE, transaction);
 				capi.commitTransaction(transaction);
+				logger.info("Finished.");
 				return nextID;
 			}
 			
@@ -160,24 +176,41 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			}
 			throw new SharedWorkspaceException("Next part id could not be retrieved: Other error (" + e.getMessage() + ")");
 		}
+		logger.info("Finished.");
 		return nextID;
 	}
 
+	/**
+	 * adds a new part to either the mainboardContainer (if the part is a mainboard)
+	 * or the partContainer (for all other parts)
+	 * uses the current simple transaction, if one exists
+	 * @param part
+	 * 				the part to insert
+	 */
 	@Override
 	public void addPart(Part part) throws SharedWorkspaceException {
+		logger.info("Starting addPart()...");
 		try {
 			// if part is a mainboard, insert into mainboardContainer
 			if(part.getClass().equals(Mainboard.class))
-				capi.write(mainboardContainer, new Entry(part, FifoCoordinator.newCoordinationData()));
+				capi.write(new Entry(part, FifoCoordinator.newCoordinationData()), mainboardContainer, RequestTimeout.DEFAULT, currentTransaction);
 			else
-				capi.write(partContainer, new Entry(part, LindaCoordinator.newCoordinationData()));
+				capi.write(new Entry(part, LindaCoordinator.newCoordinationData()), partContainer, RequestTimeout.DEFAULT, currentTransaction);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Part could not be written: Error in MzsCore (" + e.getMessage() + ")");
 		}
+		logger.info("Finished.");
 	}
 
+	/**
+	 * reads and returns a list of all available (unused) parts in the containers
+	 * partContainer and mainbordContainer
+	 * uses an autonomous transaction (i.e. this method is not affected by
+	 * the built-in simple transaction control of the class)
+	 */
 	@Override
 	public List<Part> getAvailableParts() throws SharedWorkspaceException {
+		logger.info("Starting getAvailableParts()...");
 		List<Part> result = new ArrayList<Part>();
 		List<CPU> cpuList = null;
 		List<RAM> ramList = null;
@@ -211,19 +244,23 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 				throw new SharedWorkspaceException("Parts could not be read: Error with transaction (" + e.getMessage() + ")");
 			}
 		}
+		logger.info("Finished.");
 		return result;
 	}
 	
 	/**
 	 * returns all untested computers in the shared workspace
+	 * uses the current simple transaction, if one exists
 	 * @return list of computers
 	 */
 	@Override
 	public List<Computer> getUntestedComputers()
 			throws SharedWorkspaceException {
+		logger.info("Starting getUntestedComputers()...");
 		Selector computerSelector = AnyCoordinator.newSelector(Selecting.COUNT_MAX);
 		try {
-			return capi.read(untestedContainer, computerSelector, RequestTimeout.TRY_ONCE, null);
+			logger.info("Finished.");
+			return capi.read(untestedContainer, computerSelector, RequestTimeout.TRY_ONCE, currentTransaction);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Parts could not be read: Error in MzsCore (" + e.getMessage() + ")");
 		}
@@ -243,6 +280,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 
 	/**
 	 * takes a part from the shared workspace, i.e. returns the object and removes it
+	 * uses the current simple transaction, if one exists
 	 * @param partType
 	 * 				class type of the part
 	 * @param blocking
@@ -254,6 +292,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	 */
 	@Override
 	public List<Part> takeParts(Class<?> partType, boolean blocking, int partCount) throws SharedWorkspaceException {
+		logger.info("Starting takeParts()...");
 		List<Part> result = null;
 		Selector partSelector = null;
 		ContainerReference container = null;
@@ -277,19 +316,23 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		
 		try {
 			if(blocking)
-				result = capi.take(container, partSelector, RequestTimeout.INFINITE, null);
+				result = capi.take(container, partSelector, RequestTimeout.INFINITE, currentTransaction);
 			else
 			{
 				try {
-					result = capi.take(container, partSelector, RequestTimeout.TRY_ONCE, null);
+					result = capi.take(container, partSelector, RequestTimeout.TRY_ONCE, currentTransaction);
 				} catch(CountNotMetException e) {
 					// ok with that, return null
+					logger.info("Finished.");
 					return null;
 				}
 			}
 			
 			if(result.isEmpty())
+			{
+				logger.info("Finished.");
 				return null;
+			}
 			
 		} catch (MzsCoreException e) {
 			e.printStackTrace();
@@ -297,21 +340,25 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		} catch (IndexOutOfBoundsException e) {
 			throw new SharedWorkspaceException("Part could not be taken: Index out of bounds (" + e.getMessage() + ")");
 		}
+		logger.info("Finished.");
 		return result;
 	}
 
 	/**
 	 * adds a fresh new computer to the workspace
+	 * uses the current simple transaction, if one exists
 	 * @param computer
 	 * 				the computer to add
 	 */
 	@Override
 	public void addUntestedComputer(Computer computer) throws SharedWorkspaceException {
+		logger.info("Starting addUntestedComputer()...");
 		try {
-			capi.write(untestedContainer, new Entry(computer, AnyCoordinator.newCoordinationData()));
+			capi.write(new Entry(computer, AnyCoordinator.newCoordinationData()), untestedContainer, RequestTimeout.DEFAULT, currentTransaction);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Computer could not be written: Error in MzsCore (" + e.getMessage() + ")");
 		}
+		logger.info("Finished.");
 	}
 
 	@Override
@@ -330,6 +377,58 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	public void addComputerToTrash(Computer computer) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	/**
+	 * starts a new simple transaction (only if currently no transaction is active)
+	 */
+	@Override
+	public void startTransaction() throws SharedWorkspaceException {
+		logger.info("Starting startTransaction()...");
+		if(currentTransaction == null) {
+			try {
+				currentTransaction = capi.createTransaction(RequestTimeout.INFINITE, spaceURI);
+			} catch (MzsCoreException e) {
+				throw new SharedWorkspaceException("Transaction could not be started: Error in MzsCore (" + e.getMessage() + ")");
+			}
+		}
+		logger.info("Finished.");
+	}
+
+	/**
+	 * commits the current simple transaction
+	 */
+	@Override
+	public void commitTransaction() throws SharedWorkspaceException {
+		logger.info("Starting commitTransaction()...");
+		if(currentTransaction != null) {
+			try {
+				capi.commitTransaction(currentTransaction);
+			} catch (MzsCoreException e) {
+				throw new SharedWorkspaceException("Transaction could not be commited: Error in MzsCore (" + e.getMessage() + ")");
+			} finally {
+				currentTransaction = null;
+			}
+		}
+		logger.info("Finished.");
+	}
+
+	/**
+	 * rollbacks the current simple transaction
+	 */
+	@Override
+	public void rollbackTransaction() throws SharedWorkspaceException {
+		logger.info("Starting rollbackTransaction()...");
+		if(currentTransaction != null) {
+			try {
+				capi.rollbackTransaction(currentTransaction);
+			} catch (MzsCoreException e) {
+				throw new SharedWorkspaceException("Transaction could not be royblacked: Error in MzsCore (" + e.getMessage() + ")");
+			} finally {
+				currentTransaction = null;
+			}
+		}
+		logger.info("Finished.");
 	}
 
 }

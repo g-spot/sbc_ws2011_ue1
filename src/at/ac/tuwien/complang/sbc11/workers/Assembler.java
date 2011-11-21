@@ -47,12 +47,15 @@ public class Assembler extends Worker implements Runnable, Serializable {
 			List<Part> ramList = null;
 			
 			try {
+				// do all the following methods using the simple transaction support
+				sharedWorkspace.startTransaction();
+				
 				// get cpu from shared workspace
 				logger.info("Trying to take CPU from shared workspace...");
 				List<Part> cpuList = sharedWorkspace.takeParts(CPU.class, true, 1);
 				if(cpuList != null && !cpuList.isEmpty()) {
 					cpu = (CPU) cpuList.get(0);
-					logger.info("Successfully took CPU.");
+					logger.info("Successfully took " + cpuList.size() + " CPU(s).");
 				}
 				
 				// get mainboard from shared workspace
@@ -60,7 +63,7 @@ public class Assembler extends Worker implements Runnable, Serializable {
 				List<Part> mainboardList = sharedWorkspace.takeParts(Mainboard.class, true, 1);
 				if(mainboardList != null && !mainboardList.isEmpty()) {
 					mainboard = (Mainboard) mainboardList.get(0);
-					logger.info("Successfully took mainboard.");
+					logger.info("Successfully took " + mainboardList.size() + " mainboard(s).");
 				}
 				
 				// get graphic board from shared workspace
@@ -68,7 +71,7 @@ public class Assembler extends Worker implements Runnable, Serializable {
 				List<Part> graphicBoardList = sharedWorkspace.takeParts(GraphicBoard.class, false, 1);
 				if(graphicBoardList != null && !graphicBoardList.isEmpty()) {
 					graphicBoard = (GraphicBoard) graphicBoardList.get(0);
-					logger.info("Successfully took graphic board.");
+					logger.info("Successfully took " + graphicBoardList.size() + " graphic board(s).");
 				}
 				
 				// get ram from shared workspace
@@ -83,9 +86,12 @@ public class Assembler extends Worker implements Runnable, Serializable {
 						ramList = sharedWorkspace.takeParts(RAM.class, true, 1);
 					}
 				}
+				if(ramList != null)
+					logger.info("Successfully took " + ramList.size()+ " ram module(s).");
 				
 				// no we have all parts we need, let's construct a new computer
 				Computer computer = new Computer();
+				computer.setId(++productionCount);
 				computer.setCpu(cpu);
 				computer.setMainboard(mainboard);
 				computer.setGraphicBoard(graphicBoard);
@@ -95,9 +101,15 @@ public class Assembler extends Worker implements Runnable, Serializable {
 				
 				// now write it to the shared workspace
 				sharedWorkspace.addUntestedComputer(computer);
+				
+				sharedWorkspace.commitTransaction();
 			} catch (SharedWorkspaceException e) {
 				logger.severe(e.getMessage());
-				//e.printStackTrace();
+				try {
+					sharedWorkspace.rollbackTransaction();
+				} catch (SharedWorkspaceException e1) {
+					logger.severe(e1.getMessage());
+				}
 			}
 			
 			logger.info("Finished assembling.");

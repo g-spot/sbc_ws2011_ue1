@@ -13,6 +13,7 @@ public class Computer implements Serializable {
 	private static final long serialVersionUID = 4357416927653129937L;
 
 	// general information
+	private long id;
 	private Boolean haveTestsFailed[];
 	
 	// parts
@@ -68,6 +69,14 @@ public class Computer implements Serializable {
 		return (cpu != null && mainboard != null && ramModules != null && ramModules.size() > 0);
 	}
 
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
 	// getters and setters
 	public CPU getCpu() {
 		return cpu;
@@ -103,7 +112,7 @@ public class Computer implements Serializable {
 	
 	@Override
 	public String toString() {
-		String result = "COMPUTER CPU=";
+		String result = "COMPUTER[" + getId() + "] CPU=";
 		if(cpu != null)
 			result += "[" + cpu.getId() + "]";
 		else
