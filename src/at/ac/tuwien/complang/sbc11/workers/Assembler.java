@@ -48,7 +48,7 @@ public class Assembler extends Worker implements Runnable, Serializable {
 			
 			try {
 				// do all the following methods using the simple transaction support
-				sharedWorkspace.startTransaction();
+				//sharedWorkspace.startTransaction();
 				
 				// get cpu from shared workspace
 				logger.info("Trying to take CPU from shared workspace...");
@@ -102,14 +102,14 @@ public class Assembler extends Worker implements Runnable, Serializable {
 				// now write it to the shared workspace
 				sharedWorkspace.addUntestedComputer(computer);
 				
-				sharedWorkspace.commitTransaction();
+				//sharedWorkspace.commitTransaction();
 			} catch (SharedWorkspaceException e) {
 				logger.severe(e.getMessage());
-				try {
+				/*try {
 					sharedWorkspace.rollbackTransaction();
 				} catch (SharedWorkspaceException e1) {
 					logger.severe(e1.getMessage());
-				}
+				}*/
 			}
 			
 			logger.info("Finished assembling.");

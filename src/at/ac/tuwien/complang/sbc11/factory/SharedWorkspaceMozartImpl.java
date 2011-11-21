@@ -132,6 +132,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	@Override
 	public long getNextPartId() throws SharedWorkspaceException {
 		logger.info("Starting getNextPartId()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		long nextID = 0;
 		TransactionReference transaction = null;
 		try {
@@ -190,6 +191,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	@Override
 	public void addPart(Part part) throws SharedWorkspaceException {
 		logger.info("Starting addPart()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		try {
 			// if part is a mainboard, insert into mainboardContainer
 			if(part.getClass().equals(Mainboard.class))
@@ -211,6 +213,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	@Override
 	public List<Part> getAvailableParts() throws SharedWorkspaceException {
 		logger.info("Starting getAvailableParts()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		List<Part> result = new ArrayList<Part>();
 		List<CPU> cpuList = null;
 		List<RAM> ramList = null;
@@ -257,6 +260,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	public List<Computer> getUntestedComputers()
 			throws SharedWorkspaceException {
 		logger.info("Starting getUntestedComputers()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		Selector computerSelector = AnyCoordinator.newSelector(Selecting.COUNT_MAX);
 		try {
 			logger.info("Finished.");
@@ -293,6 +297,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	@Override
 	public List<Part> takeParts(Class<?> partType, boolean blocking, int partCount) throws SharedWorkspaceException {
 		logger.info("Starting takeParts()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		List<Part> result = null;
 		Selector partSelector = null;
 		ContainerReference container = null;
@@ -353,6 +358,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	@Override
 	public void addUntestedComputer(Computer computer) throws SharedWorkspaceException {
 		logger.info("Starting addUntestedComputer()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		try {
 			capi.write(new Entry(computer, AnyCoordinator.newCoordinationData()), untestedContainer, RequestTimeout.DEFAULT, currentTransaction);
 		} catch (MzsCoreException e) {
@@ -382,9 +388,10 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	/**
 	 * starts a new simple transaction (only if currently no transaction is active)
 	 */
-	@Override
+	/*@Override
 	public void startTransaction() throws SharedWorkspaceException {
 		logger.info("Starting startTransaction()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		if(currentTransaction == null) {
 			try {
 				currentTransaction = capi.createTransaction(RequestTimeout.INFINITE, spaceURI);
@@ -393,14 +400,15 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			}
 		}
 		logger.info("Finished.");
-	}
+	}*/
 
 	/**
 	 * commits the current simple transaction
 	 */
-	@Override
+	/*@Override
 	public void commitTransaction() throws SharedWorkspaceException {
 		logger.info("Starting commitTransaction()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		if(currentTransaction != null) {
 			try {
 				capi.commitTransaction(currentTransaction);
@@ -411,14 +419,15 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			}
 		}
 		logger.info("Finished.");
-	}
+	}*/
 
 	/**
 	 * rollbacks the current simple transaction
 	 */
-	@Override
+	/*@Override
 	public void rollbackTransaction() throws SharedWorkspaceException {
 		logger.info("Starting rollbackTransaction()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		if(currentTransaction != null) {
 			try {
 				capi.rollbackTransaction(currentTransaction);
@@ -429,6 +438,6 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			}
 		}
 		logger.info("Finished.");
-	}
+	}*/
 
 }
