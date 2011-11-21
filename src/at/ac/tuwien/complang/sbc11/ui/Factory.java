@@ -97,9 +97,22 @@ public class Factory extends JFrame {
 		topPanel.add(labelPartErrorRate);
 		textErrorRate = new JTextField("0.1");
 		topPanel.add(textErrorRate);
-		topPanel.add(new JLabel());
+		//topPanel.add(new JLabel());
+		JButton buttonTestNewId = new JButton("Test id retrieval");
+		topPanel.add(buttonTestNewId);
 		JButton buttonAddProducer = new JButton("Add Producer");
 		topPanel.add(buttonAddProducer);
+		
+		buttonTestNewId.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					long nextID = factory.getNextPartId();
+					JOptionPane.showMessageDialog(null, "Next id: " + nextID);
+				} catch (SharedWorkspaceException e1) {
+					JOptionPane.showMessageDialog(null, e1.getMessage());
+				}
+			}
+		});
 		
 		buttonAddProducer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

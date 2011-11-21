@@ -3,19 +3,25 @@ package at.ac.tuwien.complang.sbc11.factory;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
+import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.capi3.Selector;
 import org.mozartspaces.core.Capi;
 import org.mozartspaces.core.ContainerReference;
 import org.mozartspaces.core.DefaultMzsCore;
 import org.mozartspaces.core.Entry;
+import org.mozartspaces.core.MzsConstants;
 import org.mozartspaces.core.MzsConstants.Selecting;
 import org.mozartspaces.core.MzsCore;
 import org.mozartspaces.core.MzsCoreException;
 import org.mozartspaces.core.MzsConstants.RequestTimeout;
+import org.mozartspaces.core.TransactionReference;
 import org.mozartspaces.notifications.Notification;
 import org.mozartspaces.notifications.NotificationListener;
 import org.mozartspaces.notifications.NotificationManager;
@@ -38,19 +44,30 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 	private Capi capi;
 	private NotificationManager notificationManager;
 	
+	private ContainerReference partIdContainer;
+	private Logger logger;
+	
 	public SharedWorkspaceMozartImpl(Factory factory) throws SharedWorkspaceException {
 		super(factory);
+		logger = Logger.getAnonymousLogger();
 		try {
 			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
-			core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
+			//core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
+			core = DefaultMzsCore.newInstance(0);
 			capi = new Capi(core);
 			notificationManager = new NotificationManager(core);
 			workspaceContainer = SpaceUtils.getOrCreateNamedFIFOContainer("FactoryWorkspace", spaceURI, capi);
+			
 			HashSet<Operation> operations = new HashSet<Operation>();
 			operations.add(Operation.WRITE);
 			operations.add(Operation.TAKE);
 			operations.add(Operation.DELETE);
 			notificationManager.createNotification(workspaceContainer, this, operations, null, null);
+			
+			// create ID container for system wide part identifiers
+			// the container is initially filled with the number 1 = first part ID
+			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
+			
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error in MzsCore (" + e.getMessage() + ")");
 		} catch (URISyntaxException e) {
@@ -61,15 +78,55 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace implements Notifi
 	}
 
 	@Override
-	public long getNextPartId() {
-		// TODO get a system wide unused identifier - take id from a container?
-		return 0;
+	public long getNextPartId() throws SharedWorkspaceException {
+		long nextID = 0;
+		TransactionReference transaction = null;
+		try {
+			transaction = capi.createTransaction(MzsConstants.TransactionTimeout.INFINITE, spaceURI);
+			Selector idSelector = AnyCoordinator.newSelector(1);
+			
+			// let's see if there is already an id in the container:
+			try {
+				capi.test(partIdContainer);
+			} catch(MzsCoreException e) {
+				// no --> then insert the first one
+				nextID = 1;
+				capi.write(new Entry(new Long(1)), partIdContainer, RequestTimeout.TRY_ONCE, transaction);
+				capi.commitTransaction(transaction);
+				return nextID;
+			}
+			
+			// if the container contains an id: take the id, increment it and insert it again
+			if(nextID == 0) {
+				//List<Selector> selectors = Collections.singletonList(idSelector);
+				ArrayList<Long> result = capi.take(partIdContainer, idSelector, RequestTimeout.TRY_ONCE, transaction);
+				nextID = result.get(0);
+				nextID++;
+
+				capi.write(partIdContainer, RequestTimeout.TRY_ONCE, transaction, new Entry(nextID));
+			}
+			
+			capi.commitTransaction(transaction);
+		} catch (MzsCoreException e) {
+			try {
+				capi.rollbackTransaction(transaction);
+			} catch (MzsCoreException e1) {
+				throw new SharedWorkspaceException("Next part id could not be retrieved: Error during rollback of transaction (" + e1.getMessage() + ")");
+			}
+			throw new SharedWorkspaceException("Next part id could not be retrieved: Error in MzsCore (" + e.getMessage() + ")");
+		} catch(Exception e) {
+			try {
+				capi.rollbackTransaction(transaction);
+			} catch (MzsCoreException e1) {
+				throw new SharedWorkspaceException("Next part id could not be retrieved: Error during rollback of transaction (" + e1.getMessage() + ")");
+			}
+			throw new SharedWorkspaceException("Next part id could not be retrieved: Other error (" + e.getMessage() + ")");
+		}
+		return nextID;
 	}
 
 	@Override
 	public void addPart(Part part) throws SharedWorkspaceException {
-		// TODO add part to space
-		//parts.add(part);
 		try {
 			capi.write(workspaceContainer, new Entry(part, LindaCoordinator.newCoordinationData()));
 		} catch (MzsCoreException e) {
