@@ -1,10 +1,8 @@
 package at.ac.tuwien.complang.sbc11.factory;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
@@ -41,6 +39,7 @@ import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
+import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
 public class SharedWorkspaceMozartImpl extends SharedWorkspace {
@@ -58,7 +57,8 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	private Logger logger;
 	
 	// for transaction purposes
-	private TransactionReference currentTransaction = null;
+	// made it final because transaction won't work anyway
+	private final TransactionReference currentTransaction = null;
 	
 	// default constructor is used by assemblers, testers and logisticians only
 	public SharedWorkspaceMozartImpl() throws SharedWorkspaceException {
@@ -74,7 +74,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
 			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
 			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
-			untestedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_UNTESTED, spaceURI, capi);
+			untestedContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_INCOMPLETE, spaceURI, capi);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error in MzsCore (" + e.getMessage() + ")");
 		} catch (URISyntaxException e) {
@@ -101,7 +101,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
 			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
 			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
-			untestedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_UNTESTED, spaceURI, capi);
+			untestedContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_INCOMPLETE, spaceURI, capi);
 			
 			// init notifications
 			logger.info("Registering notifications...");
@@ -252,16 +252,18 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	}
 	
 	/**
-	 * returns all untested computers in the shared workspace
+	 * returns all incomplete computers in the shared workspace
 	 * uses the current simple transaction, if one exists
 	 * @return list of computers
 	 */
 	@Override
-	public List<Computer> getUntestedComputers()
+	public List<Computer> getIncompleteComputers()
 			throws SharedWorkspaceException {
 		logger.info("Starting getUntestedComputers()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
-		Selector computerSelector = AnyCoordinator.newSelector(Selecting.COUNT_MAX);
+		Computer pattern = new Computer();
+		pattern.setTestStates(null); // take any computers
+		Selector computerSelector = LindaCoordinator.newSelector(pattern, Selecting.COUNT_MAX);
 		try {
 			logger.info("Finished.");
 			return capi.read(untestedContainer, computerSelector, RequestTimeout.TRY_ONCE, currentTransaction);
@@ -271,7 +273,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	}
 
 	@Override
-	public List<Computer> getAvailableComputers() throws SharedWorkspaceException {
+	public List<Computer> getCompleteComputers() throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -350,39 +352,76 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	}
 
 	/**
-	 * adds a fresh new computer to the workspace
+	 * adds a fresh new computer to the workspace (i.e. to the incomplete computer container)
 	 * uses the current simple transaction, if one exists
 	 * @param computer
 	 * 				the computer to add
 	 */
 	@Override
-	public void addUntestedComputer(Computer computer) throws SharedWorkspaceException {
+	public void addComputer(Computer computer) throws SharedWorkspaceException {
 		logger.info("Starting addUntestedComputer()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		try {
-			capi.write(new Entry(computer, AnyCoordinator.newCoordinationData()), untestedContainer, RequestTimeout.DEFAULT, currentTransaction);
+			capi.write(new Entry(computer, LindaCoordinator.newCoordinationData()), untestedContainer, RequestTimeout.DEFAULT, currentTransaction);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Computer could not be written: Error in MzsCore (" + e.getMessage() + ")");
 		}
 		logger.info("Finished.");
 	}
 
+	/**
+	 * takes a computer from the space which is not tested yet for the given TestType
+	 * @param untestedFor
+	 * 				the test type
+	 * @return a computer object, which is not tested for the given TestType - the method blocks until a untested computer arrives in the space
+	 */
 	@Override
 	public Computer takeUntestedComputer(TestType untestedFor) throws SharedWorkspaceException {
-		// TODO Auto-generated method stub
+		logger.info("Starting takeUntestedComputer()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		
+		Computer pattern = new Computer();
+		// set the desired TestType to NOT_TESTED, all others to null (to ignore them values)
+		for(TestType testType:TestType.values()) {
+			if(testType.equals(untestedFor))
+				pattern.setTested(testType, TestState.NOT_TESTED);
+			else
+				pattern.setTested(testType, null);
+		}
+		//pattern.setTested(untestedFor, TestState.NOT_TESTED);
+		Selector computerSelector = LindaCoordinator.newSelector(pattern, 1);
+		
+		try {
+			logger.info("trying to get computer with pattern:");
+			logger.info(pattern.toString());
+			List<Computer> computerList = capi.take(untestedContainer, computerSelector, RequestTimeout.INFINITE, currentTransaction);
+			if(computerList != null && computerList.size() > 0)
+			{
+				logger.info("Finished.");
+				return computerList.get(0);
+			}
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Parts could not be read: Error in MzsCore (" + e.getMessage() + ")");
+		}
 		return null;
 	}
 
 	@Override
-	public Computer takeCompleteComputer() throws SharedWorkspaceException {
+	public void shipComputer() throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
 	public void addComputerToTrash(Computer computer) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public Computer takeCompletelyTestedComputer()
+			throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**

@@ -31,7 +31,7 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 	}
 
 	@Override
-	public List<Computer> getAvailableComputers() {
+	public List<Computer> getCompleteComputers() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -61,7 +61,7 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 	}
 
 	@Override
-	public void addUntestedComputer(Computer computer) {
+	public void addComputer(Computer computer) {
 		// TODO Auto-generated method stub
 
 	}
@@ -73,9 +73,8 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 	}
 
 	@Override
-	public Computer takeCompleteComputer() {
+	public void shipComputer() {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -85,7 +84,14 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 	}
 
 	@Override
-	public List<Computer> getUntestedComputers()
+	public List<Computer> getIncompleteComputers()
+			throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Computer takeCompletelyTestedComputer()
 			throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;

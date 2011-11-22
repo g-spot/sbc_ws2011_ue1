@@ -5,11 +5,9 @@ import java.util.logging.Logger;
 
 import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.FifoCoordinator;
-import org.mozartspaces.capi3.LabelCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.core.Capi;
 import org.mozartspaces.core.ContainerReference;
-import org.mozartspaces.core.Entry;
 import org.mozartspaces.core.MzsCoreException;
 import org.mozartspaces.core.MzsConstants.Container;
 import org.mozartspaces.core.MzsConstants.RequestTimeout;
@@ -19,9 +17,9 @@ public class SpaceUtils {
 	public static final String CONTAINER_PART_ID = "ContainerPartId";
 	public static final String CONTAINER_PARTS = "ContainerParts";
 	public static final String CONTAINER_MAINBOARDS = "ContainerMainboards";
-	public static final String CONTAINER_UNTESTED = "ContainerUntested";
-	public static final String CONTAINER_DEFECT = "ContainerDefect";
-	public static final String CONTAINER_READY = "ContainerReady";
+	public static final String CONTAINER_INCOMPLETE = "ContainerIncomplete";
+	public static final String CONTAINER_TRASHED = "ContainerTrashed";
+	public static final String CONTAINER_COMPLETE = "ContainerComplete";
 	
 	public static final ContainerReference getOrCreateFIFOContainer(String containerName, URI spaceURI, Capi capi) throws MzsCoreException {
 		ContainerReference container = null;

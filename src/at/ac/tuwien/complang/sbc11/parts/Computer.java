@@ -4,17 +4,23 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mozartspaces.capi3.Index;
+import org.mozartspaces.capi3.Queryable;
+
 import at.ac.tuwien.complang.sbc11.workers.Tester;
+import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 import at.ac.tuwien.complang.sbc11.workers.Worker;
 
+@Queryable
 public class Computer implements Serializable {
 
 	private static final long serialVersionUID = 4357416927653129937L;
 
 	// general information
 	private long id;
-	private Boolean haveTestsFailed[];
+	@Index
+	private TestState testStates[];
 	
 	// parts
 	private CPU cpu = null;
@@ -34,21 +40,21 @@ public class Computer implements Serializable {
 		 *   - true (tested and failed)
 		 *   - false (tested and successful)
 		 */
-		haveTestsFailed = new Boolean[TestType.values().length];
+		testStates = new TestState[TestType.values().length];
 		for(TestType testType:Tester.TestType.values()) {
-			haveTestsFailed[testType.ordinal()] = null;
+			testStates[testType.ordinal()] = TestState.NOT_TESTED;
 		}
 		workers = new ArrayList<Worker>();
 	}
 	
-	public void setTested(TestType testType, boolean wasSuccessful) {
-		haveTestsFailed[testType.ordinal()] = wasSuccessful;
+	public void setTested(TestType testType, TestState testState) {
+		testStates[testType.ordinal()] = testState;
 	}
 	
 	public boolean isDefect() {
 		// returns true if at least one test has failed
-		for(Boolean testFailed:haveTestsFailed) {
-			if(testFailed != null && testFailed)
+		for(TestState testState:testStates) {
+			if(testState == TestState.FAILED)
 				return true;
 		}
 		return false;
@@ -56,8 +62,8 @@ public class Computer implements Serializable {
 	
 	public boolean isCompletelyTested() {
 		// returns false if at least one test has not been done yet
-		for(Boolean testFailed:haveTestsFailed) {
-			if(testFailed == null)
+		for(TestState testState:testStates) {
+			if(testState == TestState.NOT_TESTED)
 				return false;
 		}
 		return true;
@@ -109,35 +115,73 @@ public class Computer implements Serializable {
 	public List<RAM> getRamModules() {
 		return ramModules;
 	}
+
+	public TestState[] getTestStates() {
+		return testStates;
+	}
+
+	public void setTestStates(TestState[] testStates) {
+		this.testStates = testStates;
+	}
 	
 	@Override
 	public String toString() {
-		String result = "COMPUTER[" + getId() + "] CPU=";
+		final char NEWLINE = '\n';
+		final String INDENT = "   ";
+		String result = "COMPUTER[" + getId() + "]" + NEWLINE;
+		result += INDENT + toStringParts() + NEWLINE;
+		result += INDENT + toStringTests() + NEWLINE;
+		result += INDENT + toStringWorkers();
+		return result;
+	}
+	
+	private String toStringParts() {
+		String result = "CPU";
 		if(cpu != null)
 			result += "[" + cpu.getId() + "]";
 		else
-			result += "n.a.";
-		result += ", MAINBOARD=";
+			result += "[n.a.]";
+		result += ", MAINBOARD";
 		if(mainboard != null)
 			result += "[" + mainboard.getId() + "]";
 		else
-			result += "n.a.";
-		result += ", GRAPHICS=";
+			result += "[n.a.]";
+		result += ", GRAPHICS";
 		if(graphicBoard != null)
 			result += "[" + graphicBoard.getId() + "]";
 		else
-			result += "n.a.";
-		result += ", RAM=";
+			result += "[n.a.]";
+		result += ", RAM";
 		if(ramModules != null) {
 			result +="[";
 			for(RAM ram:ramModules) {
 				result += ram.getId() + ",";
 			}
 			result = result.substring(0, result.length() - 1);
-			result += "], ";
+			result += "]";
 		}
-		result += "TESTED=" + isCompletelyTested() + ", DEFECT=" + isDefect();
-		
+		return result;
+	}
+	
+	private String toStringTests() {
+		String result = "TESTED=" + isCompletelyTested() + " (";
+		for(TestType testType:Tester.TestType.values()) {
+			result += testType.toString() + "=" + testStates[testType.ordinal()] + ",";
+		}
+		result = result.substring(0, result.length() - 1);
+		result += "), DEFECT=" + isDefect();
+		return result;
+	}
+	
+	private String toStringWorkers() {
+		String result = "WORKERS(";
+		if(workers != null && workers.size() > 0) {
+			for(Worker worker:workers) {
+				result += worker.getClass().getSimpleName() + "[" + worker.getId() + "],";
+			}
+			result = result.substring(0, result.length() - 1);
+		}
+		result += ")";
 		return result;
 	}
 }

@@ -19,8 +19,8 @@ public abstract class SharedWorkspace {
 	
 	// general methods
 	public abstract List<Part> getAvailableParts() throws SharedWorkspaceException;
-	public abstract List<Computer> getUntestedComputers() throws SharedWorkspaceException;
-	public abstract List<Computer> getAvailableComputers() throws SharedWorkspaceException;
+	public abstract List<Computer> getIncompleteComputers() throws SharedWorkspaceException;
+	public abstract List<Computer> getCompleteComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getTrashedComputers() throws SharedWorkspaceException;
 	
 	// simple transaction control - doesn't work
@@ -38,14 +38,14 @@ public abstract class SharedWorkspace {
 	
 	// methods for assembling computers (tasks of the assembler)
 	public abstract List<Part> takeParts(Class<?> partType, boolean blocking, int partCount) throws SharedWorkspaceException;
-	public abstract void addUntestedComputer(Computer computer) throws SharedWorkspaceException;
+	public abstract void addComputer(Computer computer) throws SharedWorkspaceException;
 	
 	// methods for testing computers (tasks of the tester)
 	public abstract Computer takeUntestedComputer(TestType untestedFor) throws SharedWorkspaceException;
 	// uses also addComputer to put the tested computer back into space
 	
 	// methods for shipping computers (tasks of the logistician)
-	public abstract Computer takeCompleteComputer() throws SharedWorkspaceException;
+	public abstract Computer takeCompletelyTestedComputer() throws SharedWorkspaceException;
+	public abstract void shipComputer() throws SharedWorkspaceException;
 	public abstract void addComputerToTrash(Computer computer) throws SharedWorkspaceException;
-	// uses also addComputer to put the error-free computer back into space
 }

@@ -31,6 +31,7 @@ import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.workers.Producer;
+import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
 @SuppressWarnings("serial")
 public class Factory extends JFrame {
@@ -49,6 +50,8 @@ public class Factory extends JFrame {
 	
 	private SharedWorkspace factory;
 	private List<Part> partList = null;
+	
+	private final char NEWLINE = '\n';
 
 	public Factory() {
 		this.initUI();
@@ -84,11 +87,11 @@ public class Factory extends JFrame {
 		}
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				textAreaLogParts.setText("Unused parts in workspace\n");
-				textAreaLogParts.append("-------------------------\n");
+				textAreaLogParts.setText("Unused parts in workspace" + NEWLINE);
+				textAreaLogParts.append("-------------------------" + NEWLINE);
 				if(partList != null)
 					for(Part p:partList) {
-						textAreaLogParts.append(p.toString() + "\n");
+						textAreaLogParts.append(p.toString() + NEWLINE);
 					}
 			}
 		});
@@ -96,11 +99,11 @@ public class Factory extends JFrame {
 	}
 	
 	public void updateComputerList() {
-		textAreaLogComputers.setText("Unused computers in workspace\n");
-		textAreaLogComputers.append("-------------------------------\n");
+		textAreaLogComputers.setText("Unused computers in workspace" + NEWLINE);
+		textAreaLogComputers.append("-------------------------------" + NEWLINE);
 		try {
-			for(Computer c:factory.getUntestedComputers()) {
-				textAreaLogComputers.append(c.toString() + "\n");
+			for(Computer c:factory.getIncompleteComputers()) {
+				textAreaLogComputers.append(c.toString() + NEWLINE + NEWLINE);
 			}
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -109,13 +112,13 @@ public class Factory extends JFrame {
 	}
 	
 	public void updateTrashBinList() {
-		textAreaLogTrashBin.setText("Computers in trash bin\n");
-		textAreaLogTrashBin.append("----------------------\n");
+		textAreaLogTrashBin.setText("Computers in trash bin" + NEWLINE);
+		textAreaLogTrashBin.append("----------------------" + NEWLINE);
 	}
 	
 	public void updateShippedList() {
-		textAreaLogShipped.setText("Shipped computers\n");
-		textAreaLogShipped.append("-----------------\n");
+		textAreaLogShipped.setText("Shipped computers" + NEWLINE);
+		textAreaLogShipped.append("-----------------" + NEWLINE);
 	}
 	
 	private void addProducer(Class<?> partType, long partCount, double errorRate) {
@@ -124,6 +127,16 @@ public class Factory extends JFrame {
 		producerCount++;
 		buttonAddProducer.setText("Add Producer (currently: " + producerCount + ")");
 		Executors.defaultThreadFactory().newThread(producer).start();
+	}
+	
+	//TODO remove test code
+	public void test2() {
+		try {
+			Computer computer = factory.takeUntestedComputer(TestType.COMPLETENESS);
+			JOptionPane.showMessageDialog(this, "Took: " + computer.toString());
+		} catch (SharedWorkspaceException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage());
+		}
 	}
 	
 	private void initUI() {
@@ -152,8 +165,12 @@ public class Factory extends JFrame {
 		textErrorRate = new JTextField("0.1");
 		topPanel.add(textErrorRate);
 		//topPanel.add(new JLabel());
+		JPanel testPanel = new JPanel();
 		JButton buttonTest = new JButton("Update blackboard manually");
-		topPanel.add(buttonTest);
+		JButton buttonTest2 = new JButton("Test");
+		testPanel.add(buttonTest);
+		testPanel.add(buttonTest2);
+		topPanel.add(testPanel);
 		buttonAddProducer = new JButton("Add Producer (currently: " + producerCount + ")");
 		topPanel.add(buttonAddProducer);
 		
@@ -161,6 +178,12 @@ public class Factory extends JFrame {
 		buttonTest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				updateAllLists();
+			}
+		});
+		
+		buttonTest2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				test2();
 			}
 		});
 		
@@ -224,8 +247,12 @@ public class Factory extends JFrame {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		@SuppressWarnings("unused")
-		Factory factory = new Factory();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				@SuppressWarnings("unused")
+				Factory factory = new Factory();
+			}
+		});
 	}
 
 }

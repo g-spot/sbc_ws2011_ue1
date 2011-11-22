@@ -16,6 +16,8 @@ import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
+import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
+import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
 public class Assembler extends Worker implements Runnable, Serializable {
 	private static final long serialVersionUID = -4137829457317599010L;
@@ -38,7 +40,8 @@ public class Assembler extends Worker implements Runnable, Serializable {
 			logger.info("Starting to assemble computer #" + (productionCount + 1));
 			long duration = (long)((Math.random() * 10000)%2000 + 1000);
 			try {
-				Thread.sleep(duration);
+				//Thread.sleep(duration);
+				Thread.sleep(0);
 			} catch (InterruptedException e) { }
 			
 			CPU cpu = null;
@@ -95,12 +98,18 @@ public class Assembler extends Worker implements Runnable, Serializable {
 				computer.setCpu(cpu);
 				computer.setMainboard(mainboard);
 				computer.setGraphicBoard(graphicBoard);
+				// TODO remove test data
+				if(productionCount == 1)
+				{
+					//computer.setTested(TestType.COMPLETENESS, TestState.PASSED);
+					computer.setTested(TestType.CORRECTNESS, TestState.PASSED);
+				}
 				for(Part p:ramList)
 					computer.getRamModules().add((RAM)p);
 				computer.getWorkers().add(this);
 				
 				// now write it to the shared workspace
-				sharedWorkspace.addUntestedComputer(computer);
+				sharedWorkspace.addComputer(computer);
 				
 				//sharedWorkspace.commitTransaction();
 			} catch (SharedWorkspaceException e) {
