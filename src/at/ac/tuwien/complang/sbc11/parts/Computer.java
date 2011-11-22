@@ -35,6 +35,8 @@ public class Computer implements Serializable {
 	public Computer() {
 		ramModules = new ArrayList<RAM>();
 		workers = new ArrayList<Worker>();
+		completenessTested = TestState.NOT_TESTED;
+		correctnessTested = TestState.NOT_TESTED;
 	}
 	
 	/**
@@ -160,8 +162,16 @@ public class Computer implements Serializable {
 	
 	private String toStringTests() {
 		String result = "TESTED=" + isCompletelyTested() + " (";
-		result += TestType.COMPLETENESS.toString() + "=" + completenessTested.toString() + ",";
-		result += TestType.CORRECTNESS.toString() + "=" + correctnessTested.toString();
+		result += TestType.COMPLETENESS.toString() + "=";
+		if(completenessTested != null)
+			result +=completenessTested.toString() + ",";
+		else
+			result +="n.a.,";
+		result += TestType.CORRECTNESS.toString() + "=";
+		if(correctnessTested != null)
+			result += correctnessTested.toString();
+		else
+			result += "n.a.";
 		result += "), DEFECT=" + isDefect();
 		return result;
 	}

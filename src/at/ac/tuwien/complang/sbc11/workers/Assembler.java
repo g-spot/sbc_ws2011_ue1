@@ -37,8 +37,8 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 			logger.info("Starting to assemble computer #" + (productionCount + 1));
 			long duration = (long)((Math.random() * 10000)%2000 + 1000);
 			try {
-				//Thread.sleep(duration);
-				Thread.sleep(0);
+				duration = 0;
+				Thread.sleep(duration);
 			} catch (InterruptedException e) { }
 			
 			CPU cpu = null;
@@ -158,7 +158,6 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 		Runtime.getRuntime().addShutdownHook(interceptor);
 		assembler.run();
 		//Executors.defaultThreadFactory().newThread(assembler).start();
-		
 	}
 
 	@Override
