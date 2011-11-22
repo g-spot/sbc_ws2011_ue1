@@ -24,6 +24,11 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 		// TODO Auto-generated constructor stub
 	}
 
+	public SharedWorkspaceAlternativeImpl() {
+		// TODO Auto-generated constructor stub
+		super(null);
+	}
+
 	@Override
 	public List<Part> getAvailableParts() {
 		// TODO Auto-generated method stub

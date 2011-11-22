@@ -1,13 +1,19 @@
 package at.ac.tuwien.complang.sbc11.workers;
 
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
+import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
@@ -29,7 +35,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 	public Assembler() {
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.workers.Assembler");
 		try {
-			sharedWorkspace = new SharedWorkspaceMozartImpl();
+			sharedWorkspace = SharedWorkspaceHelper.getWorkspaceImplementation();
 		} catch (SharedWorkspaceException e) {
 			System.out.println(e.getMessage());
 		}
@@ -144,7 +150,14 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 	}
 	
 	public static void main(String args[]) throws IOException {
-		Assembler assembler = new Assembler();
+		
+		Properties properties = new Properties();
+		InputStream inputStream = new FileInputStream("factory.properties");
+		properties.load(inputStream);
+		System.out.println("Property factory.factory.use-implementation:" + properties.getProperty("factory.use-implementation"));
+		/*Assembler assembler = new Assembler();
+		
+		
 		
 		long id = 0;
 		if(args.length > 0)
@@ -162,6 +175,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 		Runtime.getRuntime().addShutdownHook(interceptor);
 		assembler.run();
 		//Executors.defaultThreadFactory().newThread(assembler).start();
+		*/
 	}
 
 	@Override

@@ -65,7 +65,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	// for transaction purposes
 	private TransactionReference currentTransaction = null;
 	
-	// default constructor is used by assemblers, testers and logisticians only
+	/**
+	 * the default constructor is used by assembler, testers and logisticians
+	 * it does no things that should be done only once, e.g. initializing system wide notifications
+	 * @throws SharedWorkspaceException
+	 */
 	public SharedWorkspaceMozartImpl() throws SharedWorkspaceException {
 		super(null);
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl");
@@ -89,19 +93,13 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		}
 	}
 	
-	@Override
-	public void secureShutdown() throws SharedWorkspaceException {
-		if(currentTransaction != null)
-			try {
-				capi.rollbackTransaction(currentTransaction);
-			} catch (MzsCoreException e) {
-				throw new SharedWorkspaceException("Last transaction could not be royblacked: Error in MzsCore (" + e.getMessage() + ")");
-			}
-		core.shutdown(true);
-	}
-	
-	// create the factory instance of the shared workspace
-	// can be called only once in the system - by the ui
+	/**
+	 * creates the space based implementation of the shared workspace
+	 * should be called only once in the system - by the ui
+	 * @param factory
+	 * 				callback object for notification of workspace changes to the ui
+	 * @throws SharedWorkspaceException
+	 */
 	public SharedWorkspaceMozartImpl(Factory factory) throws SharedWorkspaceException {
 		super(factory);
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl");
@@ -141,6 +139,20 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		} catch (InterruptedException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error with UI notification (" + e.getMessage() + ")");
 		}
+	}
+	
+	/**
+	 * does a secure shutdown of the MzsCore
+	 */
+	@Override
+	public void secureShutdown() throws SharedWorkspaceException {
+		if(currentTransaction != null)
+			try {
+				capi.rollbackTransaction(currentTransaction);
+			} catch (MzsCoreException e) {
+				throw new SharedWorkspaceException("Last transaction could not be royblacked: Error in MzsCore (" + e.getMessage() + ")");
+			}
+		core.shutdown(true);
 	}
 
 	/**

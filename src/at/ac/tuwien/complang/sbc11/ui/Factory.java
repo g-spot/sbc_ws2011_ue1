@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
+import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
@@ -58,7 +59,7 @@ public class Factory extends JFrame {
 		
 		// initializes the mozart implementation of the shared workspace
 		try {
-			factory = new SharedWorkspaceMozartImpl(this);
+			factory = SharedWorkspaceHelper.getWorkspaceImplementation(this);
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
