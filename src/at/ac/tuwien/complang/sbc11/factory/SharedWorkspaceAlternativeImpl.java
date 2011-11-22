@@ -73,11 +73,6 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 	}
 
 	@Override
-	public void shipComputer() {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
 	public void addComputerToTrash(Computer computer) {
 		// TODO Auto-generated method stub
 
@@ -117,6 +112,12 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 
 	@Override
 	public void rollbackTransaction() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void shipComputer(Computer computer) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		
 	}

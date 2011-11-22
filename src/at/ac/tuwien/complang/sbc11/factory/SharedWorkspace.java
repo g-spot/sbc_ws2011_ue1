@@ -48,6 +48,6 @@ public abstract class SharedWorkspace {
 	
 	// methods for shipping computers (tasks of the logistician)
 	public abstract Computer takeCompletelyTestedComputer() throws SharedWorkspaceException;
-	public abstract void shipComputer() throws SharedWorkspaceException;
+	public abstract void shipComputer(Computer computer) throws SharedWorkspaceException;
 	public abstract void addComputerToTrash(Computer computer) throws SharedWorkspaceException;
 }

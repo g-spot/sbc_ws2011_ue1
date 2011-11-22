@@ -3,6 +3,7 @@ package at.ac.tuwien.complang.sbc11.factory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
@@ -10,7 +11,9 @@ import java.util.logging.Logger;
 import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.CountNotMetException;
 import org.mozartspaces.capi3.FifoCoordinator;
+import org.mozartspaces.capi3.FifoCoordinator.FifoSelector;
 import org.mozartspaces.capi3.LindaCoordinator;
+import org.mozartspaces.capi3.LindaCoordinator.LindaSelector;
 import org.mozartspaces.capi3.Selector;
 import org.mozartspaces.core.Capi;
 import org.mozartspaces.core.ContainerReference;
@@ -26,6 +29,7 @@ import org.mozartspaces.notifications.Notification;
 import org.mozartspaces.notifications.NotificationListener;
 import org.mozartspaces.notifications.NotificationManager;
 import org.mozartspaces.notifications.Operation;
+import org.xvsm.protocol.IsolationLevel;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.mozart.PartNotificationListener;
@@ -54,6 +58,8 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	private ContainerReference partContainer;
 	private ContainerReference mainboardContainer;
 	private ContainerReference untestedContainer;
+	private ContainerReference trashedContainer;
+	private ContainerReference shippedContainer;
 	private Logger logger;
 	
 	// for transaction purposes
@@ -74,6 +80,8 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
 			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
 			untestedContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_INCOMPLETE, spaceURI, capi);
+			trashedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_TRASHED, spaceURI, capi);
+			shippedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_SHIPPED, spaceURI, capi);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error in MzsCore (" + e.getMessage() + ")");
 		} catch (URISyntaxException e) {
@@ -112,6 +120,8 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
 			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
 			untestedContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_INCOMPLETE, spaceURI, capi);
+			trashedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_TRASHED, spaceURI, capi);
+			shippedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_SHIPPED, spaceURI, capi);
 			
 			// init notifications
 			logger.info("Registering notifications...");
@@ -332,12 +342,15 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		}
 		
 		try {
+			// TODO test isolation level READ_COMMITTED
 			if(blocking)
 				result = capi.take(container, partSelector, RequestTimeout.INFINITE, currentTransaction);
+				//result = capi.take(container, selectorList, RequestTimeout.INFINITE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
 			else
 			{
 				try {
 					result = capi.take(container, partSelector, RequestTimeout.TRY_ONCE, currentTransaction);
+					//result = capi.take(container, partSelector, RequestTimeout.TRY_ONCE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
 				} catch(CountNotMetException e) {
 					// ok with that, return null
 					logger.info("Finished.");
@@ -416,15 +429,38 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		return null;
 	}
 
+	/**
+	 * adds a computer to the shipped container
+	 * @param computer
+	 * 				the computer
+	 */
 	@Override
-	public void shipComputer() throws SharedWorkspaceException {
-		// TODO Auto-generated method stub
+	public void shipComputer(Computer computer) throws SharedWorkspaceException {
+		logger.info("Starting shipComputer()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		try {
+			capi.write(new Entry(computer, AnyCoordinator.newCoordinationData()), shippedContainer, RequestTimeout.DEFAULT, currentTransaction);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Computer could not be written: Error in MzsCore (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
 	}
 
+	/**
+	 * adds a computer to the trash container
+	 * @param computer
+	 * 				the computer
+	 */
 	@Override
 	public void addComputerToTrash(Computer computer) throws SharedWorkspaceException {
-		// TODO Auto-generated method stub
-		
+		logger.info("Starting addComputerToTrash()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		try {
+			capi.write(new Entry(computer, AnyCoordinator.newCoordinationData()), trashedContainer, RequestTimeout.DEFAULT, currentTransaction);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Computer could not be written: Error in MzsCore (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
 	}
 
 	@Override

@@ -19,7 +19,7 @@ public class SpaceUtils {
 	public static final String CONTAINER_MAINBOARDS = "ContainerMainboards";
 	public static final String CONTAINER_INCOMPLETE = "ContainerIncomplete";
 	public static final String CONTAINER_TRASHED = "ContainerTrashed";
-	public static final String CONTAINER_COMPLETE = "ContainerComplete";
+	public static final String CONTAINER_SHIPPED = "ContainerShipped";
 	
 	public static final ContainerReference getOrCreateFIFOContainer(String containerName, URI spaceURI, Capi capi) throws MzsCoreException {
 		ContainerReference container = null;
