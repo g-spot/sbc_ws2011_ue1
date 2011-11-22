@@ -17,6 +17,8 @@ public abstract class SharedWorkspace {
 		this.factory = factory;
 	}
 	
+	public abstract void secureShutdown() throws SharedWorkspaceException;
+	
 	// general methods
 	public abstract List<Part> getAvailableParts() throws SharedWorkspaceException;
 	public abstract List<Computer> getIncompleteComputers() throws SharedWorkspaceException;

@@ -82,6 +82,17 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		}
 	}
 	
+	@Override
+	public void secureShutdown() throws SharedWorkspaceException {
+		if(currentTransaction != null)
+			try {
+				capi.rollbackTransaction(currentTransaction);
+			} catch (MzsCoreException e) {
+				throw new SharedWorkspaceException("Last transaction could not be royblacked: Error in MzsCore (" + e.getMessage() + ")");
+			}
+		core.shutdown(true);
+	}
+	
 	// create the factory instance of the shared workspace
 	// can be called only once in the system - by the ui
 	public SharedWorkspaceMozartImpl(Factory factory) throws SharedWorkspaceException {

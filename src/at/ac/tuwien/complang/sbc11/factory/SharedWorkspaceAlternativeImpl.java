@@ -97,4 +97,10 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 		return null;
 	}
 
+	@Override
+	public void secureShutdown() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

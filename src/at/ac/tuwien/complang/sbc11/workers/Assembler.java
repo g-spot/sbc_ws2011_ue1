@@ -18,8 +18,10 @@ import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
+import at.ac.tuwien.complang.sbc11.workers.shutdown.SecureShutdownApplication;
+import at.ac.tuwien.complang.sbc11.workers.shutdown.ShutdownInterceptor;
 
-public class Assembler extends Worker implements Runnable, Serializable {
+public class Assembler extends Worker implements SecureShutdownApplication, Serializable  {
 	private static final long serialVersionUID = -4137829457317599010L;
 	
 	transient private Logger logger;
@@ -140,12 +142,24 @@ public class Assembler extends Worker implements Runnable, Serializable {
 		}
 		assembler.setId(id);
 		
-		Executors.defaultThreadFactory().newThread(assembler).start();
+		ShutdownInterceptor interceptor = new ShutdownInterceptor(assembler);
+		Runtime.getRuntime().addShutdownHook(interceptor);
+		assembler.run();
+		//Executors.defaultThreadFactory().newThread(assembler).start();
 	}
 
 	@Override
 	public void run() {
 		assemble();
+	}
+
+	@Override
+	public void shutdown() {
+		try {
+			sharedWorkspace.secureShutdown();
+		} catch (SharedWorkspaceException e) {
+			logger.severe(e.getMessage());
+		}
 	}
 
 }
