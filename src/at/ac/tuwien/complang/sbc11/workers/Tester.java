@@ -78,16 +78,17 @@ public class Tester extends Worker implements SecureShutdownApplication, Seriali
 				
 				// finally write tested computer back to the space
 				logger.info("Trying to write tested computer back to space...");
+				computer.getWorkers().add(this);
 				sharedWorkspace.addComputer(computer);
 				logger.info("Finished.");
 			} catch (SharedWorkspaceException e) {
 				logger.severe(e.getMessage());
 			}
-		} while(testAnotherComputer());
-		
-		logger.info("Finished testing.");
+		//} while(testAnotherComputer());
+		} while(true);
 	}
 
+	@SuppressWarnings("unused")
 	private boolean testAnotherComputer() {
 		char command = ' ';
 		System.out.println("Do you want to test another computer? (y/n)");

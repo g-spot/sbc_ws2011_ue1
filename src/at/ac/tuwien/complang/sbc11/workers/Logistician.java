@@ -13,7 +13,7 @@ import at.ac.tuwien.complang.sbc11.workers.shutdown.ShutdownInterceptor;
 public class Logistician extends Worker implements SecureShutdownApplication, Serializable {
 
 	private static final long serialVersionUID = 9093226385712963149L;
-	private Logger logger;
+	transient private Logger logger;
 	
 	public Logistician() {
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.workers.Tester");
@@ -36,6 +36,8 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 					throw new SharedWorkspaceException("No computer found.");
 				logger.info("Took computer[" + computer.getId() + "]");
 				
+				computer.getWorkers().add(this);
+				
 				// now check if the computer is defect or not and distribute it to the right place
 				if(computer.isDefect())
 				{
@@ -52,11 +54,11 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 			} catch (SharedWorkspaceException e) {
 				logger.severe(e.getMessage());
 			}
-		} while(distributeAnotherComputer());
-		
-		logger.info("Finished distributing.");
+		//} while(distributeAnotherComputer());
+		} while(true);
 	}
 	
+	@SuppressWarnings("unused")
 	private boolean distributeAnotherComputer() {
 		char command = ' ';
 		System.out.println("Do you want to distribute another computer? (y/n)");

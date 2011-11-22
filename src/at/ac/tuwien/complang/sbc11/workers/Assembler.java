@@ -120,9 +120,11 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 			}
 			
 			logger.info("Finished assembling.");
-		} while(assembleAnotherComputer());
+		//} while(assembleAnotherComputer());
+		} while(true);
 	}
 	
+	@SuppressWarnings("unused")
 	private boolean assembleAnotherComputer() {
 		char command = ' ';
 		System.out.println("Do you want to assemble another computer? (y/n)");
