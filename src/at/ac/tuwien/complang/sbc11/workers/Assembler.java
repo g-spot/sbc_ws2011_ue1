@@ -1,11 +1,8 @@
 package at.ac.tuwien.complang.sbc11.workers;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
@@ -17,6 +14,7 @@ import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.workers.shutdown.SecureShutdownApplication;
+import at.ac.tuwien.complang.sbc11.workers.shutdown.ShutdownInterceptor;
 
 public class Assembler extends Worker implements SecureShutdownApplication, Serializable  {
 	private static final long serialVersionUID = -4137829457317599010L;
@@ -142,14 +140,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 	}
 	
 	public static void main(String args[]) throws IOException {
-		
-		Properties properties = new Properties();
-		InputStream inputStream = new FileInputStream("factory.properties");
-		properties.load(inputStream);
-		System.out.println("Property factory.factory.use-implementation:" + properties.getProperty("factory.use-implementation"));
-		/*Assembler assembler = new Assembler();
-		
-		
+		Assembler assembler = new Assembler();
 		
 		long id = 0;
 		if(args.length > 0)
@@ -167,7 +158,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 		Runtime.getRuntime().addShutdownHook(interceptor);
 		assembler.run();
 		//Executors.defaultThreadFactory().newThread(assembler).start();
-		*/
+		
 	}
 
 	@Override
