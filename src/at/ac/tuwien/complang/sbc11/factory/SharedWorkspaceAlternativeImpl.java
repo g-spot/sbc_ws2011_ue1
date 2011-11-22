@@ -36,7 +36,7 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 	}
 
 	@Override
-	public List<Computer> getCompleteComputers() {
+	public List<Computer> getShippedComputers() {
 		// TODO Auto-generated method stub
 		return null;
 	}

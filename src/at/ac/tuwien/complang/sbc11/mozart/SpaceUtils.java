@@ -1,10 +1,13 @@
 package at.ac.tuwien.complang.sbc11.mozart;
 
 import java.net.URI;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.mozartspaces.capi3.AnyCoordinator;
+import org.mozartspaces.capi3.Coordinator;
 import org.mozartspaces.capi3.FifoCoordinator;
+import org.mozartspaces.capi3.LabelCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.core.Capi;
 import org.mozartspaces.core.ContainerReference;
@@ -51,18 +54,30 @@ public class SpaceUtils {
 	
 	public static final ContainerReference getOrCreateLindaContainer(String containerName, URI spaceURI, Capi capi) throws MzsCoreException {
 		ContainerReference container = null;
-		Logger logger = Logger.getAnonymousLogger();
+		
 		try
 		{
-			logger.info("Looking up Linda container...");
 			container = capi.lookupContainer(containerName, spaceURI, RequestTimeout.DEFAULT, null);
-			logger.info("Found Linda container.");
 		}
 		catch(MzsCoreException e)
 		{
-			logger.info("Trying to create Linda container...");
 			container = capi.createContainer(containerName, spaceURI, Container.UNBOUNDED, null, new LindaCoordinator());
-			logger.info("Created Linda container");
+		}
+		return container;
+	}
+	
+	public static final ContainerReference getOrCreateIncompleteContainer(URI spaceURI, Capi capi) throws MzsCoreException {
+		ContainerReference container = null;
+		try
+		{
+			container = capi.lookupContainer(CONTAINER_INCOMPLETE, spaceURI, RequestTimeout.DEFAULT, null);
+		}
+		catch(MzsCoreException e)
+		{
+			List<Coordinator> obligatoryCoords = new ArrayList<Coordinator>();
+			obligatoryCoords.add(new LindaCoordinator());
+			obligatoryCoords.add(new LabelCoordinator());
+			container = capi.createContainer(CONTAINER_INCOMPLETE, spaceURI, Container.UNBOUNDED, obligatoryCoords, null, null);
 		}
 		return container;
 	}

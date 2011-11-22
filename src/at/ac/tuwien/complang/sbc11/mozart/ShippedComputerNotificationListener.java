@@ -9,22 +9,22 @@ import org.mozartspaces.notifications.Operation;
 
 import at.ac.tuwien.complang.sbc11.ui.Factory;
 
-public class UntestedComputerNotificationListener implements
+public class ShippedComputerNotificationListener implements
 		NotificationListener {
 
 	private Factory factory;
 	
 	@SuppressWarnings("unused")
-	private UntestedComputerNotificationListener() {}
+	private ShippedComputerNotificationListener() {}
 	
-	public UntestedComputerNotificationListener(Factory factory) {
+	public ShippedComputerNotificationListener(Factory factory) {
 		this.factory = factory;
 	}
 
 	@Override
 	public void entryOperationFinished(Notification arg0, Operation arg1,
 			List<? extends Serializable> arg2) {
-		factory.updateComputerList();
+		factory.updateShippedList();
 	}
 
 }

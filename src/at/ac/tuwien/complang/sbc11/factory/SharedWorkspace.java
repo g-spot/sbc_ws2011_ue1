@@ -23,7 +23,7 @@ public abstract class SharedWorkspace {
 	// general methods
 	public abstract List<Part> getAvailableParts() throws SharedWorkspaceException;
 	public abstract List<Computer> getIncompleteComputers() throws SharedWorkspaceException;
-	public abstract List<Computer> getCompleteComputers() throws SharedWorkspaceException;
+	public abstract List<Computer> getShippedComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getTrashedComputers() throws SharedWorkspaceException;
 	
 	// simple transaction control

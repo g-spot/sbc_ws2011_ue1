@@ -31,7 +31,6 @@ import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.workers.Producer;
-import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
 @SuppressWarnings("serial")
 public class Factory extends JFrame {
@@ -101,8 +100,6 @@ public class Factory extends JFrame {
 	}
 	
 	public void updateComputerList() {
-		//textAreaLogComputers.setText("Unused computers in workspace" + NEWLINE);
-		//textAreaLogComputers.append("-------------------------------" + NEWLINE);
 		textAreaLogComputers.setText("");
 		try {
 			for(Computer c:factory.getIncompleteComputers()) {
@@ -115,13 +112,27 @@ public class Factory extends JFrame {
 	}
 	
 	public void updateTrashBinList() {
-		//textAreaLogTrashBin.setText("Computers in trash bin" + NEWLINE);
-		//textAreaLogTrashBin.append("----------------------" + NEWLINE);
+		textAreaLogTrashBin.setText("");
+		try {
+			for(Computer c:factory.getTrashedComputers()) {
+				textAreaLogTrashBin.append(c.toString() + NEWLINE + NEWLINE);
+			}
+		} catch (SharedWorkspaceException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
 	}
 	
 	public void updateShippedList() {
-		//textAreaLogShipped.setText("Shipped computers" + NEWLINE);
-		//textAreaLogShipped.append("-----------------" + NEWLINE);
+		textAreaLogShipped.setText("");
+		try {
+			for(Computer c:factory.getShippedComputers()) {
+				textAreaLogShipped.append(c.toString() + NEWLINE + NEWLINE);
+			}
+		} catch (SharedWorkspaceException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
 	}
 	
 	public void updateActionLog() {
@@ -139,7 +150,7 @@ public class Factory extends JFrame {
 	//TODO remove test code
 	public void test2() {
 		try {
-			Computer computer = factory.takeUntestedComputer(TestType.COMPLETENESS);
+			Computer computer = factory.takeCompletelyTestedComputer();
 			JOptionPane.showMessageDialog(this, "Took: " + computer.toString());
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage());
