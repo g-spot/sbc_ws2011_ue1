@@ -103,4 +103,22 @@ public class SharedWorkspaceAlternativeImpl extends SharedWorkspace {
 		
 	}
 
+	@Override
+	public void startTransaction() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void commitTransaction() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void rollbackTransaction() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

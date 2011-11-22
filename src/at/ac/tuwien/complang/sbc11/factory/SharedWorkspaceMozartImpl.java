@@ -57,8 +57,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	private Logger logger;
 	
 	// for transaction purposes
-	// made it final because transaction won't work anyway
-	private final TransactionReference currentTransaction = null;
+	private TransactionReference currentTransaction = null;
 	
 	// default constructor is used by assemblers, testers and logisticians only
 	public SharedWorkspaceMozartImpl() throws SharedWorkspaceException {
@@ -438,7 +437,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	/**
 	 * starts a new simple transaction (only if currently no transaction is active)
 	 */
-	/*@Override
+	@Override
 	public void startTransaction() throws SharedWorkspaceException {
 		logger.info("Starting startTransaction()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
@@ -450,12 +449,12 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			}
 		}
 		logger.info("Finished.");
-	}*/
+	}
 
 	/**
 	 * commits the current simple transaction
 	 */
-	/*@Override
+	@Override
 	public void commitTransaction() throws SharedWorkspaceException {
 		logger.info("Starting commitTransaction()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
@@ -469,12 +468,12 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			}
 		}
 		logger.info("Finished.");
-	}*/
+	}
 
 	/**
 	 * rollbacks the current simple transaction
 	 */
-	/*@Override
+	@Override
 	public void rollbackTransaction() throws SharedWorkspaceException {
 		logger.info("Starting rollbackTransaction()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
@@ -488,6 +487,6 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			}
 		}
 		logger.info("Finished.");
-	}*/
+	}
 
 }

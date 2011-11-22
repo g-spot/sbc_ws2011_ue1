@@ -38,7 +38,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 	public void assemble() {
 		logger.info("Starting assembling...");
 		long productionCount = 0;
-		while(true) {
+		do {
 			logger.info("Starting to assemble computer #" + (productionCount + 1));
 			long duration = (long)((Math.random() * 10000)%2000 + 1000);
 			try {
@@ -53,7 +53,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 			
 			try {
 				// do all the following methods using the simple transaction support
-				//sharedWorkspace.startTransaction();
+				sharedWorkspace.startTransaction();
 				
 				// get cpu from shared workspace
 				logger.info("Trying to take CPU from shared workspace...");
@@ -113,18 +113,34 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 				// now write it to the shared workspace
 				sharedWorkspace.addComputer(computer);
 				
-				//sharedWorkspace.commitTransaction();
+				sharedWorkspace.commitTransaction();
 			} catch (SharedWorkspaceException e) {
 				logger.severe(e.getMessage());
-				/*try {
+				try {
 					sharedWorkspace.rollbackTransaction();
 				} catch (SharedWorkspaceException e1) {
 					logger.severe(e1.getMessage());
-				}*/
+				}
 			}
 			
 			logger.info("Finished assembling.");
-		}
+		} while(assembleAnotherComputer());
+	}
+	
+	private boolean assembleAnotherComputer() {
+		char command = ' ';
+		System.out.println("Do you want to assemble another computer? (y/n)");
+		do {
+			try {
+				command = (char)System.in.read();
+			} catch (IOException e) { 
+				System.out.println("Error reading from command line (" + e.getMessage() + ")");
+			}
+			if(command == 'y')
+				return true;
+			else if(command == 'n')
+				return false;
+		} while(true);
 	}
 	
 	public static void main(String args[]) throws IOException {
@@ -160,6 +176,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 		} catch (SharedWorkspaceException e) {
 			logger.severe(e.getMessage());
 		}
+		logger.info("bye.");
 	}
 
 }
