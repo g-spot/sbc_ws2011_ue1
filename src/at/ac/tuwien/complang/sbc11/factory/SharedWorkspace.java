@@ -17,6 +17,7 @@ public abstract class SharedWorkspace {
 		this.factory = factory;
 	}
 	
+	// safely shuts down current instance of the shared workspace
 	public abstract void secureShutdown() throws SharedWorkspaceException;
 	
 	// general methods
