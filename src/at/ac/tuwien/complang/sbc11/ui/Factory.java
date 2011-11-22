@@ -44,6 +44,7 @@ public class Factory extends JFrame {
 	private JTextArea textAreaLogComputers;
 	private JTextArea textAreaLogTrashBin;
 	private JTextArea textAreaLogShipped;
+	private JTextArea textAreaActionLog;
 	private JButton buttonAddProducer;
 	
 	private int workerCount = 0;
@@ -88,8 +89,9 @@ public class Factory extends JFrame {
 		}
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				textAreaLogParts.setText("Unused parts in workspace" + NEWLINE);
-				textAreaLogParts.append("-------------------------" + NEWLINE);
+				//textAreaLogParts.setText("Unused parts in workspace" + NEWLINE);
+				//textAreaLogParts.append("-------------------------" + NEWLINE);
+				textAreaLogParts.setText("");
 				if(partList != null)
 					for(Part p:partList) {
 						textAreaLogParts.append(p.toString() + NEWLINE);
@@ -100,8 +102,9 @@ public class Factory extends JFrame {
 	}
 	
 	public void updateComputerList() {
-		textAreaLogComputers.setText("Unused computers in workspace" + NEWLINE);
-		textAreaLogComputers.append("-------------------------------" + NEWLINE);
+		//textAreaLogComputers.setText("Unused computers in workspace" + NEWLINE);
+		//textAreaLogComputers.append("-------------------------------" + NEWLINE);
+		textAreaLogComputers.setText("");
 		try {
 			for(Computer c:factory.getIncompleteComputers()) {
 				textAreaLogComputers.append(c.toString() + NEWLINE + NEWLINE);
@@ -113,13 +116,17 @@ public class Factory extends JFrame {
 	}
 	
 	public void updateTrashBinList() {
-		textAreaLogTrashBin.setText("Computers in trash bin" + NEWLINE);
-		textAreaLogTrashBin.append("----------------------" + NEWLINE);
+		//textAreaLogTrashBin.setText("Computers in trash bin" + NEWLINE);
+		//textAreaLogTrashBin.append("----------------------" + NEWLINE);
 	}
 	
 	public void updateShippedList() {
-		textAreaLogShipped.setText("Shipped computers" + NEWLINE);
-		textAreaLogShipped.append("-----------------" + NEWLINE);
+		//textAreaLogShipped.setText("Shipped computers" + NEWLINE);
+		//textAreaLogShipped.append("-----------------" + NEWLINE);
+	}
+	
+	public void updateActionLog() {
+		
 	}
 	
 	private void addProducer(Class<?> partType, long partCount, double errorRate) {
@@ -147,33 +154,42 @@ public class Factory extends JFrame {
 		
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		
-		JPanel topPanel = new JPanel(new GridLayout(4, 2));
+		JPanel topPanel = new JPanel(new GridLayout(1, 2));
+		JPanel actionLogPanel = new JPanel(new GridLayout(1, 1));
+		TitledBorder titleActionLog = BorderFactory.createTitledBorder("Action log");
+		actionLogPanel.setBorder(titleActionLog);
+		textAreaActionLog = new JTextArea();
+		JScrollPane scrollPaneActionLog = new JScrollPane(textAreaActionLog);
+		actionLogPanel.add(scrollPaneActionLog);
+		
+		
+		JPanel formPanel = new JPanel(new GridLayout(4, 2));
 		
 		JLabel labelPartType = new JLabel("Part type");
-		topPanel.add(labelPartType);
+		formPanel.add(labelPartType);
 		comboPartType = new JComboBox();
 		comboPartType.addItem(new String("CPU"));
 		comboPartType.addItem(new String("Mainboard"));
 		comboPartType.addItem(new String("RAM"));
 		comboPartType.addItem(new String("GraphicBoard"));
-		topPanel.add(comboPartType);
+		formPanel.add(comboPartType);
 		JLabel labelPartCount = new JLabel("Part count");
-		topPanel.add(labelPartCount);
+		formPanel.add(labelPartCount);
 		textPartCount = new JTextField("10");
-		topPanel.add(textPartCount);
+		formPanel.add(textPartCount);
 		JLabel labelPartErrorRate = new JLabel("Error rate");
-		topPanel.add(labelPartErrorRate);
+		formPanel.add(labelPartErrorRate);
 		textErrorRate = new JTextField("0.1");
-		topPanel.add(textErrorRate);
+		formPanel.add(textErrorRate);
 		//topPanel.add(new JLabel());
 		JPanel testPanel = new JPanel();
 		JButton buttonTest = new JButton("Update blackboard manually");
 		JButton buttonTest2 = new JButton("Test");
 		testPanel.add(buttonTest);
 		testPanel.add(buttonTest2);
-		topPanel.add(testPanel);
+		formPanel.add(testPanel);
 		buttonAddProducer = new JButton("Add Producer (currently: " + producerCount + ")");
-		topPanel.add(buttonAddProducer);
+		formPanel.add(buttonAddProducer);
 		
 		// TODO remove test code
 		buttonTest.addActionListener(new ActionListener() {
@@ -216,27 +232,41 @@ public class Factory extends JFrame {
 		});
 		
 		TitledBorder title = BorderFactory.createTitledBorder("New Producer");
-		topPanel.setBorder(title);
+		formPanel.setBorder(title);
+		topPanel.add(formPanel);
+		topPanel.add(actionLogPanel);
 		
 		mainPanel.add(topPanel, BorderLayout.PAGE_START);
 		
 		JPanel centerPanel = new JPanel(new GridLayout(1, 4));
 		
+		JPanel logPartsPanel = new JPanel(new GridLayout(1, 1));
+		logPartsPanel.setBorder(BorderFactory.createTitledBorder("Unused parts in workspace"));
 		textAreaLogParts = new JTextArea();
 		JScrollPane scrollPaneLogParts = new JScrollPane(textAreaLogParts);
-		centerPanel.add(scrollPaneLogParts);
+		logPartsPanel.add(scrollPaneLogParts);
+		centerPanel.add(logPartsPanel);
 		
+		JPanel logComputersPanel = new JPanel(new GridLayout(1, 1));
+		logComputersPanel.setBorder(BorderFactory.createTitledBorder("Unused computers in workspace"));
 		textAreaLogComputers = new JTextArea();
-		JScrollPane scrollPangeLogUntested = new JScrollPane(textAreaLogComputers);
-		centerPanel.add(scrollPangeLogUntested);
+		JScrollPane scrollPaneLogUntested = new JScrollPane(textAreaLogComputers);
+		logComputersPanel.add(scrollPaneLogUntested);
+		centerPanel.add(logComputersPanel);
 		
+		JPanel logTrashPanel = new JPanel(new GridLayout(1, 1));
+		logTrashPanel.setBorder(BorderFactory.createTitledBorder("Computers in trash bin"));
 		textAreaLogTrashBin = new JTextArea();
 		JScrollPane scrollPaneLogTrashBin = new JScrollPane(textAreaLogTrashBin);
-		centerPanel.add(scrollPaneLogTrashBin);
+		logTrashPanel.add(scrollPaneLogTrashBin);
+		centerPanel.add(logTrashPanel);
 		
+		JPanel logShippedPanel = new JPanel(new GridLayout(1, 1));
+		logShippedPanel.setBorder(BorderFactory.createTitledBorder("Shipped computers"));
 		textAreaLogShipped = new JTextArea();
 		JScrollPane scrollPaneLogShipped = new JScrollPane(textAreaLogShipped);
-		centerPanel.add(scrollPaneLogShipped);
+		logShippedPanel.add(scrollPaneLogShipped);
+		centerPanel.add(logShippedPanel);
 		
 		mainPanel.add(centerPanel, BorderLayout.CENTER);
 		
