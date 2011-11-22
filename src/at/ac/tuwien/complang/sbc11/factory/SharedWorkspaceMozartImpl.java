@@ -3,7 +3,6 @@ package at.ac.tuwien.complang.sbc11.factory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
@@ -11,25 +10,20 @@ import java.util.logging.Logger;
 import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.CountNotMetException;
 import org.mozartspaces.capi3.FifoCoordinator;
-import org.mozartspaces.capi3.FifoCoordinator.FifoSelector;
 import org.mozartspaces.capi3.LindaCoordinator;
-import org.mozartspaces.capi3.LindaCoordinator.LindaSelector;
 import org.mozartspaces.capi3.Selector;
 import org.mozartspaces.core.Capi;
 import org.mozartspaces.core.ContainerReference;
 import org.mozartspaces.core.DefaultMzsCore;
 import org.mozartspaces.core.Entry;
 import org.mozartspaces.core.MzsConstants;
+import org.mozartspaces.core.MzsConstants.RequestTimeout;
 import org.mozartspaces.core.MzsConstants.Selecting;
 import org.mozartspaces.core.MzsCore;
 import org.mozartspaces.core.MzsCoreException;
-import org.mozartspaces.core.MzsConstants.RequestTimeout;
 import org.mozartspaces.core.TransactionReference;
-import org.mozartspaces.notifications.Notification;
-import org.mozartspaces.notifications.NotificationListener;
 import org.mozartspaces.notifications.NotificationManager;
 import org.mozartspaces.notifications.Operation;
-import org.xvsm.protocol.IsolationLevel;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.mozart.PartNotificationListener;
@@ -294,7 +288,8 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		logger.info("Starting getUntestedComputers()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		Computer pattern = new Computer();
-		pattern.setTestStates(null); // take any computers
+		pattern.setCompletenessTested(null); // take any computers
+		pattern.setCorrectnessTested(null);
 		Selector computerSelector = LindaCoordinator.newSelector(pattern, Selecting.COUNT_MAX);
 		try {
 			logger.info("Finished.");
@@ -416,14 +411,14 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		
 		Computer pattern = new Computer();
-		// set the desired TestType to NOT_TESTED, all others to null (to ignore them values)
-		for(TestType testType:TestType.values()) {
-			if(testType.equals(untestedFor))
-				pattern.setTested(testType, TestState.NOT_TESTED);
-			else
-				pattern.setTested(testType, null);
+		// set the desired TestType to NOT_TESTED, the other to null (to ignore the value)
+		if(untestedFor.equals(TestType.COMPLETENESS)) {
+			pattern.setCompletenessTested(TestState.NOT_TESTED);
+			pattern.setCorrectnessTested(null);
+		} else if(untestedFor.equals(TestType.CORRECTNESS)) {
+			pattern.setCompletenessTested(null);
+			pattern.setCorrectnessTested(TestState.NOT_TESTED);
 		}
-		//pattern.setTested(untestedFor, TestState.NOT_TESTED);
 		Selector computerSelector = LindaCoordinator.newSelector(pattern, 1);
 		
 		try {

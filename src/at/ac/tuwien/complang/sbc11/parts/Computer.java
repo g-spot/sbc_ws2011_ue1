@@ -7,7 +7,6 @@ import java.util.List;
 import org.mozartspaces.capi3.Index;
 import org.mozartspaces.capi3.Queryable;
 
-import at.ac.tuwien.complang.sbc11.workers.Tester;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 import at.ac.tuwien.complang.sbc11.workers.Worker;
@@ -20,7 +19,9 @@ public class Computer implements Serializable {
 	// general information
 	private long id;
 	@Index
-	private TestState testStates[];
+	private TestState completenessTested;
+	@Index
+	private TestState correctnessTested;
 	
 	// parts
 	private CPU cpu = null;
@@ -33,48 +34,35 @@ public class Computer implements Serializable {
 	
 	public Computer() {
 		ramModules = new ArrayList<RAM>();
-		/* haveTestsFailed is an array of type Boolean
-		 * for each test of the enumeration TestType
-		 * the value in the array can either be
-		 *   - null (not tested yet)
-		 *   - true (tested and failed)
-		 *   - false (tested and successful)
-		 */
-		testStates = new TestState[TestType.values().length];
-		for(TestType testType:Tester.TestType.values()) {
-			testStates[testType.ordinal()] = TestState.NOT_TESTED;
-		}
 		workers = new ArrayList<Worker>();
 	}
 	
-	public void setTested(TestType testType, TestState testState) {
-		testStates[testType.ordinal()] = testState;
-	}
-	
+	/**
+	 * returns true if at least one test has failed
+	 */
 	public boolean isDefect() {
 		// returns true if at least one test has failed
-		for(TestState testState:testStates) {
-			if(testState == TestState.FAILED)
-				return true;
-		}
-		return false;
+		return (completenessTested == TestState.FAILED || correctnessTested == TestState.FAILED);
 	}
 	
+	/**
+	 * returns false if at least one test has not been done yet
+	 */
 	public boolean isCompletelyTested() {
 		// returns false if at least one test has not been done yet
-		for(TestState testState:testStates) {
-			if(testState == TestState.NOT_TESTED)
-				return false;
-		}
-		return true;
+		return (completenessTested != TestState.NOT_TESTED && correctnessTested != TestState.NOT_TESTED);
 	}
 	
+	/**
+	 * returns true if the computer has been assigned a cpu, a mainboard and at least one ram module
+	 */
 	public boolean isComplete() {
 		// returns true if the computer has been assigned
 		// a cpu, a mainboard and at least one ram module
 		return (cpu != null && mainboard != null && ramModules != null && ramModules.size() > 0);
 	}
 
+	// getters and setters
 	public long getId() {
 		return id;
 	}
@@ -83,7 +71,22 @@ public class Computer implements Serializable {
 		this.id = id;
 	}
 
-	// getters and setters
+	public TestState getCompletenessTested() {
+		return completenessTested;
+	}
+
+	public void setCompletenessTested(TestState completenessTested) {
+		this.completenessTested = completenessTested;
+	}
+
+	public TestState getCorrectnessTested() {
+		return correctnessTested;
+	}
+
+	public void setCorrectnessTested(TestState correctnessTested) {
+		this.correctnessTested = correctnessTested;
+	}
+
 	public CPU getCpu() {
 		return cpu;
 	}
@@ -114,14 +117,6 @@ public class Computer implements Serializable {
 
 	public List<RAM> getRamModules() {
 		return ramModules;
-	}
-
-	public TestState[] getTestStates() {
-		return testStates;
-	}
-
-	public void setTestStates(TestState[] testStates) {
-		this.testStates = testStates;
 	}
 	
 	@Override
@@ -165,10 +160,8 @@ public class Computer implements Serializable {
 	
 	private String toStringTests() {
 		String result = "TESTED=" + isCompletelyTested() + " (";
-		for(TestType testType:Tester.TestType.values()) {
-			result += testType.toString() + "=" + testStates[testType.ordinal()] + ",";
-		}
-		result = result.substring(0, result.length() - 1);
+		result += TestType.COMPLETENESS.toString() + "=" + completenessTested.toString() + ",";
+		result += TestType.CORRECTNESS.toString() + "=" + correctnessTested.toString();
 		result += "), DEFECT=" + isDefect();
 		return result;
 	}

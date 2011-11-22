@@ -1,20 +1,14 @@
 package at.ac.tuwien.complang.sbc11.workers;
 
-import java.io.BufferedWriter;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
-import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
@@ -22,10 +16,7 @@ import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
-import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
-import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 import at.ac.tuwien.complang.sbc11.workers.shutdown.SecureShutdownApplication;
-import at.ac.tuwien.complang.sbc11.workers.shutdown.ShutdownInterceptor;
 
 public class Assembler extends Worker implements SecureShutdownApplication, Serializable  {
 	private static final long serialVersionUID = -4137829457317599010L;
@@ -110,7 +101,8 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 				if(productionCount == 1)
 				{
 					//computer.setTested(TestType.COMPLETENESS, TestState.PASSED);
-					computer.setTested(TestType.CORRECTNESS, TestState.PASSED);
+					//computer.setTested(TestType.CORRECTNESS, TestState.PASSED);
+					//computer.setCompletenessTested()
 				}
 				for(Part p:ramList)
 					computer.getRamModules().add((RAM)p);

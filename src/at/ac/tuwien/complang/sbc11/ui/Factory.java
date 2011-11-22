@@ -23,7 +23,6 @@ import javax.swing.border.TitledBorder;
 
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
-import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
@@ -225,7 +224,7 @@ public class Factory extends JFrame {
 					}
 					addProducer(partTypeClass, partCount, errorRate);
 				} catch(Exception ex) {
-					JOptionPane.showMessageDialog(null, "hier fehler: " + ex.getMessage());
+					JOptionPane.showMessageDialog(null, "Fehler: " + ex.getMessage());
 					ex.printStackTrace();
 				}
 			}
