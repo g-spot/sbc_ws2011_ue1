@@ -1,0 +1,1272 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head><title>Configuration Reference - OpenJMS</title><style type="text/css" media="all">
+          @import url("../style/maven-base.css");
+          
+          @import url("../style/maven-theme.css");</style><link rel="stylesheet" href="../style/print.css" type="text/css" media="print"></link><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></meta><meta name="author" content="Tim Anderson"></meta><meta name="email" content="tma@netspace.net.au"></meta></head><body class="composite"><div id="banner"><a href="http://openjms.sourceforge.net" id="organizationLogo"><img alt="The OpenJMS Group" src="../images/openjms.gif"></img></a><a href="http://openjms.sourceforge.net" id="projectLogo"><img alt="OpenJMS" src="../images/none.png"></img></a><div class="clear"><hr></hr></div></div><div id="breadcrumbs"><div class="xleft">Last published: 11 March 2007
+                <span class="separator">|</span> Doc for  0.7.7-beta-1
+                </div><div class="xright">
+        
+        <a href="http://openjms.sourceforge.net/" class="externalLink" title="External Link">Home Page</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://sourceforge.net/projects/openjms/" class="externalLink" title="External Link">SourceForge Project Page</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://jmscts.sourceforge.net/" class="externalLink" title="External Link">JMS CTS</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://java.sun.com/products/jms/" class="externalLink" title="External Link">JMS</a>
+      </div><div class="clear"><hr></hr></div></div><div id="leftColumn"><div id="navcolumn"><div id="menuOpenJMS"><h5>OpenJMS</h5><ul><li class="none"><a href="../index.html">Overview</a></li><li class="none"><a href="../downloads.html">Downloads</a></li><li class="none"><a href="../release-notes.html">Release Notes</a></li><li class="none"><a href="../gettingstarted.html">Getting Started</a></li><li class="collapsed"><a href="../usersguide/index.html">User Guide</a></li><li class="expanded"><a href="../adminguide/index.html">Administrator Guide</a><ul><li class="none"><a href="../adminguide/install.html">Installation</a></li><li class="none"><a href="../adminguide/running.html">Running OpenJMS</a></li><li class="expanded"><a href="../config/config.html">Configuration</a><ul><li class="none"><a href="../config/jdbc.html">Database</a></li><li class="collapsed"><a href="../config/connectors.html">Connectors</a></li><li class="none"><a href="../config/jndi.html">JNDI</a></li><li class="none"><a href="../config/factories.html">Connection Factories</a></li><li class="none"><a href="../config/security.html">Security</a></li><li class="none"><a href="../config/destinations.html">Destinations</a></li><li class="none"><a href="../config/gc.html">Garbage Collection</a></li><li class="none"><strong><a href="../config/reference.html">Reference</a></strong></li></ul></li></ul></li><li class="collapsed"><a href="../devguide/index.html">Developer Guide</a></li><li class="none"><a href="../faq.html">FAQ</a></li></ul></div><div id="search"><h5>Search OpenJMS</h5><form action="http://www.google.com/search" method="get"><a href="http://www.google.com" class="navlink"><img height="32" width="75" alt="Google" src="http://www.google.com/logos/Logo_25wht.gif"></img></a><input name="q" maxlength="255" size="15" type="text" value="" id="q"></input><input name="btnG" type="submit" value="Go" id="btnG"></input><input name="domains" type="hidden" value="http://openjms.sourceforge.net"></input><input name="sitesearch" type="hidden" value="http://openjms.sourceforge.net" id="search"></input></form></div><div id="menuProject_Documentation"><h5>Project Documentation</h5><ul><li class="none"><a href="../index.html">About</a></li><li class="collapsed"><a href="../project-info.html">Project Info</a></li><li class="collapsed"><a href="../maven-reports.html">Project Reports</a></li><li class="none"><a href="http://maven.apache.org/development-process.html" class="externalLink" title="External Link">Development Process</a></li></ul></div><div id="legend"><h5>Legend</h5><ul><li class="externalLink">External Link</li><li class="newWindow">Opens in a new window</li></ul></div><a href="http://maven.apache.org/" title="Built by Maven" id="poweredBy"><img alt="Built by Maven" src="../images/logos/maven-button-1.png"></img></a></div></div><div id="bodyColumn"><div class="contentBox"><div class="section"><a name="Overview"></a><h2>Overview</h2>
+      <p>
+        This document describes all of the items that can be included in 
+        the <strong>$OPENJMS_HOME/config/openjms.xml</strong> file to 
+        configure the OpenJMS server.
+      </p>
+    </div><div class="section"><a name="Configuration"></a><h2>Configuration</h2>
+      <p>
+        The <code>&lt;Configuration&gt;</code> element is the root element of 
+        the OpenJMS server configuration file. The following table lists all 
+        of the possible child elements. Child elements with children are then 
+        documented further in subsequent sections. 
+        <table class="bodyTable">
+          <tr class="a"><th>Element</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>
+              <a href="#DatabaseConfiguration">DatabaseConfiguration</a>
+            </td>
+            <td>Describes the database connection properties.</td>
+            <td>Yes</td>              
+          </tr>
+          <tr class="a">
+            <td><a href="#AdminConfiguration">AdminConfiguration</a></td>
+            <td>
+              Contains attributes to enable the OpenJMS Administrator GUI
+              to administer OpenJMS.
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="b">
+            <td><a href="#ServerConfiguration">ServerConfiguration</a></td>
+            <td>
+              Configuration options for the OpenJMS server core.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td><a href="#Connectors">Connectors</a></td>
+            <td>
+              Specifies the <a href="connectors.html">connectors</a> which 
+              may be used to connect to OpenJMS.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td><a href="#TcpConfiguration">TcpConfiguration</a></td>
+            <td>
+              Configuration options for the 
+              <a href="tcp.html">TCP connector</a>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td><a href="#TcpsConfiguration">TcpsConfiguration</a></td>
+            <td>
+              Configuration options for the 
+              <a href="tcps.html">TCPS connector</a>.
+            </td>
+            <td>No</td>  
+          </tr>
+          <tr class="b">
+            <td><a href="#RmiConfiguration">RmiConfiguration</a></td>
+            <td>
+              Configuration options for the 
+              <a href="rmi.html">RMI connector</a>.
+            </td>
+            <td>No</td>  
+          </tr>
+          <tr class="a">
+            <td><a href="#HttpConfiguration">HttpConfiguration</a></td>
+            <td>
+              Configuration options for the 
+              <a href="http.html">HTTP connector</a>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td><a href="#HttpsConfiguration">HttpsConfiguration</a></td>
+           <td>
+             Configuration options for the 
+             <a href="https.html">HTTPS connector</a>.
+            </td>
+            <td>No</td>  
+          </tr>
+          <tr class="a">
+            <td><a href="#JndiConfiguration">JndiConfiguration</a></td>
+            <td>
+              Specifies the JNDI properties, when using an external
+              JNDI provider.
+            </td> 
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>
+              <a href="#MessageManagerConfiguration">
+                MessageManagerConfiguration
+              </a>
+            </td>
+            <td>
+              Specifies options for the Message Manager, which handles
+              message processing.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>
+              <a href="#SchedulerConfiguration">SchedulerConfiguration</a>
+            </td>
+            <td>Specifies options for the Scheduler service.</td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>
+              <a href="#GarbageCollectionConfiguration">
+                GarbageCollectionConfiguration
+              </a>
+            </td>
+            <td>Specifies options for the Garbage Collection service.</td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td><a href="#LoggerConfiguration">LoggerConfiguration</a></td>
+            <td>Specifies options to configure logging.</td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td><a href="#SecurityConfiguration">SecurityConfiguration</a></td>
+            <td>Specifies options to configure security.</td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td><a href="#Users">Users</a></td>
+            <td>
+              This allows users to be registered when the server is started.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>
+              <a href="#AdministeredDestinations">
+                 AdministeredDestinations
+              </a>
+            </td>
+            <td>
+              This allows administered Topic and Queue objects to be 
+              registered when the server is started. This avoids the need 
+              to create them programmatically, or via the OpenJMS 
+              Administrator GUI.
+            </td>
+            <td>No</td>
+          </tr>            
+        </table>
+      </p>
+    </div><div class="section"><a name="DatabaseConfiguration"></a><h2>DatabaseConfiguration</h2>
+      <p>
+        This element specifies the database configuration for OpenJMS.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Element</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>
+              <a href="#RdbmsDatabaseConfiguration">
+                RdbmsDatabaseConfiguration
+              </a>
+            </td>
+            <td>
+              Specifies the database configuration for a JDBC 2.0 compliant 
+              database.
+            </td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="RdbmsDatabaseConfiguration"></a><h2>RdbmsDatabaseConfiguration</h2>
+      <p>
+        This element specifies the configuration for connecting to a 
+        JDBC 2.0 compliant database.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>class</td>
+            <td>
+              The connection manager, which pools connections to the underlying
+              database. This is a fully qualified class name, and defaults
+              to 
+              <code>"org.exolab.jms.persistence.DBCPConnectionManager"</code>
+              if a value is not set.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>driver</td>
+            <td>
+              The class name of JDBC driver, used to access the database.
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="b">
+            <td>url</td>
+            <td>The JDBC URL.</td>
+            <td>Yes</td>
+          </tr>
+          <tr class="a">
+            <td>user</td>
+            <td>The user name.</td>
+            <td>Yes</td>
+          </tr>
+          <tr class="b">
+            <td>password</td>
+            <td>The user password.</td>
+            <td>Yes</td>
+          </tr>
+          <tr class="a">
+            <td>maxActive</td>
+            <td>
+              The maximum no. of active connections that can be allocated from
+              the connection pool. Use "0" for no limit. Defaults to "10".
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>maxIdle</td>
+            <td>
+              The maximum no. of connections that can sit idle in the 
+              connection pool, before connections are evicted. 
+              Defaults to "10".
+            </td>
+            <td>No</td>
+          </tr>
+         <tr class="a">
+           <td>minIdleTime</td>
+           <td>
+             The minimum time, in seconds, that a connection may remain idle
+             before it may be evicted. 
+             The default value of "0" disables eviction of idle connections.
+             Must be used in conjunction with <em>evictionInterval</em>.
+           </td>
+           <td>No</td>
+         </tr>
+         <tr class="b">
+           <td>evictionInterval</td>
+           <td>
+             The interval, in seconds, between checking idle 
+             connections for eviction. Idle connections are removed after 
+             <em>minIdleTime</em> seconds, or if <em>testQuery</em> is
+             specified and the query fails.
+           </td>
+           <td>No</td>
+         </tr>
+         <tr class="a">
+           <td>testQuery</td>
+           <td>
+             Specifies an SQL query to validate connections. This query
+             should return at least one row, and be fast to execute.
+             By default, no connection is validated.
+           </td>
+           <td>No</td>
+         </tr>
+         <tr class="b">
+           <td>testBeforeUse</td>
+           <td>
+             If "true", each connection is tested before being used,
+             using <em>testQuery</em>.
+             If a connection fails, it is discarded, and another connection
+             allocated. This ensures a higher reliability, at the cost of
+             performance. Defaults to "false".
+           </td>
+           <td>No</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="AdminConfiguration"></a><h2>AdminConfiguration</h2>
+      <p>
+        This element specifies attribute to enable the OpenJMS Administrator 
+        GUI to administer OpenJMS.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>script</td>
+            <td>
+              The shell command to start the OpenJMS server. E.g, on Windows:
+              
+    <div class="source"><pre>
+${openjms.home}\bin\startup.bat
+              </pre></div>
+  
+              <p></p>
+              On Unix:
+              
+    <div class="source"><pre>
+${openjms.home}/bin/startup.sh
+              </pre></div>
+  
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="a">
+            <td>config</td>
+            <td>
+              The path to the OpenJMS server configuration file. 
+              If not specified, it defaults to 
+              <code>"${openjms.home}/config/openjms.xml"</code>
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="ServerConfiguration"></a><h2>ServerConfiguration</h2>
+      <p>
+        This element specifies configuration options for the OpenJMS server 
+        core.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="b"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="a">
+            <td>host</td>
+            <td>
+               The host address of the OpenJMS server. 
+               This is used by the server when registering connection factories
+               in JNDI, to enable clients to locate the server.
+               If a value isn't specified or is set to 
+               <code>"localhost"</code>, it defaults to the local host's IP 
+               address.
+               If the host machine has multiple NICs, then the host will need 
+               to be specified.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>embeddedJNDI</td>
+            <td>
+              This specifies whether to use an embedded (or internal) JNDI 
+              provider, or an external one. If <code>"false"</code>, then the 
+              <a href="#JndiConfiguration">JndiConfiguration</a> element 
+              must be specified.
+              If a value isn't specified, it defaults to <code>"true"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="Connectors"></a><h2>Connectors</h2>
+      <p>
+        This element specifies the <a href="connectors.html">connectors</a> 
+        which may be used to connect to the OpenJMS server.
+      </p>
+      <p>
+        OpenJMS can support multiple connectors simultaneously.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Element</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td><a href="#Connector">Connector</a></td>
+            <td>
+               Specifies the type of communication to use, between clients
+               and the OpenJMS server. One or more connectors may be 
+               configured.
+            </td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="Connector"></a><h2>Connector</h2>
+      <p>
+        This element specifies the type of communication to use, between 
+        clients and the OpenJMS server.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>scheme</td>
+            <td>
+               Specifies the connector to use. Valid values are:
+               <ul>
+                 <li><a href="rmi.html">rmi</a></li>
+                 <li><a href="tcp.html">tcp</a></li>
+                 <li><a href="tcps.html">tcps</a></li>
+                 <li><a href="http.html">http</a></li>
+                 <li><a href="https.html">https</a></li>
+                 <li><a href="embedded.html">embedded</a></li>
+               </ul>
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="a"><th>Element</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>
+              <a href="#ConnectionFactories">ConnectionFactories</a>
+            </td>
+            <td>
+               Specifies the <code>ConnectionFactory</code> objects which will
+               use the connector.
+            </td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="ConnectionFactories"></a><h2>ConnectionFactories</h2>
+      <p>
+        Connection factories are bound in JNDI by the OpenJMS server. This
+        element defines the type and binding of the factories.
+      </p>
+      <p>
+        Multiple connection factories may be specified for each type.
+      </p>
+      <p>
+        Each connection factory must have a unique name.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Element</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>
+              <a href="#ConnectionFactory">ConnectionFactory</a>
+            </td>
+            <td>
+               Specifies to bind a <code>ConnectionFactory</code> in JNDI.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>
+              <a href="#QueueConnectionFactory">QueueConnectionFactory</a>
+            </td>
+            <td>
+               Specifies to bind a <code>QueueConnectionFactory</code> in JNDI.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>
+              <a href="#TopicConnectionFactory">TopicConnectionFactory</a>
+            </td>
+            <td>
+               Specifies to bind a <code>TopicConnectionFactory</code> in JNDI.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>
+              <a href="#XAQueueConnectionFactory">XAQueueConnectionFactory</a>
+            </td>
+            <td>
+               Specifies to bind a <code>XAQueueConnectionFactory</code> in 
+               JNDI.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>
+              <a href="#XATopicConnectionFactory">XATopicConnectionFactory</a>
+            </td>
+            <td>
+               Specifies to bind a <code>XATopicConnectionFactory</code> in 
+               JNDI.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="ConnectionFactory"></a><h2>ConnectionFactory</h2>
+      <p>
+        This element specifies the name of a <code>ConnectionFactory</code>, to
+        be used when binding it in JNDI.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>name</td>
+            <td>The name of the <code>ConnectionFactory</code></td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="XAConnectionFactory"></a><h2>XAConnectionFactory</h2>
+      <p>
+        This element specifies the name of an <code>XAConnectionFactory</code>,
+        to be used when binding it in JNDI.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>name</td>
+            <td>The name of the <code>XAConnectionFactory</code></td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="QueueConnectionFactory"></a><h2>QueueConnectionFactory</h2>
+      <p>
+        This element specifies the name of a 
+        <code>QueueConnectionFactory</code>, to be used when binding it
+        in JNDI.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>name</td>
+            <td>The name of the <code>QueueConnectionFactory</code></td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="TopicConnectionFactory"></a><h2>TopicConnectionFactory</h2>
+      <p>
+        This element specifies the name of a 
+        <code>TopicConnectionFactory</code>, to be used when binding it
+        in JNDI.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>name</td>
+            <td>The name of the <code>TopicConnectionFactory</code></td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="XAQueueConnectionFactory"></a><h2>XAQueueConnectionFactory</h2>
+      <p>
+        This element specifies the name of a 
+        <code>XAQueueConnectionFactory</code>, to be used when binding it
+        in JNDI.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>name</td>
+            <td>The name of the <code>XAQueueConnectionFactory</code></td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="XATopicConnectionFactory"></a><h2>XATopicConnectionFactory</h2>
+      <p>
+        This element specifies the name of a 
+        <code>XATopicConnectionFactory</code>, to be used when binding it
+        in JNDI.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>name</td>
+            <td>The name of the <code>XATopicConnectionFactory</code></td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="TcpConfiguration"></a><h2>TcpConfiguration</h2>
+      <p>
+        This elements specifies the configuration of the 
+        <a href="tcp.html">TCP connector</a>.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>internalHost</td>
+            <td>
+              This is only applicable when the OpenJMS server is behind a NAT 
+              firewall. It becomes the internal address the server is known by 
+              and the host address in 
+              <a href="#ServerConfiguration">ServerConfiguration</a> is the 
+              external address. Clients will attempt to connect to 
+              <em>host</em> first. If that fails, they will try to connect to 
+              <em>internalHost</em>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>port</td>
+            <td>
+              The port number that the server listens on.
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="b">
+            <td>jndiPort</td>
+            <td>
+              The JNDI port, if an embedded JNDI provider is being used.
+              It defaults to <code>"0"</code> if a value isn't specified,
+              indicating that the value of <code>port</code> should be used.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>adminPort</td>
+            <td>
+              The administration service port. It defaults to <code>"0"</code> 
+              if a value isn't specified, indicating that the value of
+              <code>port</code> should be used.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>bindAll</td>
+            <td>
+              If <code>"false"</code>, can be used on a multi-homed host to
+              only accept connect requests on the address specified by
+              ServerConfiguration/host.
+              If <code>"true"</code>, it will accept connections on any/all
+              local addresses. It defaults to <code>"true"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+      <p>
+        If no <strong>&lt;TcpConfiguration&gt;</strong> element is specified,
+        the following is used:
+        
+    <div class="source"><pre>
+  &lt;TcpConfiguration port="3035" jndiPort="0" adminPort="0" bindAll="true" /&gt;
+               
+        </pre></div>
+  
+      </p>
+    </div><div class="section"><a name="TcpsConfiguration"></a><h2>TcpsConfiguration</h2>
+      <p>
+        This elements specifies the configuration of the 
+        <a href="tcps.html">TCPS connector</a>.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>internalHost</td>
+            <td>
+              This is only applicable when the OpenJMS server is behind a NAT 
+              firewall. It becomes the internal address the server is known by 
+              and the host address in 
+              <a href="#ServerConfiguration">ServerConfiguration</a> is the 
+              external address. Clients will attempt to connect to 
+              <em>host</em> first. If that fails, they will try to connect to 
+              <em>internalHost</em>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>port</td>
+            <td>
+              The port number that the server listens on.
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="b">
+            <td>jndiPort</td>
+            <td>
+              The JNDI port, if an embedded JNDI provider is being used.
+              It defaults to <code>"0"</code> if a value isn't specified,
+              indicating that the value of <code>port</code> should be used.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>adminPort</td>
+            <td>
+              The administration service port. It defaults to <code>"0"</code> 
+              if a value isn't specified, indicating that the value of
+              <code>port</code> should be used.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>bindAll</td>
+            <td>
+              If <code>"false"</code>, can be used on a multi-homed host to
+              only accept connect requests on the address specified by
+              ServerConfiguration/host.
+              If <code>"true"</code>, it will accept connections on any/all
+              local addresses. It defaults to <code>"true"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>keyStore</td>
+            <td>
+              The path to the keystore. If not specified, it defaults to 
+              <code>"${openjms.home}/config/openjms.keystore"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>keyStorePassword</td>
+            <td>
+              The keystore password. If not specified, it defaults to 
+              <code>"openjms"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>keyStoreType</td>
+            <td>
+              The keystore type. If not specified, it defaults to 
+              <code>"JKS"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>trustStore</td>
+            <td>
+              The path to the trustStore. If not specified, it defaults to 
+              the value of <code>keyStore</code>
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>trustStorePassword</td>
+            <td>
+              The truststore password. If unset, this defaults to the value
+              of <code>keyStorePassword</code>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>trustStoreType</td>
+            <td>
+              The truststore type. If not specified, it defaults to 
+              <code>"JKS"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>needClientAuth</td>
+            <td>
+              Determines if connections which are accepted must include client
+              authentication. If <code>"false"</code>, clients do not need to 
+              provide authentication information. If <code>"true"</code>,
+              clients must authenticate themselves. 
+              Defaults to <code>"false"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+      <p>
+        If no <strong>&lt;TcpsConfiguration&gt;</strong> element is specified,
+        the following is used:
+        
+    <div class="source"><pre>
+  &lt;TcpsConfiguration port="3035" jndiPort="0" adminPort="0" bindAll="true"
+                     keyStore="${openjms.home}/config/openjms.keystore"
+                     keyStorePassword="openjms"
+                     keyStoreType="JKS"
+                     trustStoreType="JKS"
+                     needClientAuth="false"/&gt;
+               
+        </pre></div>
+  
+      </p>
+    </div><div class="section"><a name="RmiConfiguration"></a><h2>RmiConfiguration</h2>
+      <p>
+        This elements specifies the configuration of the 
+        <a href="rmi.html">RMI connector</a>.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="b"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="a">
+            <td>embeddedRegistry</td>
+            <td>
+              This specifies whether to use an embedded (or internal) RMI
+              registry, or an external one. If no value is specified, it
+              defaults to <code>"true"</code>
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>registryHost</td>
+            <td>
+              The RMI registry host. This is only applicable if an external
+              RMI registry is being used, i.e., <em>embeddedRegistry</em> is 
+              <code>"false"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>registryPort</td>
+            <td>
+              The RMI registry port. It defaults to <code>"1099"</code> if a 
+              value isn't specified.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+      <p>
+        If no <strong>&lt;RmiConfiguration&gt;</strong> element is specified,
+        the following is used:
+        
+    <div class="source"><pre>
+  &lt;RmiConfiguration embeddedRegistry="true"
+                    registryHost="localhost"
+                    registryPort="1099"/&gt;
+               
+        </pre></div>
+  
+      </p>
+    </div><div class="section"><a name="HttpConfiguration"></a><h2>HttpConfiguration</h2>
+      <p>
+        This elements specifies the configuration of the 
+        <a href="http.html">HTTP connector</a>.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="b"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="a">
+            <td>port</td>
+            <td>
+              The port number that the server listens on.
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="b">
+            <td>jndiPort</td>
+            <td>
+              The JNDI port, if an embedded JNDI provider is being used.
+              It defaults to <code>"0"</code> if a value isn't specified,
+              indicating that the value of <code>port</code> should be used.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>adminPort</td>
+            <td>
+              The administration service port. It defaults to <code>"0"</code> 
+              if a value isn't specified, indicating that the value of
+              <code>port</code> should be used.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>bindAll</td>
+            <td>
+              If <code>"false"</code>, can be used on a multi-homed host to
+              only accept connect requests on the address specified by
+              ServerConfiguration/host.
+              If <code>"true"</code>, it will accept connections on any/all
+              local addresses. It defaults to <code>"true"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>webServerHost</td>
+            <td>
+              The web server host. It defaults to <code>"localhost"</code>
+              if no value is set.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>webServerPort</td>
+            <td>
+              The web server port.
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="a">
+            <td>servlet</td>
+            <td>
+              The tunnel servlet path. It defaults to 
+              <code>"/openjms-tunnel/tunnel"</code> if a value isn't specified.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+      <p>
+        If no <strong>&lt;HttpConfiguration&gt;</strong> element is specified,
+        the following is used:
+        
+    <div class="source"><pre>
+  &lt;HttpConfiguration port="3030" jndiPort="0" adminPort="0" bindAll="true" 
+                     webServerHost="localhost" webServerPort="80"
+                     servlet="/openjms-tunnel/tunnel"/&gt;
+               
+        </pre></div>
+  
+      </p>
+    </div><div class="section"><a name="HttpsConfiguration"></a><h2>HttpsConfiguration</h2>
+      <p>
+        This elements specifies the configuration of the 
+        <a href="https.html">HTTPS connector</a>.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="b"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="a">
+            <td>port</td>
+            <td>
+              The port number that the server listens on.
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="b">
+            <td>jndiPort</td>
+            <td>
+              The JNDI port, if an embedded JNDI provider is being used.
+              It defaults to <code>"0"</code> if a value isn't specified,
+              indicating that the value of <code>port</code> should be used.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>adminPort</td>
+            <td>
+              The administration service port. It defaults to <code>"0"</code> 
+              if a value isn't specified, indicating that the value of
+              <code>port</code> should be used.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>bindAll</td>
+            <td>
+              If <code>"false"</code>, can be used on a multi-homed host to
+              only accept connect requests on the address specified by
+              ServerConfiguration/host.
+              If <code>"true"</code>, it will accept connections on any/all
+              local addresses. It defaults to <code>"true"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>webServerHost</td>
+            <td>
+              The web server host. It defaults to <code>"localhost"</code>
+              if no value is set.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>webServerPort</td>
+            <td>
+              The web server port.
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="a">
+            <td>servlet</td>
+            <td>
+              The tunnel servlet path. It defaults to 
+              <code>"/openjms-tunnel/tunnel"</code> if a value isn't specified.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+      <p>
+        If no <strong>&lt;HttpsConfiguration&gt;</strong> element is specified,
+        the following is used:
+        
+    <div class="source"><pre>
+  &lt;HttpsConfiguration port="3030" jndiPort="0" adminPort="0" bindAll="true" 
+                      webServerHost="localhost" webServerPort="443"
+                      servlet="/openjms-tunnel/tunnel"/&gt;
+               
+        </pre></div>
+  
+      </p>
+    </div><div class="section"><a name="JndiConfiguration"></a><h2>JndiConfiguration</h2>
+      <p>
+        This element defines the properties used when constructing an 
+        InitialContext. This only needs to be specified if an external JNDI
+        provider is being used. 
+      </p>
+      <p>
+        See <a href="jndi.html">Configuring JNDI</a> for more details.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="b"><th>Element</th><th>Description</th><th>Required</th></tr>
+          <tr class="a">
+            <td>property</td>
+            <td>
+              A name and value pair used in the creation of the InitialContext.
+              E.g:
+              
+    <div class="source"><pre>
+  &lt;property name="java.naming.factory.initial"
+            value="com.sun.jndi.rmi.registry.RegistryContextFactory"/&gt;
+               
+              </pre></div>
+  
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="MessageManagerConfiguration"></a><h2>MessageManagerConfiguration</h2>
+      <p>
+        This element defines items specific to the Message Manager, which
+        is responsible for message processing.
+        <br></br>
+        This is not currently used.
+      </p>
+      
+    </div><div class="section"><a name="SchedulerConfiguration"></a><h2>SchedulerConfiguration</h2>
+      <p>
+        This element defines items specific to the Scheduler service.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="b"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="a">
+            <td>maxThreads</td>
+            <td>
+              The maximum number of worker threads that the scheduler uses.
+            </td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="GarbageCollectionConfiguration"></a><h2>GarbageCollectionConfiguration</h2>
+      <p>
+        This element defines items specific to the Garbage Collection service.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="b"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="a">
+            <td>memoryCheckInterval</td>
+            <td>
+              This indicates how often the server will check the memory 
+              utilization of the server. 
+              It will check to ensure that the ratio of free memory to total 
+              memory doesn't fall below the lowWaterThreshold.
+              The value is specified in seconds, and defaults to 
+              <code>"30"</code> seconds if not set.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>lowWaterThreshold</td>
+            <td>
+              This is the ratio of free memory to total memory, specified as a 
+              percentage, which will trigger garbage collection.
+              The default value of <code>"20"</code> indicates that when free 
+              memory falls below 20% of total memory (i.e. total VM memory) 
+              then garbage collection will be triggered. The range of valid 
+              values is <code>"10"-"50"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="a">
+            <td>garbageCollectionInterval</td>
+            <td>
+              This indicates how often the garbage collector will run to remove
+              processed messages from the cache. A value of <code>"0"</code>
+              will disable this capability. 
+              The value is specified in seconds, and defaults to 
+              <code>"600"</code> seconds if a value is not set.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td>garbageCollectionThreadPriority</td>
+            <td>
+              This is the priority assigned to the garbage collection thread. 
+              It ranges from <code>"1"-"10"</code>, and defaults to 
+              <code>"5"</code> if a value is not set.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="LoggerConfiguration"></a><h2>LoggerConfiguration</h2>
+      <p>
+        This element specifies the file to initialise logging with. The OpenJMS
+        server uses 
+        <a href="http://logging.apache.org/log4j/docs/index.html" class="externalLink" title="External Link">log4j</a>
+        for logging.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>file</td>
+            <td>
+              The path to an XML file conforming to log4j.dtd
+            </td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="SecurityConfiguration"></a><h2>SecurityConfiguration</h2>
+      <p>
+        This element specifies options to configure security.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>securityEnabled</td>
+            <td>
+              This specifies whether to enable security. If 
+              <code>"true"</code>, then security is enabled.
+              If a value isn't specified, it defaults to <code>"false"</code>.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>          
+    </div><div class="section"><a name="Users"></a><h2>Users</h2>
+      <p>
+        This element is used to bootstrap the creation of users.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Element</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td><a href="#User">User</a></td>
+            <td>
+              This element defines an user. Zero or more users may be 
+              specified.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="User"></a><h2>User</h2>
+      <p>
+        This element is used to create an user.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>name</td>
+            <td>The name of the user.</td>
+            <td>Yes</td>
+          </tr>
+          <tr class="a">
+            <td>password</td>
+            <td>The password of the user.</td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="AdministeredDestinations"></a><h2>AdministeredDestinations</h2>
+      <p>
+        This element is used to bootstrap the creation of administered topics 
+        and queues. It also allows the client to register durable subscribers 
+        for administered topics.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="b"><th>Element</th><th>Description</th><th>Required</th></tr>
+          <tr class="a">
+            <td><a href="#AdministeredTopic">AdministeredTopic</a></td>
+            <td>
+              This element defines an administered topic, and any durable
+              subscribers. Zero or more topics may be specified.
+            </td>
+            <td>No</td>
+          </tr>
+          <tr class="b">
+            <td><a href="#AdministeredQueue">AdministeredQueue</a></td>
+            <td>
+              This element defines an administered queue, and any durable
+              subscribers. Zero or more queues may be specified.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="AdministeredTopic"></a><h2>AdministeredTopic</h2>
+      <p>
+        This element defines an administered topic, and any durable
+        subscribers.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>name</td>
+            <td>
+              The name of the topic. This must be unique.
+            </td>
+            <td>Yes</td>
+          </tr>
+          <tr class="a"><th>Element</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td><a href="#Subscriber">Subscriber</a></td>
+            <td>
+              This defines a durable subscriber to an administered topic.
+              Zero or more subscribers may be specified.
+            </td>
+            <td>No</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="Subscriber"></a><h2>Subscriber</h2>
+      <p>
+        This element define a durable subscriber to an administered topic.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>name</td>
+            <td>
+              The name of the durable subscriber. This must be unique.
+            </td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div><div class="section"><a name="AdministeredQueue"></a><h2>AdministeredQueue</h2>
+      <p>
+        This element defines an administered queue.
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a"><th>Attribute</th><th>Description</th><th>Required</th></tr>
+          <tr class="b">
+            <td>name</td>
+            <td>
+              The name of the queue. This must be unique.
+            </td>
+            <td>Yes</td>
+          </tr>
+        </table>
+      </p>
+    </div></div></div><div class="clear"><hr></hr></div><div id="footer"><div class="xleft">
+      <a href="http://sourceforge.net/projects/openjms" class="externalLink" title="External Link">
+        <img src="http://sourceforge.net/sflogo.php?group_id=54559" border="0" alt="sf logo"></img>
+      </a>
+    </div><div class="xright">© 1999-2007, The OpenJMS Group</div><div class="clear"><hr></hr></div></div></body></html>

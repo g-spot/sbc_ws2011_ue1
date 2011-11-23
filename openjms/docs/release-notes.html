@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head><title>OpenJMS Release Notes - OpenJMS</title><style type="text/css" media="all">
+          @import url("./style/maven-base.css");
+          
+          @import url("./style/maven-theme.css");</style><link rel="stylesheet" href="./style/print.css" type="text/css" media="print"></link><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></meta><meta name="author" content="Tim Anderson"></meta><meta name="email" content="tma@netspace.net.au"></meta></head><body class="composite"><div id="banner"><a href="http://openjms.sourceforge.net" id="organizationLogo"><img alt="The OpenJMS Group" src="./images/openjms.gif"></img></a><a href="http://openjms.sourceforge.net" id="projectLogo"><img alt="OpenJMS" src="./images/none.png"></img></a><div class="clear"><hr></hr></div></div><div id="breadcrumbs"><div class="xleft">Last published: 11 March 2007
+                <span class="separator">|</span> Doc for  0.7.7-beta-1
+                </div><div class="xright">
+        
+        <a href="http://openjms.sourceforge.net/" class="externalLink" title="External Link">Home Page</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://sourceforge.net/projects/openjms/" class="externalLink" title="External Link">SourceForge Project Page</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://jmscts.sourceforge.net/" class="externalLink" title="External Link">JMS CTS</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://java.sun.com/products/jms/" class="externalLink" title="External Link">JMS</a>
+      </div><div class="clear"><hr></hr></div></div><div id="leftColumn"><div id="navcolumn"><div id="menuOpenJMS"><h5>OpenJMS</h5><ul><li class="none"><a href="index.html">Overview</a></li><li class="none"><a href="downloads.html">Downloads</a></li><li class="none"><strong><a href="release-notes.html">Release Notes</a></strong></li><li class="none"><a href="gettingstarted.html">Getting Started</a></li><li class="collapsed"><a href="usersguide/index.html">User Guide</a></li><li class="collapsed"><a href="adminguide/index.html">Administrator Guide</a></li><li class="collapsed"><a href="devguide/index.html">Developer Guide</a></li><li class="none"><a href="faq.html">FAQ</a></li></ul></div><div id="search"><h5>Search OpenJMS</h5><form action="http://www.google.com/search" method="get"><a href="http://www.google.com" class="navlink"><img height="32" width="75" alt="Google" src="http://www.google.com/logos/Logo_25wht.gif"></img></a><input name="q" maxlength="255" size="15" type="text" value="" id="q"></input><input name="btnG" type="submit" value="Go" id="btnG"></input><input name="domains" type="hidden" value="http://openjms.sourceforge.net"></input><input name="sitesearch" type="hidden" value="http://openjms.sourceforge.net" id="search"></input></form></div><div id="menuProject_Documentation"><h5>Project Documentation</h5><ul><li class="none"><a href="index.html">About</a></li><li class="collapsed"><a href="project-info.html">Project Info</a></li><li class="collapsed"><a href="maven-reports.html">Project Reports</a></li><li class="none"><a href="http://maven.apache.org/development-process.html" class="externalLink" title="External Link">Development Process</a></li></ul></div><div id="legend"><h5>Legend</h5><ul><li class="externalLink">External Link</li><li class="newWindow">Opens in a new window</li></ul></div><a href="http://maven.apache.org/" title="Built by Maven" id="poweredBy"><img alt="Built by Maven" src="./images/logos/maven-button-1.png"></img></a></div></div><div id="bodyColumn"><div class="contentBox"><div class="section"><a name="OpenJMS_0_7_7-beta-1_Released"></a><h2>OpenJMS 0.7.7-beta-1 Released</h2>
+      <p>
+        The OpenJMS team is pleased to announce the release of OpenJMS 
+        0.7.7-beta-1.
+      </p>
+      <p>
+        <a href="downloads.html">http://openjms.sourceforge.net/downloads.html</a>
+      </p>
+      <p>
+        This contains the following changes since 0.7.7-alpha-3:
+        <ul>
+          <li>Added RFE-982260: support for context classloader during deserialization</li>
+          <li>Fixed BUG-1502902  Admin API reports available messages when queue is empty</li>
+          <li>Fixed BUG-1480739: receiveNoWait() with AUTO_ACK not ackwnowledging messages</li>
+          <li>Fixed BUG-1402865: Killed client prevents reconnect over http</li>
+          <li>Fixed BUG-1436546: NullPointerException thrown by selector</li>
+          <li>Fixed BUG-1413927: concurrent-1.3.4.jar missing from usersguide/jars.html
+          </li>
+          <li>Fixed BUG-1123902: Heirarchical names results in NameNotFoundException
+          </li>
+          <li>Fixed BUG-1236732: Impossible to bind queue to jms.queue1</li>
+          <li>Fixed BUG-1611385: Client-Server Connection hangs and locks clients</li>
+        </ul>
+      </p>
+
+      <div class="subsection"><a name="Known_Issues"></a><h3>Known Issues</h3>
+        <p>
+          <ul>
+            <li>Persistent messages using the default database (Derby) are 
+                currently limited to 32K.
+                A workaround for this issue is described here: <a href="http://article.gmane.org/gmane.comp.java.openjms.user/3036" class="externalLink" title="External Link">how to modify the table schema for derby DB</a>
+            </li>
+          </ul>
+        </p>
+      </div>
+
+      <p>
+        To see a list of changes to OpenJMS, please refer to the
+        <a href="changes-report.html#0_7_7-dev">Changes Report</a>
+      </p>
+      <p>
+        We hope you enjoy using OpenJMS! If you have any questions,
+        please consult:
+        <ul>
+          <li>
+            the FAQ: <a href="faq.html">http://openjms.sourceforge.net/faq.html</a>
+          </li>
+          <li>
+            the openjms-user mailing list: <a href="mail-lists.html">
+            http://openjms.sourceforge.net/mail-lists.html</a>
+          </li>        
+        </ul>
+      </p>
+      <p>
+        <i>- The OpenJMS team</i>
+      </p>
+    </div></div></div><div class="clear"><hr></hr></div><div id="footer"><div class="xleft">
+      <a href="http://sourceforge.net/projects/openjms" class="externalLink" title="External Link">
+        <img src="http://sourceforge.net/sflogo.php?group_id=54559" border="0" alt="sf logo"></img>
+      </a>
+    </div><div class="xright">© 1999-2007, The OpenJMS Group</div><div class="clear"><hr></hr></div></div></body></html>

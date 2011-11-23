@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head><title>Configuring the database - OpenJMS</title><style type="text/css" media="all">
+          @import url("../style/maven-base.css");
+          
+          @import url("../style/maven-theme.css");</style><link rel="stylesheet" href="../style/print.css" type="text/css" media="print"></link><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></meta><meta name="author" content="Tim Anderson"></meta><meta name="email" content="tma@netspace.net.au"></meta></head><body class="composite"><div id="banner"><a href="http://openjms.sourceforge.net" id="organizationLogo"><img alt="The OpenJMS Group" src="../images/openjms.gif"></img></a><a href="http://openjms.sourceforge.net" id="projectLogo"><img alt="OpenJMS" src="../images/none.png"></img></a><div class="clear"><hr></hr></div></div><div id="breadcrumbs"><div class="xleft">Last published: 11 March 2007
+                <span class="separator">|</span> Doc for  0.7.7-beta-1
+                </div><div class="xright">
+        
+        <a href="http://openjms.sourceforge.net/" class="externalLink" title="External Link">Home Page</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://sourceforge.net/projects/openjms/" class="externalLink" title="External Link">SourceForge Project Page</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://jmscts.sourceforge.net/" class="externalLink" title="External Link">JMS CTS</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://java.sun.com/products/jms/" class="externalLink" title="External Link">JMS</a>
+      </div><div class="clear"><hr></hr></div></div><div id="leftColumn"><div id="navcolumn"><div id="menuOpenJMS"><h5>OpenJMS</h5><ul><li class="none"><a href="../index.html">Overview</a></li><li class="none"><a href="../downloads.html">Downloads</a></li><li class="none"><a href="../release-notes.html">Release Notes</a></li><li class="none"><a href="../gettingstarted.html">Getting Started</a></li><li class="collapsed"><a href="../usersguide/index.html">User Guide</a></li><li class="expanded"><a href="../adminguide/index.html">Administrator Guide</a><ul><li class="none"><a href="../adminguide/install.html">Installation</a></li><li class="none"><a href="../adminguide/running.html">Running OpenJMS</a></li><li class="expanded"><a href="../config/config.html">Configuration</a><ul><li class="none"><strong><a href="../config/jdbc.html">Database</a></strong></li><li class="collapsed"><a href="../config/connectors.html">Connectors</a></li><li class="none"><a href="../config/jndi.html">JNDI</a></li><li class="none"><a href="../config/factories.html">Connection Factories</a></li><li class="none"><a href="../config/security.html">Security</a></li><li class="none"><a href="../config/destinations.html">Destinations</a></li><li class="none"><a href="../config/gc.html">Garbage Collection</a></li><li class="none"><a href="../config/reference.html">Reference</a></li></ul></li></ul></li><li class="collapsed"><a href="../devguide/index.html">Developer Guide</a></li><li class="none"><a href="../faq.html">FAQ</a></li></ul></div><div id="search"><h5>Search OpenJMS</h5><form action="http://www.google.com/search" method="get"><a href="http://www.google.com" class="navlink"><img height="32" width="75" alt="Google" src="http://www.google.com/logos/Logo_25wht.gif"></img></a><input name="q" maxlength="255" size="15" type="text" value="" id="q"></input><input name="btnG" type="submit" value="Go" id="btnG"></input><input name="domains" type="hidden" value="http://openjms.sourceforge.net"></input><input name="sitesearch" type="hidden" value="http://openjms.sourceforge.net" id="search"></input></form></div><div id="menuProject_Documentation"><h5>Project Documentation</h5><ul><li class="none"><a href="../index.html">About</a></li><li class="collapsed"><a href="../project-info.html">Project Info</a></li><li class="collapsed"><a href="../maven-reports.html">Project Reports</a></li><li class="none"><a href="http://maven.apache.org/development-process.html" class="externalLink" title="External Link">Development Process</a></li></ul></div><div id="legend"><h5>Legend</h5><ul><li class="externalLink">External Link</li><li class="newWindow">Opens in a new window</li></ul></div><a href="http://maven.apache.org/" title="Built by Maven" id="poweredBy"><img alt="Built by Maven" src="../images/logos/maven-button-1.png"></img></a></div></div><div id="bodyColumn"><div class="contentBox"><div class="section"><a name="Overview"></a><h2>Overview</h2>
+      <p>
+        OpenJMS requires a JDBC 2.0 compliant database.
+      </p>
+      <p>
+        As of release 0.7.7, OpenJMS is distributed pre-configured
+        with <a href="http://incubator.apache.org/derby" class="externalLink" title="External Link">Derby</a>,
+        a pure Java database. This is provided to demonstrate OpenJMS' features
+        "out-of-the-box", and may change in future. 
+      </p>
+
+      <div class="subsection"><a name="Supported_databases"></a><h3>Supported databases</h3>
+        <p>
+          The following databases are known to work with OpenJMS:
+          <table class="bodyTable">
+            <tr class="b"><th>Database</th><th>Version</th><th>Web Site</th></tr>
+            <tr class="a">
+              <td>Oracle9i</td>
+              <td>9</td>
+              <td><a href="http://www.oracle.com" class="externalLink" title="External Link">http://www.oracle.com</a></td>
+            </tr>
+            <tr class="b">
+              <td>Sybase ASE</td>JDBC
+              <td>12.0</td>
+              <td><a href="http://www.sybase.com" class="externalLink" title="External Link">http://www.sybase.com</a></td>
+            </tr>
+            <tr class="a">
+              <td>MySQL</td>
+              <td>4.0.12</td>
+              <td><a href="http://www.mysql.com" class="externalLink" title="External Link">http://www.mysql.com</a></td>
+            </tr>
+            <tr class="b">
+              <td>Derby</td>
+              <td>10.0.2.1</td>
+              <td><a href="http://incubator.apache.org/derby" class="externalLink" title="External Link">http://incubator.apache.org/derby</a></td>
+            </tr>
+          </table>
+        </p>
+      </div>
+    </div><div class="section"><a name="Configuration"></a><h2>Configuration</h2>
+      <p>
+        To configure OpenJMS to use a JDBC database:
+        <ol>
+          <li>Add the JDBC jars to the CLASSPATH</li>
+          <li>Configure openjms.xml</li>
+          <li>Create the OpenJMS tables in the database</li>
+        </ol>
+      </p>
+
+      <div class="subsection"><a name="Add_the_JDBC_jars_to_the_CLASSPATH"></a><h3>Add the JDBC jars to the CLASSPATH</h3>
+        <p>
+          <em>Windows</em>
+        </p>
+        <p>
+          Edit the <strong>%OPENJMS_HOME%\bin\setenv.bat</strong> batch file: 
+          
+    <div class="source"><pre>
+rem Configures the JDBC driver
+set CLASSPATH=&lt;insert path to JDBC driver here&gt;
+          </pre></div>
+  
+        </p>
+        <p>
+          <em>Unix</em>
+        </p>
+        <p>
+          Edit the <strong>$OPENJMS_HOME/bin/setenv.sh</strong> script:
+          
+    <div class="source"><pre>
+# Configures the JDBC driver
+CLASSPATH=&lt;insert path to JDBC driver here&gt;
+          </pre></div>
+  
+        </p>
+      </div>
+
+      <div class="subsection"><a name="Configure_openjms_xml"></a><h3>Configure openjms.xml</h3>
+        <p>
+          The JDBC driver connection properties need to be added to the
+          OpenJMS configuration file, 
+          <strong>$OPENJMS_HOME/config/openjms.xml</strong>, e.g:
+
+          
+    <div class="source"><pre>
+
+    &lt;DatabaseConfiguration&gt;
+      &lt;RdbmsDatabaseConfiguration
+        driver="oracle.jdbc.driver.OracleDriver"
+        url="jdbc:oracle:oci8:@myhost" 
+        user="openjms" 
+        password="openjms" /&gt;
+    &lt;/DatabaseConfiguration&gt;
+
+          </pre></div>
+        
+        </p>
+      </div>
+
+      <div class="subsection"><a name="Create_the_OpenJMS_tables"></a><h3>Create the OpenJMS tables</h3>
+        <p>
+          The <strong>dbtool</strong> application may be used to create, drop, 
+          and recreate the OpenJMS database tables.
+        </p>
+        <p>
+          To create the tables on open up a command prompt and type:
+        </p>
+        <p>
+          <em>Windows</em>
+          
+    <div class="source"><pre>
+cd %OPENJMS_HOME%\bin
+dbtool.bat -create -config %OPENJMS_HOME%\config\openjms.xml
+          </pre></div>
+  
+        </p>
+        <p>
+          <em>Unix</em>
+          
+    <div class="source"><pre>
+cd $OPENJMS_HOME/bin
+dbtool.sh -create -config $OPENJMS_HOME/config/openjms.xml
+          </pre></div>
+  
+        </p>
+        <p>
+          The dbtool application may not support all available JDBC drivers, 
+          due to buggy JDBC implementations. In this case, the tables must be 
+          manually created. The OpenJMS distribution ships with SQL scripts 
+          for most popular databases. These scripts are located in the
+          <strong>$OPENJMS_HOME/db/sql</strong> directory and are named in 
+          the form of create_<em>db</em>.sql (e.g create_oracle.sql, 
+          create_mysql.sql)
+        </p>
+        <p>
+          For example, to manually create the tables in an Oracle database:
+          
+    <div class="source"><pre>
+sqlplus <em>user</em>/<em>password</em> @create_oracle.sql
+          </pre></div>
+  
+        </p>
+      </div>
+    </div><div class="section"><a name="Connection_pooling"></a><h2>Connection pooling</h2>
+      <p>
+        OpenJMS uses a pool of JDBC connections, for performance reasons.
+        This can be configured via the 
+        <strong>&lt;RdbmsDatabaseConfiguration&gt;</strong> element. E.g.:
+        
+    <div class="source"><pre>
+    &lt;RdbmsDatabaseConfiguration
+      driver="com.mysql.jdbc.Driver" 
+      url="jdbc:mysql://localhost/openjms"
+      user="openjms" 
+      password="openjms"
+      maxActive="10"
+      maxIdle="5"
+      evictionInterval="3600"
+      testQuery="select current_date"/&gt;
+         </pre></div>
+  
+      </p>
+      <p>          
+        The above specifies to use MySQL as the JDBC provider, with
+        the connection pool configured as follows:
+        <ul>
+          <li><em>maxActive</em> specifies to use up to 10 connections</li>
+          <li>
+            <em>maxIdle</em> specifies to allow up to 5 connections to sit idle
+            in the pool.
+          </li>
+          <li>
+            <em>evictionInterval</em> specifies to run <em>testQuery</em>
+            every 3600 seconds to check if idle connections are valid.
+          </li>
+          <li>
+            <em>testQuery</em> is an SQL query used to validate connections
+            before OpenJMS tries to use them. This is useful in the case of 
+            MySQL, which forces closure of connections that have been idle
+            for too long.
+          </li>
+        </ul>
+      </p>
+    </div><div class="section"><a name="See_Also"></a><h2>See Also</h2>
+      <p>
+        The following references provide detailed descriptions of 
+        the configuration elements related to database configuration:
+        <ul>
+          <li>
+            <a href="reference.html#DatabaseConfiguration">
+              DatabaseConfiguration
+            </a>
+          </li>
+          <li>
+            <a href="reference.html#RdbmsDatabaseConfiguration">
+              RdbmsDatabaseConfiguration
+            </a>
+          </li>
+        </ul>
+      </p>
+    </div></div></div><div class="clear"><hr></hr></div><div id="footer"><div class="xleft">
+      <a href="http://sourceforge.net/projects/openjms" class="externalLink" title="External Link">
+        <img src="http://sourceforge.net/sflogo.php?group_id=54559" border="0" alt="sf logo"></img>
+      </a>
+    </div><div class="xright">© 1999-2007, The OpenJMS Group</div><div class="clear"><hr></hr></div></div></body></html>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<rss version="0.91">
+  <channel>
+    <title>Changes report</title>
+    <link>http://openjms.sourceforge.net</link>
+    <description>Changes report</description>
+    <language>en-us</language>
+    <copyright>Copyright 2007 The OpenJMS Group</copyright>
+    <item>
+      <title>0 change(s) for version 0.7.7-beta-1</title>
+      <link>http://openjms.sourceforge.net/changes-report.html#0_7_7-beta-1</link>
+      <description>
+        <table border="1">
+          <tr>
+            <th style="width:50px">Type</th>
+            <th>Changes</th>
+            <th style="width:70px">By</th>
+          </tr>
+        </table>
+      </description>
+    </item>
+  </channel>
+</rss>

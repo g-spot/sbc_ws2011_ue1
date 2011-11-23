@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head><title>Using the HTTPS Connector - OpenJMS</title><style type="text/css" media="all">
+          @import url("../style/maven-base.css");
+          
+          @import url("../style/maven-theme.css");</style><link rel="stylesheet" href="../style/print.css" type="text/css" media="print"></link><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></meta><meta name="author" content="Tim Anderson"></meta><meta name="email" content="tma@netspace.net.au"></meta></head><body class="composite"><div id="banner"><a href="http://openjms.sourceforge.net" id="organizationLogo"><img alt="The OpenJMS Group" src="../images/openjms.gif"></img></a><a href="http://openjms.sourceforge.net" id="projectLogo"><img alt="OpenJMS" src="../images/none.png"></img></a><div class="clear"><hr></hr></div></div><div id="breadcrumbs"><div class="xleft">Last published: 11 March 2007
+                <span class="separator">|</span> Doc for  0.7.7-beta-1
+                </div><div class="xright">
+        
+        <a href="http://openjms.sourceforge.net/" class="externalLink" title="External Link">Home Page</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://sourceforge.net/projects/openjms/" class="externalLink" title="External Link">SourceForge Project Page</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://jmscts.sourceforge.net/" class="externalLink" title="External Link">JMS CTS</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://java.sun.com/products/jms/" class="externalLink" title="External Link">JMS</a>
+      </div><div class="clear"><hr></hr></div></div><div id="leftColumn"><div id="navcolumn"><div id="menuOpenJMS"><h5>OpenJMS</h5><ul><li class="none"><a href="../index.html">Overview</a></li><li class="none"><a href="../downloads.html">Downloads</a></li><li class="none"><a href="../release-notes.html">Release Notes</a></li><li class="none"><a href="../gettingstarted.html">Getting Started</a></li><li class="expanded"><a href="../usersguide/index.html">User Guide</a><ul><li class="none"><a href="../usersguide/using.html">Using OpenJMS</a></li><li class="none"><a href="../usersguide/examples.html">Examples</a></li><li class="none"><a href="../usersguide/jars.html">Client JARS</a></li><li class="expanded"><a href="../usersguide/connectors.html">Connectors</a><ul><li class="none"><a href="../usersguide/tcp.html">TCP</a></li><li class="none"><a href="../usersguide/tcps.html">TCPS</a></li><li class="none"><a href="../usersguide/rmi.html">RMI</a></li><li class="none"><a href="../usersguide/http.html">HTTP</a></li><li class="none"><strong><a href="../usersguide/https.html">HTTPS</a></strong></li><li class="none"><a href="../usersguide/embedded.html">Embedded</a></li></ul></li><li class="none"><a href="../usersguide/admin.html">Administration API</a></li></ul></li><li class="collapsed"><a href="../adminguide/index.html">Administrator Guide</a></li><li class="collapsed"><a href="../devguide/index.html">Developer Guide</a></li><li class="none"><a href="../faq.html">FAQ</a></li></ul></div><div id="search"><h5>Search OpenJMS</h5><form action="http://www.google.com/search" method="get"><a href="http://www.google.com" class="navlink"><img height="32" width="75" alt="Google" src="http://www.google.com/logos/Logo_25wht.gif"></img></a><input name="q" maxlength="255" size="15" type="text" value="" id="q"></input><input name="btnG" type="submit" value="Go" id="btnG"></input><input name="domains" type="hidden" value="http://openjms.sourceforge.net"></input><input name="sitesearch" type="hidden" value="http://openjms.sourceforge.net" id="search"></input></form></div><div id="menuProject_Documentation"><h5>Project Documentation</h5><ul><li class="none"><a href="../index.html">About</a></li><li class="collapsed"><a href="../project-info.html">Project Info</a></li><li class="collapsed"><a href="../maven-reports.html">Project Reports</a></li><li class="none"><a href="http://maven.apache.org/development-process.html" class="externalLink" title="External Link">Development Process</a></li></ul></div><div id="legend"><h5>Legend</h5><ul><li class="externalLink">External Link</li><li class="newWindow">Opens in a new window</li></ul></div><a href="http://maven.apache.org/" title="Built by Maven" id="poweredBy"><img alt="Built by Maven" src="../images/logos/maven-button-1.png"></img></a></div></div><div id="bodyColumn"><div class="contentBox"><div class="section"><a name="Overview"></a><h2>Overview</h2>
+      <p>
+        The HTTPS connector enables OpenJMS clients to connect to the
+        OpenJMS server using secure HTTP.
+      </p>
+      <p>
+        This is typically used when firewall restrictions prevent the use
+        of the RMI, TCP, and TCPS connectors.
+      </p>
+    </div><div class="section"><a name="Using_the_HTTPS_connector"></a><h2>Using the HTTPS connector</h2>
+      <p>
+        Clients connect to the OpenJMS server via a webserver. 
+        To connect to OpenJMS via a webserver running on the local host, using
+        the default HTTPS configuration, construct an <em>InitialContext</em>
+       as follows:
+        
+    <div class="source"><pre>
+    Hashtable properties = new Hashtable();
+    properties.put(Context.INITIAL_CONTEXT_FACTORY, 
+                   "org.exolab.jms.jndi.InitialContextFactory");
+    properties.put(Context.PROVIDER_URL, "https://localhost:443/");
+    properties.put("org.exolab.jms.net.https.keyStore", "&lt;keystore&gt;");
+    properties.put("org.exolab.jms.net.https.keyStorePassword", "&lt;password&gt;");
+    properties.put("org.exolab.jms.net.https.trustStore", "&lt;keystore&gt;");
+    Context context = new InitialContext(properties);
+        </pre></div>
+  
+        Where:
+        <ul>
+          <li>
+            <em>keystore</em> specifies the path to the client certificate
+            keystore.
+          </li>
+          <li>
+            <em>password</em> specifies the password of the client certificate
+            keystore.
+          </li>
+        </ul>
+      </p>
+      <p>          
+        The <em>Context.PROVIDER_URL</em> property has the format:
+        
+    <div class="source"><pre>
+"http://&lt;webserver-host&gt;:&lt;webserver-port&gt;/"
+        </pre></div>
+  
+      </p>
+      <p>
+        Where:
+        <ul>
+          <li>
+            <em>webserver-host</em> specifies the host of the webserver 
+            running the OpenJMS servlet.
+          </li>
+          <li>
+            <em>webserver-port</em> specifies the port that the 
+            OpenJMS servlet is listening on.
+          </li>
+        </ul>
+      </p>
+      <div class="subsection"><a name="Connection_properties"></a><h3>Connection properties</h3>
+        <p>
+          The HTTPS connector supports the following connection properties:
+          <table class="bodyTable">
+            <tr class="b"><th>Name</th><th>Description</th></tr>
+            <tr class="a">
+              <td>"org.exolab.jms.net.https.keyStore"</td>
+              <td>
+                The path of the keystore to use. If not specified, indicates 
+                to use the default keystore. Synonymous with the 
+                <em>"javax.net.ssl.keyStore"</em> System property.
+              </td>
+            </tr>
+            <tr class="b">
+              <td>"org.exolab.jms.net.https.keyStorePassword"</td>
+              <td>
+                The keystore password. If not specified, indicates to
+                use the default password. Synonymous with the 
+                <em>"javax.net.ssl.keyStorePassword"</em> System property.
+              </td>
+            </tr>
+            <tr class="a">
+              <td>"org.exolab.jms.net.https.keyStoreType"</td>
+              <td>
+                The keystore type. If not specified, defaults to "JKS".
+                Synonymous with the <em>"javax.net.ssl.keyStoreType"</em> 
+                System property.
+              </td>
+            </tr>
+            <tr class="b">
+              <td>"org.exolab.jms.net.https.trustStore"</td>
+              <td>
+                The path of the truststore to use. If not specified, indicates 
+                to use the default truststore. Synonymous with the 
+                <em>"javax.net.ssl.trustStore"</em> System property.
+              </td>
+            </tr>
+            <tr class="a">
+              <td>"org.exolab.jms.net.https.trustStorePassword"</td>
+              <td>
+                The truststore password. If not specified, indicates to
+                use the default password. Synonymous with the 
+                <em>"javax.net.ssl.trustStorePassword"</em> System property.
+              </td>
+            </tr>
+            <tr class="b">
+              <td>"org.exolab.jms.net.https.trustStoreType"</td>
+              <td>
+                The truststore type. If not specified, defaults to "JKS".
+                Synonymous with the <em>"javax.net.ssl.trustStoreType"</em>
+                System property.
+              </td>
+            </tr>
+            <tr class="a">
+              <td>"org.exolab.jms.net.https.proxyHost"</td>
+              <td>
+                Indicates the proxy server to use. Synonymous with the 
+                <em>"https.proxyHost"</em> System property.
+              </td>
+            </tr>
+            <tr class="b">
+              <td>"org.exolab.jms.net.https.proxyPort"</td>
+              <td>
+                Indicates the port of the proxy server. Synonymous with the 
+                <em>"https.proxyPort"</em> System property.
+              </td>
+            </tr>
+            <tr class="a">
+              <td>"org.exolab.jms.net.https.proxyUser"</td>
+              <td>
+                Indicates the user to log in to the proxy server with.
+              </td>
+            </tr>
+            <tr class="b">
+              <td>"org.exolab.jms.net.https.proxyPassword"</td>
+              <td>
+                Indicates the password to log in to the proxy server with.
+              </td>
+            </tr>
+          </table>
+        </p>
+      </div>
+    </div><div class="section"><a name="Administration_using_the_HTTPS_connector"></a><h2>Administration using the HTTPS connector</h2>
+      <p>
+        To administer an OpenJMS server via the webserver running on the local
+        host, using the default HTTPS configuration, construct a 
+        <em>JmsAdminServerIfc</em> as follows:
+        
+    <div class="source"><pre>
+    String url = "https://localhost:443/";
+    JmsAdminServerIfc admin = AdminConnectionFactory.create(url);
+        </pre></div>
+  
+      </p>
+      <p>          
+        The URL argument has the same format as the 
+         <em>Context.PROVIDER_URL</em> described in 
+         <a href="#Using_the_HTTPS_connector">Using the HTTPS connector</a>
+      </p>
+    </div></div></div><div class="clear"><hr></hr></div><div id="footer"><div class="xleft">
+      <a href="http://sourceforge.net/projects/openjms" class="externalLink" title="External Link">
+        <img src="http://sourceforge.net/sflogo.php?group_id=54559" border="0" alt="sf logo"></img>
+      </a>
+    </div><div class="xright">© 1999-2007, The OpenJMS Group</div><div class="clear"><hr></hr></div></div></body></html>

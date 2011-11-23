@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head><title>Building OpenJMS - OpenJMS</title><style type="text/css" media="all">
+          @import url("../style/maven-base.css");
+          
+          @import url("../style/maven-theme.css");</style><link rel="stylesheet" href="../style/print.css" type="text/css" media="print"></link><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></meta><meta name="author" content="Tim Anderson"></meta><meta name="email" content="tma@netspace.net.au"></meta></head><body class="composite"><div id="banner"><a href="http://openjms.sourceforge.net" id="organizationLogo"><img alt="The OpenJMS Group" src="../images/openjms.gif"></img></a><a href="http://openjms.sourceforge.net" id="projectLogo"><img alt="OpenJMS" src="../images/none.png"></img></a><div class="clear"><hr></hr></div></div><div id="breadcrumbs"><div class="xleft">Last published: 11 March 2007
+                <span class="separator">|</span> Doc for  0.7.7-beta-1
+                </div><div class="xright">
+        
+        <a href="http://openjms.sourceforge.net/" class="externalLink" title="External Link">Home Page</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://sourceforge.net/projects/openjms/" class="externalLink" title="External Link">SourceForge Project Page</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://jmscts.sourceforge.net/" class="externalLink" title="External Link">JMS CTS</a>
+      
+        
+          
+            <span class="separator">|</span>
+          
+        
+        <a href="http://java.sun.com/products/jms/" class="externalLink" title="External Link">JMS</a>
+      </div><div class="clear"><hr></hr></div></div><div id="leftColumn"><div id="navcolumn"><div id="menuOpenJMS"><h5>OpenJMS</h5><ul><li class="none"><a href="../index.html">Overview</a></li><li class="none"><a href="../downloads.html">Downloads</a></li><li class="none"><a href="../release-notes.html">Release Notes</a></li><li class="none"><a href="../gettingstarted.html">Getting Started</a></li><li class="collapsed"><a href="../usersguide/index.html">User Guide</a></li><li class="collapsed"><a href="../adminguide/index.html">Administrator Guide</a></li><li class="expanded"><a href="../devguide/index.html">Developer Guide</a><ul><li class="none"><a href="../devguide/volunteers.html">Volunteers</a></li><li class="none"><a href="../devguide/source.html">Getting the Source</a></li><li class="none"><a href="../devguide/codestyle.html">Coding Conventions</a></li><li class="none"><strong><a href="../devguide/build.html">Building OpenJMS</a></strong></li><li class="none"><a href="../devguide/test.html">Testing OpenJMS</a></li><li class="none"><a href="../devguide/submit.html">Submitting Changes</a></li><li class="none"><a href="../devguide/roadmap.html">Roadmap</a></li></ul></li><li class="none"><a href="../faq.html">FAQ</a></li></ul></div><div id="search"><h5>Search OpenJMS</h5><form action="http://www.google.com/search" method="get"><a href="http://www.google.com" class="navlink"><img height="32" width="75" alt="Google" src="http://www.google.com/logos/Logo_25wht.gif"></img></a><input name="q" maxlength="255" size="15" type="text" value="" id="q"></input><input name="btnG" type="submit" value="Go" id="btnG"></input><input name="domains" type="hidden" value="http://openjms.sourceforge.net"></input><input name="sitesearch" type="hidden" value="http://openjms.sourceforge.net" id="search"></input></form></div><div id="menuProject_Documentation"><h5>Project Documentation</h5><ul><li class="none"><a href="../index.html">About</a></li><li class="collapsed"><a href="../project-info.html">Project Info</a></li><li class="collapsed"><a href="../maven-reports.html">Project Reports</a></li><li class="none"><a href="http://maven.apache.org/development-process.html" class="externalLink" title="External Link">Development Process</a></li></ul></div><div id="legend"><h5>Legend</h5><ul><li class="externalLink">External Link</li><li class="newWindow">Opens in a new window</li></ul></div><a href="http://maven.apache.org/" title="Built by Maven" id="poweredBy"><img alt="Built by Maven" src="../images/logos/maven-button-1.png"></img></a></div></div><div id="bodyColumn"><div class="contentBox"><div class="section"><a name="Overview"></a><h2>Overview</h2>
+      <p>
+        OpenJMS is built using <a href="http://maven.apache.org" class="externalLink" title="External Link">Maven</a>.
+        Maven 1.0.2 must be used.
+      </p>
+      <p>
+        If you are familiar with Maven, skip forward to 
+        <a href="#Building_OpenJMS">Building OpenJMS</a>
+      </p>
+    </div><div class="section"><a name="New_to_Maven_"></a><h2>New to Maven?</h2>
+      <p>
+        Maven is a build tool that aims to simplify the process of developing 
+        Java projects.
+      </p>
+      <p>
+        If you don't have Maven installed, download a copy from 
+        <a href="http://maven.apache.org/" class="externalLink" title="External Link">http://maven.apache.org/</a>, 
+        install it, and put its <em>bin/</em> directory in your path.
+      </p>
+
+      <div class="subsection"><a name="Third_party_JARs"></a><h3>Third party JARs</h3>
+        <p>
+          OpenJMS uses third party JARs which maven will automatically 
+          attempt to download from a central repository and cache locally.
+        </p>
+        <p>
+          However, due to licensing restrictions, not all JARs can be
+          automatically downloaded - these need to be done manually. 
+          In particular, this applies to JARs distributed by Sun (i.e, the 
+          JDBC, JMS, JNDI and JTA JARs).
+        </p>
+        <p>
+          When maven encounters a JAR it can't download, it will output a
+          message like:
+
+    <div class="source"><pre>
+The build cannot continue because of the following unsatisfied dependency:
+
+jdbc-2.0.jar; version override doesn't exist: 2.0 (try downloading from
+http://java.sun.com/products/jdbc)
+</pre></div>
+  
+        </p>
+        <p>
+          The following table indicates the name of the product, the download
+          archive name, and the path the resulting JAR(s) must be copied to. 
+          The JAR(s) may need to be extracted and/or renamed.
+          <table class="bodyTable">
+            <tr class="a">
+              <th>Product</th>
+              <th>Download</th>
+              <th>Copy to</th>
+            </tr>
+            <tr class="b">
+              <td>
+                <a href="http://java.sun.com/products/jdbc/download.html" class="externalLink" title="External Link">
+                  JDBC 2.0 Optional Package Binary</a>
+              </td>
+              <td>jdbc2_0-stdext.jar</td>
+              <td>${maven.repo.local}/jdbc/jars/jdbc-2.0.jar</td>
+            </tr>
+            <tr class="a">
+              <td>
+                <a href="http://java.sun.com/products/jms/docs.html" class="externalLink" title="External Link">
+                  JMS 1.0.2b API Documentation, Jar, and Source</a>
+              </td>
+              <td>jms-1_0_2b.zip</td>
+              <td>${maven.repo.local}/jms/jars/jms-1.0.2b.jar</td>
+            </tr>
+            <tr class="b">
+              <td>
+                <a href="http://java.sun.com/products/jndi/downloads/index.html" class="externalLink" title="External Link">JNDI 1.2.1</a>
+              </td>
+              <td>jndi-1_2_1.zip</td>
+              <td>${maven.repo.local}/jndi/jars/jndi-1.2.1.jar</td>
+            </tr>
+            <tr class="a">
+              <td>
+                <a href="http://java.sun.com/products/jsse/index-103.html#downloads" class="externalLink" title="External Link">JSSE 1.0.3_03 software and documentation</a>
+              </td>
+              <td>jsse-1_0_3_03-gl.zip</td>
+              <td>${maven.repo.local}/jsse/jars/jsse-1.0.3.jar</td>
+            </tr>
+            <tr class="b">
+              <td></td>
+              <td></td>
+              <td>${maven.repo.local}/jsse/jars/jcert-1.0.3.jar</td>
+            </tr>
+            <tr class="a">
+              <td></td>
+              <td></td>
+              <td>${maven.repo.local}/jsse/jars/jnet-1.0.3.jar</td>
+            </tr>
+            <tr class="b">
+              <td>
+                <a href="http://java.sun.com/products/jta/" class="externalLink" title="External Link">JTA 1.0.1</a>
+              </td>
+              <td>jta-1_0_1B-classes.zip</td>
+              <td>${maven.repo.local}/jta/jars/jta-1.0.1.jar</td>
+            </tr>
+          </table>
+        </p>
+        <p>
+          In the above, <strong>${maven.repo.local}</strong> represents
+          maven's local repository. By default, this is
+          <strong>${user.home}/.maven/repository</strong>
+        </p>
+      </div>
+    </div><div class="section"><a name="Building_OpenJMS"></a><h2>Building OpenJMS</h2>
+      <p>
+        The following assume that maven is run from the root of the OpenJMS
+        source tree, unless otherwise specified.
+      </p>
+    
+      <div class="subsection"><a name="Building_the_OpenJMS_JARS"></a><h3>Building the OpenJMS JARS</h3>
+        <p>
+          To build all of the OpenJMS JARS:
+        </p>
+        <p>
+          
+    <div class="source"><pre>
+maven -Dmaven.test.skip o:build
+          </pre></div>
+  
+        </p>
+        <p>
+          NOTE: <em>maven.test.skip</em> prevents the unit tests being run.
+          Need to do this until:
+          <ul>
+            <li>
+              The http unit tests can be run automatically. These require
+              openjms-tunnel to deployed to a running Tomcat installation.
+            </li>
+            <li>
+              A mechanism is set up to only run unit tests if something has 
+              changed.
+            </li>
+          </ul>
+        </p>
+      </div>
+
+      <div class="subsection"><a name="Installing_the_server"></a><h3>Installing the server</h3>
+        <p>
+          To install the server:
+        </p>
+        <p>
+          
+    <div class="source"><pre>
+maven -Dmaven.test.skip o:install
+          </pre></div>
+  
+        </p>
+        <p>
+          By default this installs the server to the <strong>install/</strong>
+          directory. To override this behaviour, define 
+          <strong>install.dir</strong>
+          in <strong>distribution/build.properties</strong>
+        </p>
+      </div>
+
+      <div class="subsection"><a name="Building_a_single_module"></a><h3>Building a single module</h3>
+        <p>
+          To build a single module, <em>cd</em> to the directory holding the 
+          module and run maven from there. E.g, to compile the openjms-net 
+          module:
+        </p>
+        <p>
+          
+    <div class="source"><pre>
+cd modules/net
+maven java:compile
+          </pre></div>
+  
+        </p>
+        <p>
+          To install it to the local repository to make it available to other 
+          modules:
+        </p>
+        <p>
+          
+    <div class="source"><pre>
+maven jar:install
+          </pre></div>
+  
+        </p>       
+      </div>
+
+      <div class="subsection"><a name="Building_the_documentation"></a><h3>Building the documentation</h3>
+        <p>
+          To build the website, run:
+          
+    <div class="source"><pre>
+maven o:site
+          </pre></div>
+  
+        </p>
+        <p>
+          The website will be generated to the <strong>target/docs/</strong>
+          directory.
+        </p>
+      </div>
+    </div><div class="section"><a name="Goals"></a><h2>Goals</h2>
+      <p>
+        The following custom goals are available:
+      </p>
+      <p>
+        <table class="bodyTable">
+          <tr class="a">
+            <th>Goal</th> 
+            <th>Description</th>
+          </tr>
+          <tr class="b">
+            <td>o:build</td>
+            <td>Executes the default build for all projects</td>
+          </tr>
+          <tr class="a">
+            <td>o:clean</td>
+            <td>Deletes the <em>target</em> directory in all projects</td>
+          </tr>
+          <tr class="b">
+            <td>o:site</td>
+            <td>Generates the website</td>
+          </tr>
+          <tr class="a">
+            <td>o:install</td>
+            <td>Builds and installs the OpenJMS server</td>
+          </tr>
+          <tr class="b">
+            <td>o:dist-bin</td>
+            <td>Generates a binary distribution</td>
+          </tr>
+          <tr class="a">
+            <td>o:dist-src</td>
+            <td>Generates a source distribution</td>
+          </tr>
+        </table>
+      </p>
+    </div></div></div><div class="clear"><hr></hr></div><div id="footer"><div class="xleft">
+      <a href="http://sourceforge.net/projects/openjms" class="externalLink" title="External Link">
+        <img src="http://sourceforge.net/sflogo.php?group_id=54559" border="0" alt="sf logo"></img>
+      </a>
+    </div><div class="xright">© 1999-2007, The OpenJMS Group</div><div class="clear"><hr></hr></div></div></body></html>
