@@ -8,17 +8,15 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.swing.SwingUtilities;
 
 import at.ac.tuwien.complang.sbc11.parts.Part;
-import at.ac.tuwien.complang.sbc11.ui.Factory;
 
 public class JMSCloudImpl{
 
@@ -42,7 +40,7 @@ public class JMSCloudImpl{
 	
 		try 
 		{
-	    Hashtable properties = new Hashtable();
+	    Hashtable<String, String> properties = new Hashtable<String, String>();
 	    properties.put(Context.INITIAL_CONTEXT_FACTORY, 
 	                   "org.exolab.jms.jndi.InitialContextFactory");
 	    properties.put(Context.PROVIDER_URL, "tcp://localhost:3035/");
@@ -78,7 +76,7 @@ public class JMSCloudImpl{
 	
 	public static void getMessage()
 	{
-	    Hashtable properties = new Hashtable();
+	    Hashtable<String, String> properties = new Hashtable<String, String>();
 	    properties.put(Context.INITIAL_CONTEXT_FACTORY, 
 	                   "org.exolab.jms.jndi.InitialContextFactory");
 	    properties.put(Context.PROVIDER_URL, "tcp://localhost:3035/");
