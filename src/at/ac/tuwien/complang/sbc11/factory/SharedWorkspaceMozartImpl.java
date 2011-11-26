@@ -11,6 +11,7 @@ import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.CoordinationData;
 import org.mozartspaces.capi3.CountNotMetException;
 import org.mozartspaces.capi3.FifoCoordinator;
+import org.mozartspaces.capi3.IsolationLevel;
 import org.mozartspaces.capi3.LabelCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.capi3.Selector;
@@ -364,16 +365,19 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		List<Part> result = null;
 		Selector partSelector = null;
 		ContainerReference container = null;
+		List<Selector> selectorList = new ArrayList<Selector>();
 		
 		if(partType.equals(Mainboard.class))
 		{
 			partSelector = FifoCoordinator.newSelector(partCount);
 			container = mainboardContainer;
+			selectorList.add(partSelector);
 		}
 		else
 		{
 			try {
 				partSelector = LindaCoordinator.newSelector((Part)partType.newInstance(), partCount);
+				selectorList.add(partSelector);
 			} catch (InstantiationException e) {
 				throw new SharedWorkspaceException("Part could not be taken: Part Type could not be instantiated (" + e.getMessage() + ")");
 			} catch (IllegalAccessException e) {
@@ -384,14 +388,15 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		
 		try {
 			// TODO test isolation level READ_COMMITTED
+			//result = capi.take(container, selectorList, RequestTimeout.INFINITE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
 			if(blocking)
-				result = capi.take(container, partSelector, RequestTimeout.INFINITE, currentTransaction);
-				//result = capi.take(container, selectorList, RequestTimeout.INFINITE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
+				//result = capi.take(container, partSelector, RequestTimeout.INFINITE, currentTransaction);
+				result = capi.take(container, selectorList, RequestTimeout.INFINITE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
 			else
 			{
 				try {
-					result = capi.take(container, partSelector, RequestTimeout.TRY_ONCE, currentTransaction);
-					//result = capi.take(container, partSelector, RequestTimeout.TRY_ONCE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
+					//result = capi.take(container, partSelector, RequestTimeout.TRY_ONCE, currentTransaction);
+					result = capi.take(container, selectorList, RequestTimeout.TRY_ONCE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
 				} catch(CountNotMetException e) {
 					// ok with that, return null
 					logger.info("Finished.");
