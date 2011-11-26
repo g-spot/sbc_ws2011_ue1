@@ -18,19 +18,22 @@ import javax.naming.NamingException;
 
 import at.ac.tuwien.complang.sbc11.parts.Part;
 
-public class JMSCloudImpl{
-
-	Part read() {
+public class JMSCloudImpl
+{
+	Part read() 
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	void write(Part computerPart) {
+	void write(Part computerPart) 
+	{
 		// TODO Auto-generated method stub
 		
 	}
 
-	void delete(Part computerPart) {
+	void delete(Part computerPart) 
+	{
 		// TODO Auto-generated method stub
 
 	}
@@ -40,34 +43,37 @@ public class JMSCloudImpl{
 	
 		try 
 		{
-	    Hashtable<String, String> properties = new Hashtable<String, String>();
-	    properties.put(Context.INITIAL_CONTEXT_FACTORY, 
-	                   "org.exolab.jms.jndi.InitialContextFactory");
-	    properties.put(Context.PROVIDER_URL, "tcp://localhost:3035/");
-
-	    Context context = new InitialContext(properties);
-	    
-	    ConnectionFactory factory = 
-	            (ConnectionFactory) context.lookup("ConnectionFactory");
-	    Connection connection = factory.createConnection();
-	    
-
-	    Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	 
-	    Destination destination = (Destination) context.lookup("topic1");
-	 
-	    connection.start();
-	    MessageProducer sender = session.createProducer(destination);
-	    TextMessage message;
-		
+		    Hashtable<String, String> properties = new Hashtable<String, String>();
+		    properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.exolab.jms.jndi.InitialContextFactory");
+		    properties.put(Context.PROVIDER_URL, "tcp://localhost:3035/");
+	
+		    Context context = new InitialContext(properties);
+		    
+		    ConnectionFactory factory = (ConnectionFactory) context.lookup("ConnectionFactory");
+		    Connection connection = factory.createConnection();
+		    
+		    
+		    Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		    
+		    //Different destinations for differenet part types in the same context
+		    Destination destination = (Destination) context.lookup("topic1");
+		 
+		    connection.start();
+	
+		    MessageProducer sender = session.createProducer(destination);
+		    TextMessage message;
+			
+		    // For parts it will be session.createObjectMessage.
 			message = session.createTextMessage("Hello World!");
-
-	    sender.send(message);
+	
+		    sender.send(message);
 	    
-		} catch (JMSException e) {
+		} catch (JMSException e) 
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (NamingException e) {
+		} catch (NamingException e) 
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -82,33 +88,36 @@ public class JMSCloudImpl{
 	    properties.put(Context.PROVIDER_URL, "tcp://localhost:3035/");
 
 	    Context context;
-		try {
+		try 
+		{
+		
 			context = new InitialContext(properties);
+	    
+			ConnectionFactory factory = (ConnectionFactory) context.lookup("ConnectionFactory");
+			Connection connection = factory.createConnection();
+	    
+			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	    
+			Destination destination = (Destination) context.lookup("topic1");
+			MessageConsumer receiver = session.createConsumer(destination );
+			receiver.setMessageListener(new MessageListener() 
+			{
+		        public void onMessage(Message message) 
+		        {
+		            TextMessage text = (TextMessage) message;
+		            System.out.println("Received message: " + text);
+		        }
+			});
 
+		    // start the connection to enable message delivery
+		    connection.start();
 	    
-	    ConnectionFactory factory = 
-	            (ConnectionFactory) context.lookup("ConnectionFactory");
-	    Connection connection = factory.createConnection();
-	    
-	    Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	    
-		Destination destination = (Destination) context.lookup("topic1");
-		MessageConsumer receiver = session.createConsumer(destination );
-	    receiver.setMessageListener(new MessageListener() 
-	    {
-	        public void onMessage(Message message) {
-	            TextMessage text = (TextMessage) message;
-	            System.out.println("Received message: " + text);
-	        }
-	    });
-
-	    // start the connection to enable message delivery
-	    connection.start();
-	    
-		} catch (NamingException e) {
+		} catch (NamingException e) 
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (JMSException e) {
+		} catch (JMSException e) 
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
