@@ -1,23 +1,119 @@
 package at.ac.tuwien.complang.sbc11.jms;
 
-public class JMSCloudImpl extends JMSCloud{
+import java.util.Hashtable;
 
-	@Override
-	Object read() {
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.swing.SwingUtilities;
+
+import at.ac.tuwien.complang.sbc11.parts.Part;
+import at.ac.tuwien.complang.sbc11.ui.Factory;
+
+public class JMSCloudImpl{
+
+	Part read() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
-	void write() {
+	void write(Part computerPart) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
-	Object delete() {
+	void delete(Part computerPart) {
 		// TODO Auto-generated method stub
-		return null;
+
+	}
+	
+	public static void main(String[] args) 
+	{
+	
+		try 
+		{
+	    Hashtable properties = new Hashtable();
+	    properties.put(Context.INITIAL_CONTEXT_FACTORY, 
+	                   "org.exolab.jms.jndi.InitialContextFactory");
+	    properties.put(Context.PROVIDER_URL, "tcp://localhost:3035/");
+
+	    Context context = new InitialContext(properties);
+	    
+	    ConnectionFactory factory = 
+	            (ConnectionFactory) context.lookup("ConnectionFactory");
+	    Connection connection = factory.createConnection();
+	    
+
+	    Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	 
+	    Destination destination = (Destination) context.lookup("topic1");
+	 
+	    connection.start();
+	    MessageProducer sender = session.createProducer(destination);
+	    TextMessage message;
+		
+			message = session.createTextMessage("Hello World!");
+
+	    sender.send(message);
+	    
+		} catch (JMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		getMessage();
+	}
+	
+	public static void getMessage()
+	{
+	    Hashtable properties = new Hashtable();
+	    properties.put(Context.INITIAL_CONTEXT_FACTORY, 
+	                   "org.exolab.jms.jndi.InitialContextFactory");
+	    properties.put(Context.PROVIDER_URL, "tcp://localhost:3035/");
+
+	    Context context;
+		try {
+			context = new InitialContext(properties);
+
+	    
+	    ConnectionFactory factory = 
+	            (ConnectionFactory) context.lookup("ConnectionFactory");
+	    Connection connection = factory.createConnection();
+	    
+	    Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	    
+		Destination destination = (Destination) context.lookup("topic1");
+		MessageConsumer receiver = session.createConsumer(destination );
+	    receiver.setMessageListener(new MessageListener() 
+	    {
+	        public void onMessage(Message message) {
+	            TextMessage text = (TextMessage) message;
+	            System.out.println("Received message: " + text);
+	        }
+	    });
+
+	    // start the connection to enable message delivery
+	    connection.start();
+	    
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

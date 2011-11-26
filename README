@@ -1,0 +1,9 @@
+
+
+Running OpenJMS:
+================
+
+.profile add 
+export JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home
+
+goto "bin" directory of OpenJMS and run "sh openjms.sh start"
