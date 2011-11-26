@@ -30,7 +30,7 @@ public class SharedWorkspaceHelper {
 			if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_MOZART))
 				implementation = new SharedWorkspaceMozartImpl();
 			else if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_JMS))
-				implementation = new SharedWorkspaceAlternativeImpl();
+				implementation = new SharedWorkspaceJMSImpl();
 		} catch (IOException e) {
 			throw new SharedWorkspaceException("Could not read " + PROPERTIES_FILENAME + " (" + e.getMessage() + ")");
 		}
@@ -52,7 +52,7 @@ public class SharedWorkspaceHelper {
 			if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_MOZART))
 				implementation = new SharedWorkspaceMozartImpl(factory);
 			else if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_JMS))
-				implementation = new SharedWorkspaceAlternativeImpl(factory);
+				implementation = new SharedWorkspaceJMSImpl(factory);
 		} catch (IOException e) {
 			throw new SharedWorkspaceException("Could not read " + PROPERTIES_FILENAME + " (" + e.getMessage() + ")");
 		}

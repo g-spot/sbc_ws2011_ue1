@@ -2,6 +2,7 @@ package at.ac.tuwien.complang.sbc11.factory;
 
 import java.util.List;
 
+import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
@@ -17,6 +18,18 @@ import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
  * 
  */
 public class SharedWorkspaceJMSImpl extends SharedWorkspace {
+	
+	public SharedWorkspaceJMSImpl() {
+		super(null);
+		// TODO shorty: dieser konstruktor wird von den workern verwendet
+		// der andere (mit dem Factory-Objekt) wird vom GUI verwendet, factory ist das callback-Objekt
+		// fŸr GUI-€nderungen
+		// zu Bedenken: der Konstruktor ohne Parameter wird beliebig oft aufgerufen, 
+		// deshalb dŸrfen hier keine systemweiten Initialisierungen rein
+		// --> sonst Ÿberschreibst du dir eventuell Sachen, die schon in Verwendung sind
+		// der Konstruktor mit Factory-Parameter wird definitiv immer als erstes und auch nur 1x
+		// aufgerufen, deshalb kšnnen systemweite Initialisierungen (falls vorhanden) dort rein
+	}
 
 	public SharedWorkspaceJMSImpl(Factory factory) {
 		super(factory);
@@ -24,63 +37,105 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace {
 	}
 
 	@Override
-	public List<Part> getAvailableParts() {
+	public void secureShutdown() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public List<Part> getAvailableParts() throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<Computer> getAvailableComputers() {
+	public List<Computer> getIncompleteComputers()
+			throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<Computer> getTrashedComputers() {
+	public List<Computer> getShippedComputers() throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public long getNextPartId() {
+	public List<Computer> getTrashedComputers() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void startTransaction() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void commitTransaction() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void rollbackTransaction() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public long getNextPartId() throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public void addPart(Part part) {
+	public void addPart(Part part) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
-	public Part takePart(Class<?> partType) {
+	public List<Part> takeParts(Class<?> partType, boolean blocking,
+			int partCount) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void addComputer(Computer computer) {
+	public void addComputer(Computer computer) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
-	public Computer takeUntestedComputer(TestType untestedFor) {
+	public Computer takeUntestedComputer(TestType untestedFor)
+			throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Computer takeCompleteComputer() {
+	public Computer takeCompletelyTestedComputer()
+			throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void addComputerToTrash(Computer computer) {
+	public void shipComputer(Computer computer) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
-
+		
 	}
+
+	@Override
+	public void addComputerToTrash(Computer computer)
+			throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }
