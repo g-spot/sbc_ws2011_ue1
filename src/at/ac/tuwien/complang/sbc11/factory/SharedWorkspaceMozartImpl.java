@@ -3,6 +3,7 @@ package at.ac.tuwien.complang.sbc11.factory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
@@ -29,12 +30,12 @@ import org.mozartspaces.notifications.NotificationManager;
 import org.mozartspaces.notifications.Operation;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
-import at.ac.tuwien.complang.sbc11.mozart.PartNotificationListener;
-import at.ac.tuwien.complang.sbc11.mozart.ShippedComputerNotificationListener;
 import at.ac.tuwien.complang.sbc11.mozart.SpaceUtils;
 import at.ac.tuwien.complang.sbc11.mozart.StandaloneServer;
-import at.ac.tuwien.complang.sbc11.mozart.IncompleteComputerNotificationListener;
-import at.ac.tuwien.complang.sbc11.mozart.TrashedComputerNotificationListener;
+import at.ac.tuwien.complang.sbc11.mozart.listeners.IncompleteComputerNotificationListener;
+import at.ac.tuwien.complang.sbc11.mozart.listeners.PartNotificationListener;
+import at.ac.tuwien.complang.sbc11.mozart.listeners.ShippedComputerNotificationListener;
+import at.ac.tuwien.complang.sbc11.mozart.listeners.TrashedComputerNotificationListener;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
@@ -266,10 +267,14 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		TransactionReference transaction = null;
 		try {
 			transaction = capi.createTransaction(RequestTimeout.INFINITE, spaceURI);
-			cpuList = capi.read(partContainer, cpuSelector, RequestTimeout.TRY_ONCE, transaction);
+			/*cpuList = capi.read(partContainer, cpuSelector, RequestTimeout.TRY_ONCE, transaction);
 			ramList = capi.read(partContainer, ramSelector, RequestTimeout.TRY_ONCE, transaction);
 			graphicBoardList = capi.read(partContainer, graphicBoardSelector, RequestTimeout.TRY_ONCE, transaction);
-			mainboardList = capi.read(mainboardContainer, mainboardSelector, RequestTimeout.TRY_ONCE, transaction);
+			mainboardList = capi.read(mainboardContainer, mainboardSelector, RequestTimeout.TRY_ONCE, transaction);*/
+			cpuList = capi.read(partContainer, Arrays.asList(cpuSelector), RequestTimeout.TRY_ONCE, transaction, IsolationLevel.READ_COMMITTED, null);
+			ramList = capi.read(partContainer, Arrays.asList(ramSelector), RequestTimeout.TRY_ONCE, transaction, IsolationLevel.READ_COMMITTED, null);
+			graphicBoardList = capi.read(partContainer, Arrays.asList(graphicBoardSelector), RequestTimeout.TRY_ONCE, transaction, IsolationLevel.READ_COMMITTED, null);
+			mainboardList = capi.read(mainboardContainer, Arrays.asList(mainboardSelector), RequestTimeout.TRY_ONCE, transaction, IsolationLevel.READ_COMMITTED, null);
 			result.addAll(cpuList);
 			result.addAll(ramList);
 			result.addAll(graphicBoardList);
