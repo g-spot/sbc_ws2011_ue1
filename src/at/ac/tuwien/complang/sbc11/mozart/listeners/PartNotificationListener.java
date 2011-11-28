@@ -26,28 +26,19 @@ public class PartNotificationListener implements NotificationListener {
 	@Override
 	public void entryOperationFinished(Notification source, Operation operation,
 			List<? extends Serializable> entries) {
+		System.out.println("Performing operation: " + operation.name());
 		// update part list
-		System.out.println("update part list");
 		factory.updatePartList();
-		System.out.println("finished.");
 		
 		// update action log
-		System.out.println("update action log");
 		String message;
-		message = "Container " + source.getNotificationContainer().getStringRepresentation() + ": ";
+		message = source.getNotificationContainer().getStringRepresentation() + ": ";
 		message += operation.name() + NEWLINE;
-		//message = operation.name() + ": ";
-		//message += source.getNotificationContainer().getSpace().getAuthority() + ", ";
-		//System.out.println(source.getNotificationContainer().)
-		//System.out.println("test 1");
 		for(Serializable s:entries) {
-			System.out.println("test 2");
 			Part part = (Part)((Entry)s).getValue();
 			message += "   " + part.toString() + NEWLINE;
 		}
-		System.out.println("test3");
-		factory.updateActionLog(message);
-		System.out.println("finished.");
+		factory.appendActionLog(message);
 	}
 
 }

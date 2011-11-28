@@ -136,8 +136,8 @@ public class Factory extends JFrame {
 		}
 	}
 	
-	public void updateActionLog(String message) {
-		textAreaActionLog.append(message + NEWLINE);
+	public void appendActionLog(String message) {
+		textAreaActionLog.append(message);
 	}
 	
 	private void addProducer(Class<?> partType, long partCount, double errorRate) {
@@ -151,8 +151,9 @@ public class Factory extends JFrame {
 	//TODO remove test code
 	public void test2() {
 		try {
-			Computer computer = factory.takeCompletelyTestedComputer();
-			JOptionPane.showMessageDialog(this, "Took: " + computer.toString());
+			//Computer computer = factory.takeCompletelyTestedComputer();
+			List<Part> p = factory.takeParts(CPU.class, false, 1);
+			JOptionPane.showMessageDialog(this, "Took: " + p.get(0).toString());
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage());
 		}

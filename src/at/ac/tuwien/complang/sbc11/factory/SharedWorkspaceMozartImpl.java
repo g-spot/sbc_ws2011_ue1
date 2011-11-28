@@ -28,6 +28,11 @@ import org.mozartspaces.core.MzsCoreException;
 import org.mozartspaces.core.TransactionReference;
 import org.mozartspaces.notifications.NotificationManager;
 import org.mozartspaces.notifications.Operation;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.mozart.SpaceUtils;
@@ -78,6 +83,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		super(null);
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl");
 		try {
+			initCoreLogging();
 			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
 			core = DefaultMzsCore.newInstance(0);
 			capi = new Capi(core);
@@ -108,6 +114,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		super(factory);
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl");
 		try {
+			initCoreLogging();
 			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
 			core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
 			
@@ -144,6 +151,18 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error with URI (" + e.getMessage() + ")");
 		} catch (InterruptedException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error with UI notification (" + e.getMessage() + ")");
+		}
+	}
+	
+	private void initCoreLogging() {
+		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+		JoranConfigurator configurator = new JoranConfigurator();
+		configurator.setContext(context);
+		context.reset();
+		try {
+			configurator.doConfigure("logback.xml");
+		} catch (JoranException e) {
+			logger.warning("Could not configure core logging.");
 		}
 	}
 	
