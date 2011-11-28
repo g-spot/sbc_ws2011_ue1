@@ -96,13 +96,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 				computer.setCpu(cpu);
 				computer.setMainboard(mainboard);
 				computer.setGraphicBoard(graphicBoard);
-				// TODO remove test data
-				if(productionCount == 1)
-				{
-					//computer.setTested(TestType.COMPLETENESS, TestState.PASSED);
-					//computer.setTested(TestType.CORRECTNESS, TestState.PASSED);
-					//computer.setCompletenessTested()
-				}
+				
 				for(Part p:ramList)
 					computer.getRamModules().add((RAM)p);
 				computer.getWorkers().add(this);

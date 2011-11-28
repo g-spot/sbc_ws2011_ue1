@@ -42,10 +42,7 @@ public class Producer extends Worker implements Runnable, Serializable {
 				Thread.sleep(0);
 				Part part = (Part)partClass.newInstance();
 				logger.info("Done. Production took " + duration + " milliseconds.");
-				
-				// TODO how to get a system wide identifier for a part?
-				// rmi: server has to provide a function getNextId()
-				// mozart: take id from a container?
+
 				part.setId(sharedWorkspace.getNextPartId());
 				part.setProducer(this);
 				

@@ -25,6 +25,17 @@ public class SpaceUtils {
 	public static final String CONTAINER_TRASHED = "ContainerTrashed";
 	public static final String CONTAINER_SHIPPED = "ContainerShipped";
 	
+	/**
+	 * searches for a named fifo container, creates a new named container, if nothing is found
+	 * @param containerName
+	 * 			the name of the container
+	 * @param spaceURI
+	 * 			the uri where to search for/create the container
+	 * @param capi
+	 * @return
+	 * 			the found/created container
+	 * @throws MzsCoreException
+	 */
 	public static final ContainerReference getOrCreateFIFOContainer(String containerName, URI spaceURI, Capi capi) throws MzsCoreException {
 		ContainerReference container = null;
 		
@@ -39,6 +50,17 @@ public class SpaceUtils {
 		return container;
 	}
 	
+	/**
+	 * searches for a named any container, creates a new named container, if nothing is found
+	 * @param containerName
+	 * 			the name of the container
+	 * @param spaceURI
+	 * 			the uri where to search for/create the container
+	 * @param capi
+	 * @return
+	 * 			the found/created container
+	 * @throws MzsCoreException
+	 */
 	public static final ContainerReference getOrCreateAnyContainer(String containerName, URI spaceURI, Capi capi) throws MzsCoreException {
 		ContainerReference container = null;
 		
@@ -53,6 +75,17 @@ public class SpaceUtils {
 		return container;
 	}
 	
+	/**
+	 * searches for a named linda container, creates a new named container, if nothing is found
+	 * @param containerName
+	 * 			the name of the container
+	 * @param spaceURI
+	 * 			the uri where to search for/create the container
+	 * @param capi
+	 * @return
+	 * 			the found/created container
+	 * @throws MzsCoreException
+	 */
 	public static final ContainerReference getOrCreateLindaContainer(String containerName, URI spaceURI, Capi capi) throws MzsCoreException {
 		ContainerReference container = null;
 		
@@ -67,6 +100,16 @@ public class SpaceUtils {
 		return container;
 	}
 	
+	/**
+	 * searches for the "incomplete computers"-container, creates it, if nothing is found.
+	 * this container works with a LindaCoordinator and a LabelCoordinator
+	 * @param spaceURI
+	 * 			the uri where to search for/create the container
+	 * @param capi
+	 * @return
+	 * 			the found/created container
+	 * @throws MzsCoreException
+	 */
 	public static final ContainerReference getOrCreateIncompleteContainer(URI spaceURI, Capi capi) throws MzsCoreException {
 		ContainerReference container = null;
 		try
@@ -83,6 +126,16 @@ public class SpaceUtils {
 		return container;
 	}
 	
+	/**
+	 * searches for the "id"-container, creates it, if nothing is found.
+	 * this container works with a KeyCoordinator
+	 * @param spaceURI
+	 * 			the uri where to search for/create the container
+	 * @param capi
+	 * @return
+	 * 			the found/created container
+	 * @throws MzsCoreException
+	 */
 	public static final ContainerReference getOrCreateIDContainer(URI spaceURI, Capi capi) throws MzsCoreException {
 		ContainerReference container = null;
 		

@@ -451,14 +451,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		}
 		
 		try {
-			// TODO test isolation level READ_COMMITTED
 			if(blocking)
-				//result = capi.take(container, partSelector, RequestTimeout.INFINITE, currentTransaction);
 				result = capi.take(container, selectorList, RequestTimeout.INFINITE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
 			else
 			{
 				try {
-					//result = capi.take(container, partSelector, RequestTimeout.TRY_ONCE, currentTransaction);
 					result = capi.take(container, selectorList, RequestTimeout.TRY_ONCE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
 				} catch(CountNotMetException e) {
 					// ok with that, return null
