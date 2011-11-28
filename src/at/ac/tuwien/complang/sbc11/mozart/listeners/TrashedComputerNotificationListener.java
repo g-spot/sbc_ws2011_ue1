@@ -1,6 +1,7 @@
 package at.ac.tuwien.complang.sbc11.mozart.listeners;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 
 import org.mozartspaces.core.Entry;
@@ -15,13 +16,15 @@ public class TrashedComputerNotificationListener implements
 		NotificationListener {
 
 	private Factory factory;
+	private HashMap<String, String> containerMap;
 	private final char NEWLINE = '\n';
 	
 	@SuppressWarnings("unused")
 	private TrashedComputerNotificationListener() {}
 	
-	public TrashedComputerNotificationListener(Factory factory) {
+	public TrashedComputerNotificationListener(Factory factory, HashMap<String, String> containerMap) {
 		this.factory = factory;
+		this.containerMap = containerMap;
 	}
 
 	@Override
@@ -32,7 +35,7 @@ public class TrashedComputerNotificationListener implements
 				
 		// update action log
 		String message;
-		message = source.getNotificationContainer().getStringRepresentation() + ": ";
+		message = containerMap.get(source.getNotificationContainer().getId()) + ": ";
 		message += operation.name() + NEWLINE;
 		for(Serializable s:entries) {
 			Computer part = (Computer)((Entry)s).getValue();

@@ -49,7 +49,7 @@
 	-->
 	
 	
-	<logger name="org.mozartspaces.core" level="WARN"/>
+	<logger name="org.mozartspaces.core" level="DEBUG"/>
 	
 	 
 	<!-- 

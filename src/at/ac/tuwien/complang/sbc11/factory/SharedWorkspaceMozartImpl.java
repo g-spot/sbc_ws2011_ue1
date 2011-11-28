@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
@@ -132,6 +133,15 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			trashedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_TRASHED, spaceURI, capi);
 			shippedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_SHIPPED, spaceURI, capi);
 			
+			// store all containers in a hashmap
+			HashMap<String, String> containerMap = new HashMap<String, String>();
+			containerMap.put(partIdContainer.getStringRepresentation(), SpaceUtils.CONTAINER_PART_ID);
+			containerMap.put(partContainer.getStringRepresentation(), SpaceUtils.CONTAINER_PARTS);
+			containerMap.put(mainboardContainer.getStringRepresentation(), SpaceUtils.CONTAINER_MAINBOARDS);
+			containerMap.put(incompleteContainer.getStringRepresentation(), SpaceUtils.CONTAINER_INCOMPLETE);
+			containerMap.put(trashedContainer.getStringRepresentation(), SpaceUtils.CONTAINER_TRASHED);
+			containerMap.put(shippedContainer.getStringRepresentation(), SpaceUtils.CONTAINER_SHIPPED);
+			
 			// init notifications
 			logger.info("Registering notifications...");
 			notificationManager = new NotificationManager(core);
@@ -139,11 +149,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			operations.add(Operation.WRITE);
 			operations.add(Operation.TAKE);
 			operations.add(Operation.DELETE);
-			notificationManager.createNotification(partContainer, new PartNotificationListener(factory), operations, null, null);
-			notificationManager.createNotification(mainboardContainer, new PartNotificationListener(factory), operations, null, null);
-			notificationManager.createNotification(incompleteContainer, new IncompleteComputerNotificationListener(factory), operations, null, null);
-			notificationManager.createNotification(trashedContainer, new TrashedComputerNotificationListener(factory), operations, null, null);
-			notificationManager.createNotification(shippedContainer, new ShippedComputerNotificationListener(factory), operations, null, null);
+			notificationManager.createNotification(partContainer, new PartNotificationListener(factory, containerMap), operations, null, null);
+			notificationManager.createNotification(mainboardContainer, new PartNotificationListener(factory, containerMap), operations, null, null);
+			notificationManager.createNotification(incompleteContainer, new IncompleteComputerNotificationListener(factory, containerMap), operations, null, null);
+			notificationManager.createNotification(trashedContainer, new TrashedComputerNotificationListener(factory, containerMap), operations, null, null);
+			notificationManager.createNotification(shippedContainer, new ShippedComputerNotificationListener(factory, containerMap), operations, null, null);
 			
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error in MzsCore (" + e.getMessage() + ")");
