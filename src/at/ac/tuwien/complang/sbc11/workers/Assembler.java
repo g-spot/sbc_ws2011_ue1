@@ -91,7 +91,8 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 				
 				// no we have all parts we need, let's construct a new computer
 				Computer computer = new Computer();
-				computer.setId(++productionCount);
+				long nextID = sharedWorkspace.getNextComputerId();
+				computer.setId(nextID);
 				computer.setCpu(cpu);
 				computer.setMainboard(mainboard);
 				computer.setGraphicBoard(graphicBoard);

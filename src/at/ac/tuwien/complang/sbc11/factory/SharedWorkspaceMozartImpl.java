@@ -14,6 +14,7 @@ import org.mozartspaces.capi3.CoordinationData;
 import org.mozartspaces.capi3.CountNotMetException;
 import org.mozartspaces.capi3.FifoCoordinator;
 import org.mozartspaces.capi3.IsolationLevel;
+import org.mozartspaces.capi3.KeyCoordinator;
 import org.mozartspaces.capi3.LabelCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.capi3.Selector;
@@ -60,7 +61,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	private NotificationManager notificationManager;
 	
 	// containers
-	private ContainerReference partIdContainer;
+	private ContainerReference idContainer;
 	private ContainerReference partContainer;
 	private ContainerReference mainboardContainer;
 	private ContainerReference incompleteContainer;
@@ -74,6 +75,8 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	// global constants
 	private final String LABEL_COMPLETELY_TESTED = "label_completely_tested";
 	private final String LABEL_NOT_COMPLETELY_TESTED = "label_not_completely_tested";
+	private final String KEY_ID_PART = "key_id_part";
+	private final String KEY_ID_COMPUTER = "key_id_computer";
 	
 	/**
 	 * the default constructor is used by assembler, testers and logisticians
@@ -85,18 +88,15 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl");
 		try {
 			initCoreLogging();
+			
 			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
 			core = DefaultMzsCore.newInstance(0);
 			capi = new Capi(core);
 			
 			// get container
 			logger.info("Retrieving containers...");
-			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
-			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
-			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
-			incompleteContainer = SpaceUtils.getOrCreateIncompleteContainer(spaceURI, capi);
-			trashedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_TRASHED, spaceURI, capi);
-			shippedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_SHIPPED, spaceURI, capi);
+			initContainers();
+			
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error in MzsCore (" + e.getMessage() + ")");
 		} catch (URISyntaxException e) {
@@ -126,16 +126,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			
 			// create container
 			logger.info("Retrieving containers...");
-			partIdContainer = SpaceUtils.getOrCreatePartIDContainer(spaceURI, capi);
-			partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
-			mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
-			incompleteContainer = SpaceUtils.getOrCreateIncompleteContainer(spaceURI, capi);
-			trashedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_TRASHED, spaceURI, capi);
-			shippedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_SHIPPED, spaceURI, capi);
+			initContainers();
 			
 			// store all containers in a hashmap
 			HashMap<String, String> containerMap = new HashMap<String, String>();
-			containerMap.put(partIdContainer.getStringRepresentation(), SpaceUtils.CONTAINER_PART_ID);
+			containerMap.put(idContainer.getStringRepresentation(), SpaceUtils.CONTAINER_ID);
 			containerMap.put(partContainer.getStringRepresentation(), SpaceUtils.CONTAINER_PARTS);
 			containerMap.put(mainboardContainer.getStringRepresentation(), SpaceUtils.CONTAINER_MAINBOARDS);
 			containerMap.put(incompleteContainer.getStringRepresentation(), SpaceUtils.CONTAINER_INCOMPLETE);
@@ -148,7 +143,6 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			HashSet<Operation> operations = new HashSet<Operation>();
 			operations.add(Operation.WRITE);
 			operations.add(Operation.TAKE);
-			operations.add(Operation.DELETE);
 			notificationManager.createNotification(partContainer, new PartNotificationListener(factory, containerMap), operations, null, null);
 			notificationManager.createNotification(mainboardContainer, new PartNotificationListener(factory, containerMap), operations, null, null);
 			notificationManager.createNotification(incompleteContainer, new IncompleteComputerNotificationListener(factory, containerMap), operations, null, null);
@@ -164,6 +158,9 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		}
 	}
 	
+	/**
+	 * includes the configuration file for the MzsCore logging mechanism
+	 */
 	private void initCoreLogging() {
 		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 		JoranConfigurator configurator = new JoranConfigurator();
@@ -174,6 +171,15 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		} catch (JoranException e) {
 			logger.warning("Could not configure core logging.");
 		}
+	}
+	
+	private void initContainers() throws MzsCoreException {
+		idContainer = SpaceUtils.getOrCreateIDContainer(spaceURI, capi);
+		partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
+		mainboardContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_MAINBOARDS, spaceURI, capi);
+		incompleteContainer = SpaceUtils.getOrCreateIncompleteContainer(spaceURI, capi);
+		trashedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_TRASHED, spaceURI, capi);
+		shippedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_SHIPPED, spaceURI, capi);
 	}
 	
 	/**
@@ -200,19 +206,44 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	public long getNextPartId() throws SharedWorkspaceException {
 		logger.info("Starting getNextPartId()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		
+		long nextID = getNextId(KEY_ID_PART);
+		
+		logger.info("Finished.");
+		return nextID;
+	}
+	
+	/**
+	 * gets the next system wide identifier for computers
+	 * uses an autonomous transaction (i.e. this method is not affected by
+	 * the built-in simple transaction control of the class)
+	 * @return the next computer id
+	 */
+	@Override
+	public long getNextComputerId() throws SharedWorkspaceException {
+		logger.info("Starting getNextComputerId()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		
+		long nextID = getNextId(KEY_ID_COMPUTER);
+		
+		logger.info("Finished.");
+		return nextID;
+	}
+	
+	private long getNextId(String keyType) throws SharedWorkspaceException {
 		long nextID = 0;
 		TransactionReference transaction = null;
 		try {
 			transaction = capi.createTransaction(MzsConstants.TransactionTimeout.INFINITE, spaceURI);
-			Selector idSelector = AnyCoordinator.newSelector(1);
+			Selector idSelector = KeyCoordinator.newSelector(keyType, 1);
 			
 			// let's see if there is already an id in the container:
 			try {
-				capi.test(partIdContainer);
+				capi.test(idContainer, idSelector, RequestTimeout.TRY_ONCE, transaction);
 			} catch(MzsCoreException e) {
 				// no --> then insert the first one
 				nextID = 1;
-				capi.write(new Entry(new Long(1)), partIdContainer, RequestTimeout.TRY_ONCE, transaction);
+				capi.write(new Entry(new Long(1), KeyCoordinator.newCoordinationData(keyType)), idContainer, RequestTimeout.TRY_ONCE, transaction);
 				capi.commitTransaction(transaction);
 				logger.info("Finished.");
 				return nextID;
@@ -221,11 +252,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			// if the container contains an id: take the id, increment it and insert it again
 			if(nextID == 0) {
 				//List<Selector> selectors = Collections.singletonList(idSelector);
-				ArrayList<Long> result = capi.take(partIdContainer, idSelector, RequestTimeout.TRY_ONCE, transaction);
+				ArrayList<Long> result = capi.take(idContainer, idSelector, RequestTimeout.TRY_ONCE, transaction);
 				nextID = result.get(0);
 				nextID++;
 
-				capi.write(partIdContainer, RequestTimeout.TRY_ONCE, transaction, new Entry(nextID));
+				capi.write(new Entry(nextID, KeyCoordinator.newCoordinationData(keyType)), idContainer, RequestTimeout.TRY_ONCE, transaction);
 			}
 			
 			capi.commitTransaction(transaction);
@@ -244,7 +275,6 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			}
 			throw new SharedWorkspaceException("Next part id could not be retrieved: Other error (" + e.getMessage() + ")");
 		}
-		logger.info("Finished.");
 		return nextID;
 	}
 
@@ -422,7 +452,6 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		
 		try {
 			// TODO test isolation level READ_COMMITTED
-			//result = capi.take(container, selectorList, RequestTimeout.INFINITE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
 			if(blocking)
 				//result = capi.take(container, partSelector, RequestTimeout.INFINITE, currentTransaction);
 				result = capi.take(container, selectorList, RequestTimeout.INFINITE, currentTransaction, IsolationLevel.READ_COMMITTED, null);

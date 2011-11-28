@@ -137,5 +137,11 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace {
 		
 	}
 
+	@Override
+	public long getNextComputerId() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 
 }

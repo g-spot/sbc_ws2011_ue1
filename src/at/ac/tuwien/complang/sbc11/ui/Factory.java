@@ -137,7 +137,10 @@ public class Factory extends JFrame {
 	}
 	
 	public void appendActionLog(String message) {
+		//String text = textAreaActionLog.getText();
+		//textAreaActionLog.setText(text + message); // workaround for automatic scrolling
 		textAreaActionLog.append(message);
+		textAreaActionLog.setCaretPosition(textAreaActionLog.getText().length() - 1);
 	}
 	
 	private void addProducer(Class<?> partType, long partCount, double errorRate) {

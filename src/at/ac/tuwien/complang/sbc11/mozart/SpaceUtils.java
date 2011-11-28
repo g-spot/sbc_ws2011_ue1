@@ -7,6 +7,7 @@ import java.util.List;
 import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.Coordinator;
 import org.mozartspaces.capi3.FifoCoordinator;
+import org.mozartspaces.capi3.KeyCoordinator;
 import org.mozartspaces.capi3.LabelCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.core.Capi;
@@ -17,7 +18,7 @@ import org.mozartspaces.core.MzsConstants.RequestTimeout;
 
 public class SpaceUtils {
 	
-	public static final String CONTAINER_PART_ID = "ContainerPartId";
+	public static final String CONTAINER_ID = "ContainerId";
 	public static final String CONTAINER_PARTS = "ContainerParts";
 	public static final String CONTAINER_MAINBOARDS = "ContainerMainboards";
 	public static final String CONTAINER_INCOMPLETE = "ContainerIncomplete";
@@ -82,19 +83,16 @@ public class SpaceUtils {
 		return container;
 	}
 	
-	public static final ContainerReference getOrCreatePartIDContainer(URI spaceURI, Capi capi) throws MzsCoreException {
+	public static final ContainerReference getOrCreateIDContainer(URI spaceURI, Capi capi) throws MzsCoreException {
 		ContainerReference container = null;
 		
 		try
 		{
-			container = capi.lookupContainer(CONTAINER_PART_ID, spaceURI, RequestTimeout.DEFAULT, null);
+			container = capi.lookupContainer(CONTAINER_ID, spaceURI, RequestTimeout.DEFAULT, null);
 		}
 		catch(MzsCoreException e)
 		{
-			// the container should take only one entry at a time
-			//container = capi.createContainer(CONTAINER_PART_ID, spaceURI, 1, null, new AnyCoordinator());
-			// it should work with size = 1, but i think there is a bug in transaction handling (see getNextPartid)
-			container = capi.createContainer(CONTAINER_PART_ID, spaceURI, 2, null, new AnyCoordinator());
+			container = capi.createContainer(CONTAINER_ID, spaceURI, Container.UNBOUNDED, null, new KeyCoordinator());
 		}
 		return container;
 	}

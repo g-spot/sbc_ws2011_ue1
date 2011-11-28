@@ -29,22 +29,34 @@ public class PartNotificationListener implements NotificationListener {
 	@Override
 	public void entryOperationFinished(Notification source, Operation operation,
 			List<? extends Serializable> entries) {
-		System.out.println("Performing operation: " + operation.name());
-		// update part list
-		factory.updatePartList();
 		
-		for(String key:containerMap.keySet()) {
-			System.out.println("Key: " + key + ", Value: " + containerMap.get(key));
+		if(operation.equals(Operation.TAKE) || operation.equals(Operation.WRITE)) {
+			// update part list
+			factory.updatePartList();
 		}
+		
+		/*for(String key:containerMap.keySet()) {
+			System.out.println("Key: " + key + ", Value: " + containerMap.get(key));
+		}*/
 		
 		// update action log
 		String message;
-		System.out.println("current container: " + source.getNotificationContainer().getStringRepresentation());
-		message = containerMap.get(source.getNotificationContainer().getStringRepresentation()) + ": ";
+		//System.out.println("current container: " + source.getNotificationContainer().getStringRepresentation());
+		//message = containerMap.get(source.getNotificationContainer().getStringRepresentation()) + ": ";
+		message = source.getNotificationContainer().getStringRepresentation() + ": ";
 		message += operation.name() + NEWLINE;
 		for(Serializable s:entries) {
-			Part part = (Part)((Entry)s).getValue();
-			message += "   " + part.toString() + NEWLINE;
+			Part part = null;
+			try {
+				if(s.getClass().equals(Entry.class))
+					part = (Part)((Entry)s).getValue();
+				else
+					part = (Part)s;
+			} catch(ClassCastException e) {
+				message += "   Unknown object" + NEWLINE;
+			}
+			if(part != null)
+				message += "   " + part.toString() + NEWLINE;
 		}
 		factory.appendActionLog(message);
 	}

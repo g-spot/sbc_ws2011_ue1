@@ -30,16 +30,29 @@ public class TrashedComputerNotificationListener implements
 	@Override
 	public void entryOperationFinished(Notification source, Operation operation,
 			List<? extends Serializable> entries) {
-		// update trash bin list
-		factory.updateTrashBinList();
+		
+		if(operation.equals(Operation.TAKE) || operation.equals(Operation.WRITE)) {
+			// update trash bin list
+			factory.updateTrashBinList();
+		}
 				
 		// update action log
 		String message;
-		message = containerMap.get(source.getNotificationContainer().getId()) + ": ";
+		//message = containerMap.get(source.getNotificationContainer().getId()) + ": ";
+		message = source.getNotificationContainer().getStringRepresentation() + ": ";
 		message += operation.name() + NEWLINE;
 		for(Serializable s:entries) {
-			Computer part = (Computer)((Entry)s).getValue();
-			message += "   " + part.toString() + NEWLINE;
+			Computer computer = null;
+			try {
+				if(s.getClass().equals(Entry.class))
+					computer = (Computer)((Entry)s).getValue();
+				else
+					computer = (Computer)s;
+			} catch(ClassCastException e) {
+				message += "   Unknown object" + NEWLINE;
+			}
+			if(computer != null)
+				message += "   " + computer.toString() + NEWLINE;
 		}
 		factory.appendActionLog(message);
 	}

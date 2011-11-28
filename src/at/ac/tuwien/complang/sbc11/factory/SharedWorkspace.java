@@ -40,6 +40,7 @@ public abstract class SharedWorkspace {
 	public abstract void addPart(Part part) throws SharedWorkspaceException;
 	
 	// methods for assembling computers (tasks of the assembler)
+	public abstract long getNextComputerId() throws SharedWorkspaceException;
 	public abstract List<Part> takeParts(Class<?> partType, boolean blocking, int partCount) throws SharedWorkspaceException;
 	public abstract void addComputer(Computer computer) throws SharedWorkspaceException;
 	
