@@ -1,6 +1,7 @@
 package at.ac.tuwien.complang.sbc11.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -135,8 +136,8 @@ public class Factory extends JFrame {
 		}
 	}
 	
-	public void updateActionLog() {
-		
+	public void updateActionLog(String message) {
+		textAreaActionLog.append(message + NEWLINE);
 	}
 	
 	private void addProducer(Class<?> partType, long partCount, double errorRate) {
@@ -161,17 +162,17 @@ public class Factory extends JFrame {
 		//this.setSize(800, 600);
 		this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
 		this.setTitle("MozartFactory");
-		
+
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		
 		JPanel topPanel = new JPanel(new GridLayout(1, 2));
+		topPanel.setPreferredSize(new Dimension(200,200));
 		JPanel actionLogPanel = new JPanel(new GridLayout(1, 1));
 		TitledBorder titleActionLog = BorderFactory.createTitledBorder("Action log");
 		actionLogPanel.setBorder(titleActionLog);
 		textAreaActionLog = new JTextArea();
 		JScrollPane scrollPaneActionLog = new JScrollPane(textAreaActionLog);
 		actionLogPanel.add(scrollPaneActionLog);
-		
 		
 		JPanel formPanel = new JPanel(new GridLayout(4, 2));
 		
