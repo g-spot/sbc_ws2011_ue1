@@ -41,6 +41,7 @@ public class PartNotificationListener implements NotificationListener {
 		/*for(String key:containerMap.keySet()) {
 			System.out.println("Key: " + key + ", Value: " + containerMap.get(key));
 		}*/
+		//source.getObservedContainer().
 		
 		// update action log
 		String message;
