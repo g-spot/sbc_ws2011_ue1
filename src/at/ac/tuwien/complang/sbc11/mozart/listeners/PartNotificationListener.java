@@ -15,14 +15,17 @@ import at.ac.tuwien.complang.sbc11.ui.Factory;
 public class PartNotificationListener implements NotificationListener {
 	
 	private Factory factory;
-	private HashMap<String, String> containerMap;
+	private HashMap<Notification, String> containerMap;
 	private final char NEWLINE = '\n';
 	
 	@SuppressWarnings("unused")
 	private PartNotificationListener() {}
 	
-	public PartNotificationListener(Factory factory, HashMap<String, String> containerMap) {
+	public PartNotificationListener(Factory factory) {
 		this.factory = factory;
+	}
+	
+	public void setContainerMap(HashMap<Notification, String> containerMap) {
 		this.containerMap = containerMap;
 	}
 
@@ -41,6 +44,16 @@ public class PartNotificationListener implements NotificationListener {
 		
 		// update action log
 		String message;
+		try
+		{
+			for(Notification notification:containerMap.keySet()) {
+				System.out.println("====>>> " + containerMap.get(notification));
+			}
+			System.out.println("====> actual: " + containerMap.get(source));
+		} catch(Exception e) {
+			System.out.println("========> error");
+			e.printStackTrace();
+		}
 		//System.out.println("current container: " + source.getNotificationContainer().getStringRepresentation());
 		//message = containerMap.get(source.getNotificationContainer().getStringRepresentation()) + ": ";
 		message = source.getNotificationContainer().getStringRepresentation() + ": ";

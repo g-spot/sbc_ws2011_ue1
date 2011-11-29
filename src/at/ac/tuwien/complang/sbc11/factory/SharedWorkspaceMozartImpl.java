@@ -28,6 +28,7 @@ import org.mozartspaces.core.MzsConstants.Selecting;
 import org.mozartspaces.core.MzsCore;
 import org.mozartspaces.core.MzsCoreException;
 import org.mozartspaces.core.TransactionReference;
+import org.mozartspaces.notifications.Notification;
 import org.mozartspaces.notifications.NotificationManager;
 import org.mozartspaces.notifications.Operation;
 import org.slf4j.LoggerFactory;
@@ -143,8 +144,17 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			HashSet<Operation> operations = new HashSet<Operation>();
 			operations.add(Operation.WRITE);
 			operations.add(Operation.TAKE);
-			notificationManager.createNotification(partContainer, new PartNotificationListener(factory, containerMap), operations, null, null);
-			notificationManager.createNotification(mainboardContainer, new PartNotificationListener(factory, containerMap), operations, null, null);
+			Notification notification;
+			PartNotificationListener partContainerListener = new PartNotificationListener(factory);
+			PartNotificationListener mainboardContainerListener = new PartNotificationListener(factory);
+			HashMap<Notification, String> notificationMap = new HashMap<Notification, String>();
+			
+			notification = notificationManager.createNotification(partContainer, partContainerListener, operations, null, null);
+			notificationMap.put(notification, SpaceUtils.CONTAINER_PARTS);
+			notification = notificationManager.createNotification(mainboardContainer, mainboardContainerListener, operations, null, null);
+			notificationMap.put(notification, SpaceUtils.CONTAINER_MAINBOARDS);
+			partContainerListener.setContainerMap(notificationMap);
+			mainboardContainerListener.setContainerMap(notificationMap);
 			notificationManager.createNotification(incompleteContainer, new IncompleteComputerNotificationListener(factory, containerMap), operations, null, null);
 			notificationManager.createNotification(trashedContainer, new TrashedComputerNotificationListener(factory, containerMap), operations, null, null);
 			notificationManager.createNotification(shippedContainer, new ShippedComputerNotificationListener(factory, containerMap), operations, null, null);
