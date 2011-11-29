@@ -65,7 +65,8 @@ public class JMSCloudImpl
 			
 		    // For parts it will be session.createObjectMessage.
 			message = session.createTextMessage("Hello World!");
-	
+			
+			//after receiving .clearbody when using ObjectMessage
 		    sender.send(message);
 	    
 		} catch (JMSException e) 
