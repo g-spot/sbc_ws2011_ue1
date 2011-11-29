@@ -17,8 +17,18 @@ public abstract class MozartContainerListener implements NotificationListener {
 	protected HashMap<String, String> containerMap;
 	private final char NEWLINE = '\n';
 	
+	/**
+	 * calls the right UI update callback method
+	 */
 	protected abstract void updateBlackboard();
 
+	/**
+	 * matches the given @containerId with the key of the @containerMap
+	 * and returns the value of the @containerMap = name of the container
+	 * @param containerId
+	 * 			a key to search for in the containerMap
+	 * @return the value corresponding to the found key in the containerMap
+	 */
 	private String getContainerName(String containerId) {
 		String containerName = "UNKNOWN CONTAINER";
 		for(String key:containerMap.keySet()) {
@@ -30,6 +40,11 @@ public abstract class MozartContainerListener implements NotificationListener {
 		return containerName;
 	}
 	
+	/**
+	 * returns the concatenated toString()-values of all given @entries
+	 * @param entries
+	 * @return
+	 */
 	private String getEntriesDescription(List<? extends Serializable> entries) {
 		String description = "   ";
 		if(entries == null || entries.size() == 0)
@@ -47,14 +62,14 @@ public abstract class MozartContainerListener implements NotificationListener {
 	public void entryOperationFinished(Notification source, Operation operation,
 			List<? extends Serializable> entries) {
 		
+		// update blackboard
 		if(operation.equals(Operation.TAKE) || operation.equals(Operation.WRITE)) {
 			// calls the right abstract method to update the blackboard
 			updateBlackboard();
 		}
 		
-		String containerName = getContainerName(source.getObservedContainer().getStringRepresentation());
-		
 		// update action log
+		String containerName = getContainerName(source.getObservedContainer().getStringRepresentation());
 		String message = operation.name() + " on container: " + containerName + NEWLINE;
 		message += getEntriesDescription(entries);
 		factory.appendActionLog(message);
