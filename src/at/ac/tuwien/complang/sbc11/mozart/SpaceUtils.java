@@ -18,12 +18,12 @@ import org.mozartspaces.core.MzsConstants.RequestTimeout;
 
 public class SpaceUtils {
 	
-	public static final String CONTAINER_ID = "ContainerId";
-	public static final String CONTAINER_PARTS = "ContainerParts";
-	public static final String CONTAINER_MAINBOARDS = "ContainerMainboards";
-	public static final String CONTAINER_INCOMPLETE = "ContainerIncomplete";
-	public static final String CONTAINER_TRASHED = "ContainerTrashed";
-	public static final String CONTAINER_SHIPPED = "ContainerShipped";
+	public static final String CONTAINER_ID = "<Identifiers>";
+	public static final String CONTAINER_PARTS = "<Parts>";
+	public static final String CONTAINER_MAINBOARDS = "<Mainboards>";
+	public static final String CONTAINER_INCOMPLETE = "<Incomplete>";
+	public static final String CONTAINER_TRASHED = "<Trashed>";
+	public static final String CONTAINER_SHIPPED = "<Shipped>";
 	
 	/**
 	 * searches for a named fifo container, creates a new named container, if nothing is found
