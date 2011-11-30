@@ -1,5 +1,6 @@
 package at.ac.tuwien.complang.sbc11.factory;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -8,9 +9,12 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -140,29 +144,6 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	    return new Part();
 	}
 	
-/*
- *             // create the browser
-            browser = session.createBrowser(queue);
-
-            // start the connection
-            connection.start();
-
-            Enumeration messages = browser.getEnumeration();
-            while (messages.hasMoreElements()) 
-            {
-                Message message = (Message) messages.nextElement();
-                if (message instanceof ObjectMessage) 
-                {
-                    ObjectMessage text = (ObjectMessage) message;
-                    // DO SOMETHING
-                } else if (message != null) 
-                {
-                    // not our problem
-                }
-            }
-   
- */
-	
 	@Override
 	public void secureShutdown() throws SharedWorkspaceException 
 	{
@@ -190,7 +171,41 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	@Override
 	public List<Part> getAvailableParts() throws SharedWorkspaceException 
 	{
-		// TODO Auto-generated method stub
+		
+		// create the browser
+		Queue queue;
+		try 
+		{
+			queue = (Queue) this.globalContext.lookup("part");
+
+			QueueBrowser browser = this.jmsSession.createBrowser(queue);
+	
+	        // start the connection
+	        this.jmsConnection.start();
+	
+	        Enumeration messages = browser.getEnumeration();
+	        
+	        while (messages.hasMoreElements()) 
+	        {
+	            Message message = (Message) messages.nextElement();
+	            if (message instanceof ObjectMessage) 
+	            {
+	                ObjectMessage text = (ObjectMessage) message;
+	                // DO SOMETHING with the element
+	            } else if (message != null) 
+	            {
+	                // not our problem
+	            }
+	        }
+	        
+		} catch (NamingException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
 
