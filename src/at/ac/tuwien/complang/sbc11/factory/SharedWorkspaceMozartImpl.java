@@ -174,6 +174,10 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		}
 	}
 	
+	/**
+	 * creates or lookups all used containers
+	 * @throws MzsCoreException
+	 */
 	private void initContainers() throws MzsCoreException {
 		idContainer = SpaceUtils.getOrCreateIDContainer(spaceURI, capi);
 		partContainer = SpaceUtils.getOrCreateLindaContainer(SpaceUtils.CONTAINER_PARTS, spaceURI, capi);
