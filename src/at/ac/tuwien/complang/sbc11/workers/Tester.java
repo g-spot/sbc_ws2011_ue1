@@ -34,6 +34,9 @@ public class Tester extends Worker implements SecureShutdownApplication, Seriali
 		
 		do {
 			try {
+				// do all the following methods using the simple transaction support
+				sharedWorkspace.startTransaction();
+				
 				logger.info("Trying to take untested computer from space...");
 				// first of all take an untested computer from the space
 				Computer computer = sharedWorkspace.takeUntestedComputer(this.testType);
@@ -81,8 +84,15 @@ public class Tester extends Worker implements SecureShutdownApplication, Seriali
 				computer.getWorkers().add(this);
 				sharedWorkspace.addComputer(computer);
 				logger.info("Finished.");
+				
+				sharedWorkspace.commitTransaction();
 			} catch (SharedWorkspaceException e) {
 				logger.severe(e.getMessage());
+				try {
+					sharedWorkspace.rollbackTransaction();
+				} catch (SharedWorkspaceException e1) {
+					logger.severe(e1.getMessage());
+				}
 			}
 		//} while(testAnotherComputer());
 		} while(true);

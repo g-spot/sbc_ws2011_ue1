@@ -29,6 +29,9 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 		
 		do {
 			try {
+				// do all the following methods using the simple transaction support
+				sharedWorkspace.startTransaction();
+				
 				logger.info("Trying to take completely tested computer from the space...");
 				// first get a completely tested computer from the shared workspace
 				Computer computer = sharedWorkspace.takeCompletelyTestedComputer();
@@ -51,8 +54,15 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 				}
 				
 				logger.info("Finished.");
+				
+				sharedWorkspace.commitTransaction();
 			} catch (SharedWorkspaceException e) {
 				logger.severe(e.getMessage());
+				try {
+					sharedWorkspace.rollbackTransaction();
+				} catch (SharedWorkspaceException e1) {
+					logger.severe(e1.getMessage());
+				}
 			}
 		//} while(distributeAnotherComputer());
 		} while(true);
