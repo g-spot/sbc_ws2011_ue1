@@ -140,6 +140,29 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	    return new Part();
 	}
 	
+/*
+ *             // create the browser
+            browser = session.createBrowser(queue);
+
+            // start the connection
+            connection.start();
+
+            Enumeration messages = browser.getEnumeration();
+            while (messages.hasMoreElements()) 
+            {
+                Message message = (Message) messages.nextElement();
+                if (message instanceof ObjectMessage) 
+                {
+                    ObjectMessage text = (ObjectMessage) message;
+                    // DO SOMETHING
+                } else if (message != null) 
+                {
+                    // not our problem
+                }
+            }
+   
+ */
+	
 	@Override
 	public void secureShutdown() throws SharedWorkspaceException 
 	{
