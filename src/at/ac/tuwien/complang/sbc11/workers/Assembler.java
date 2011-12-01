@@ -19,6 +19,11 @@ import at.ac.tuwien.complang.sbc11.workers.shutdown.ShutdownInterceptor;
 public class Assembler extends Worker implements SecureShutdownApplication, Serializable  {
 	private static final long serialVersionUID = -4137829457317599010L;
 	
+	private CPU cpu = null;
+	private Mainboard mainboard = null;
+	private GraphicBoard graphicBoard = null;
+	private List<Part> ramList = null;
+	
 	transient private Logger logger;
 
 	public Assembler() {
@@ -41,10 +46,11 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 				Thread.sleep(duration);
 			} catch (InterruptedException e) { }
 			
-			CPU cpu = null;
-			Mainboard mainboard = null;
-			GraphicBoard graphicBoard = null;
-			List<Part> ramList = null;
+			// reset values
+			cpu = null;
+			mainboard = null;
+			graphicBoard = null;
+			ramList = null;
 			
 			try {
 				// do all the following methods using the simple transaction support
@@ -52,31 +58,20 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 				
 				// get cpu from shared workspace
 				logger.info("Trying to take CPU from shared workspace...");
-				List<Part> cpuList = sharedWorkspace.takeParts(CPU.class, true, 1);
-				if(cpuList != null && !cpuList.isEmpty()) {
-					cpu = (CPU) cpuList.get(0);
-					logger.info("Successfully took " + cpuList.size() + " CPU(s).");
-				}
+				sharedWorkspace.takePartsAsync(CPU.class, true, 1, this);
+
 				
 				// get mainboard from shared workspace
 				logger.info("Trying to take mainboard from shared workspace...");
-				List<Part> mainboardList = sharedWorkspace.takeParts(Mainboard.class, true, 1);
-				if(mainboardList != null && !mainboardList.isEmpty()) {
-					mainboard = (Mainboard) mainboardList.get(0);
-					logger.info("Successfully took " + mainboardList.size() + " mainboard(s).");
-				}
+				sharedWorkspace.takePartsAsync(Mainboard.class, true, 1, this);
 				
 				// get graphic board from shared workspace
 				logger.info("Trying to take graphic board from shared workspace...");
-				List<Part> graphicBoardList = sharedWorkspace.takeParts(GraphicBoard.class, false, 1);
-				if(graphicBoardList != null && !graphicBoardList.isEmpty()) {
-					graphicBoard = (GraphicBoard) graphicBoardList.get(0);
-					logger.info("Successfully took " + graphicBoardList.size() + " graphic board(s).");
-				}
+				sharedWorkspace.takePartsAsync(GraphicBoard.class, false, 1, this);
 				
 				// get ram from shared workspace
 				logger.info("Trying to take ram from shared workspace...");
-				// first try to get 4 ram modules, non-blocking
+				/*// first try to get 4 ram modules, non-blocking
 				ramList = sharedWorkspace.takeParts(RAM.class, false, 4);
 				if(ramList == null) {
 					// if no 4 ram modules are available, try 2 ram modules, non-blocking
@@ -85,9 +80,12 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 						// if no 2 ram modules are available, wait until at least 1 module can be retrieved
 						ramList = sharedWorkspace.takeParts(RAM.class, true, 1);
 					}
-				}
-				if(ramList != null)
-					logger.info("Successfully took " + ramList.size()+ " ram module(s).");
+				}*/
+				sharedWorkspace.takePartsAsync(RAM.class, true, 2, this);
+				// TODO implement 4, 2, 1 logic for taking RAM modules
+				
+				// wait until all parts are taken
+				while(!allPartsTaken());
 				
 				// no we have all parts we need, let's construct a new computer
 				Computer computer = new Computer();
@@ -117,6 +115,15 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 			logger.info("Finished assembling.");
 		//} while(assembleAnotherComputer());
 		} while(true);
+	}
+	
+	private boolean allPartsTaken() {
+		// TODO implement "graphic board not needed" logic
+		return cpu != null && mainboard != null && graphicBoard != null && ramList != null;
+	}
+	
+	public void setParts(List<Part> parts) {
+		// TODO implement
 	}
 	
 	@SuppressWarnings("unused")

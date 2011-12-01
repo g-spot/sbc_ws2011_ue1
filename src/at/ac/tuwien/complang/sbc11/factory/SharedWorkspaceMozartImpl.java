@@ -18,6 +18,7 @@ import org.mozartspaces.capi3.KeyCoordinator;
 import org.mozartspaces.capi3.LabelCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.capi3.Selector;
+import org.mozartspaces.core.AsyncCapi;
 import org.mozartspaces.core.Capi;
 import org.mozartspaces.core.ContainerReference;
 import org.mozartspaces.core.DefaultMzsCore;
@@ -39,6 +40,7 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.mozart.SpaceUtils;
 import at.ac.tuwien.complang.sbc11.mozart.StandaloneServer;
+import at.ac.tuwien.complang.sbc11.mozart.TakePartsRequestCallbackHandler;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.IncompleteComputerNotificationListener;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.PartNotificationListener;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.ShippedComputerNotificationListener;
@@ -50,6 +52,7 @@ import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
+import at.ac.tuwien.complang.sbc11.workers.Assembler;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 import at.ac.tuwien.complang.sbc11.workers.Worker;
@@ -59,6 +62,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	private URI spaceURI;
 	private MzsCore core;
 	private Capi capi;
+	private AsyncCapi asyncCapi;
 	private NotificationManager notificationManager;
 	
 	// containers
@@ -93,6 +97,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
 			core = DefaultMzsCore.newInstance(0);
 			capi = new Capi(core);
+			asyncCapi = new AsyncCapi(core);
 			
 			// get container
 			logger.info("Retrieving containers...");
@@ -124,6 +129,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			//core = DefaultMzsCore.newInstance(0);
 			
 			capi = new Capi(core);
+			asyncCapi = new AsyncCapi(core);
 			
 			// create container
 			logger.info("Retrieving containers...");
@@ -669,10 +675,52 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	}
 
 	@Override
-	public void takePartsAsnchronous(Class<?> partType, boolean blocking,
-			int partCount, Worker callback) throws SharedWorkspaceException {
-		// TODO Auto-generated method stub
+	public void takePartsAsync(Class<?> partType, boolean blocking,
+			int partCount, Assembler callback) throws SharedWorkspaceException {
+		logger.info("Starting takePartsAsync()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		List<Part> result = null;
+		Selector partSelector = null;
+		ContainerReference container = null;
+		List<Selector> selectorList = new ArrayList<Selector>();
 		
+		if(partType.equals(Mainboard.class))
+		{
+			partSelector = FifoCoordinator.newSelector(partCount);
+			container = mainboardContainer;
+			selectorList.add(partSelector);
+		}
+		else
+		{
+			try {
+				partSelector = LindaCoordinator.newSelector((Part)partType.newInstance(), partCount);
+				selectorList.add(partSelector);
+			} catch (InstantiationException e) {
+				throw new SharedWorkspaceException("Part could not be taken: Part Type could not be instantiated (" + e.getMessage() + ")");
+			} catch (IllegalAccessException e) {
+				throw new SharedWorkspaceException("Part could not be taken: Part Type could not be instantiated (" + e.getMessage() + ")");
+			}
+			container = partContainer;
+		}
+
+		// call asynchronous take
+		if(blocking)
+			asyncCapi.take(container,
+							selectorList,
+							RequestTimeout.INFINITE,
+							currentTransaction,
+							IsolationLevel.READ_COMMITTED,
+							null,
+							new TakePartsRequestCallbackHandler(callback));
+		else
+			asyncCapi.take(container,
+					selectorList,
+					RequestTimeout.TRY_ONCE,
+					currentTransaction,
+					IsolationLevel.READ_COMMITTED,
+					null,
+					new TakePartsRequestCallbackHandler(callback));
+		logger.info("Finished.");
 	}
 
 }
