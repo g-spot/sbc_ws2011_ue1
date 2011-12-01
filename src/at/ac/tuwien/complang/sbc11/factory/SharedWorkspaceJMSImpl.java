@@ -26,6 +26,7 @@ import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
+import at.ac.tuwien.complang.sbc11.workers.Worker;
 
 /* Implements the shared workspace with an alternative technology.
  * The technology used is JMS. OpenJMS is the implementation that will be used here.
@@ -311,5 +312,12 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	{
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public void takePartsAsnchronous(Class<?> partType, boolean blocking,
+			int partCount, Worker callback) throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
 	}
 }

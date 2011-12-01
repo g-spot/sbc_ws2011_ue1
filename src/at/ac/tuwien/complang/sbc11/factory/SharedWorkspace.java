@@ -7,6 +7,7 @@ import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
+import at.ac.tuwien.complang.sbc11.workers.Worker;
 
 public abstract class SharedWorkspace {
 	
@@ -52,4 +53,7 @@ public abstract class SharedWorkspace {
 	public abstract Computer takeCompletelyTestedComputer() throws SharedWorkspaceException;
 	public abstract void shipComputer(Computer computer) throws SharedWorkspaceException;
 	public abstract void addComputerToTrash(Computer computer) throws SharedWorkspaceException;
+	
+	// asynchronous takesParts
+	public abstract void takePartsAsnchronous(Class<?> partType, boolean blocking, int partCount, Worker callback) throws SharedWorkspaceException;
 }

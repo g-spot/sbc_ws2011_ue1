@@ -52,6 +52,7 @@ import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
+import at.ac.tuwien.complang.sbc11.workers.Worker;
 
 public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	
@@ -665,6 +666,13 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			}
 		}
 		logger.info("Finished.");
+	}
+
+	@Override
+	public void takePartsAsnchronous(Class<?> partType, boolean blocking,
+			int partCount, Worker callback) throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
