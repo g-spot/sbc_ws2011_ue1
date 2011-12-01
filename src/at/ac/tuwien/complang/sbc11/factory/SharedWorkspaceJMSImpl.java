@@ -1,5 +1,6 @@
 package at.ac.tuwien.complang.sbc11.factory;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -25,6 +26,9 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.exolab.jms.administration.AdminConnectionFactory;
+import org.exolab.jms.administration.JmsAdminServerIfc;
+
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.jms.listeners.ObjectMessageListener;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
@@ -49,6 +53,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	private ConnectionFactory connectionFactory;
 	private Connection jmsConnection;
 	private Session jmsSession;
+	private JmsAdminServerIfc admin;
+	private String adminUrl;
 	
 	// JMS specific destinations
 	private HashMap<String,Destination> destinationMap;
@@ -56,7 +62,35 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	public SharedWorkspaceJMSImpl() 
 	{
 		super(null);
-		// TODO g-spot: danke fŸr den hinweis!
+		// g-spot: danke fŸr den hinweis!
+		
+		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceJMSImpl");
+				
+		try 
+		{
+			//JMS Connection
+			initJMSConnection();
+			
+			//Destinations used
+			initDestiantions();
+			
+			//JMS admin interface needed for counting messages in a queue and so on
+			this.admin = AdminConnectionFactory.create(this.adminUrl);
+			
+		} catch (NamingException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		logger.info("Initialization done.");
 	}
 
 	public SharedWorkspaceJMSImpl(Factory factory) 
@@ -67,26 +101,14 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		
 		try 
 		{
-			logger.info("Initializing context...");
-			this.globalContext = new InitialContext();
+			//JMS Connection
+			initJMSConnection();
 			
-			logger.info("Initializing connectionFactory...");
-			this.connectionFactory = (ConnectionFactory) this.globalContext.lookup("ConnectionFactory");
+			//Destinations used
+			initDestiantions();
 			
-			logger.info("Initializing connection...");
-			this.jmsConnection = this.connectionFactory.createConnection();
-			
-			logger.info("Initializing session...");
-			this.jmsSession = this.jmsConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-			
-			logger.info("Initializing destinationMap...");
-			this.destinationMap.put("part", (Destination) globalContext.lookup("part"));
-			this.destinationMap.put("mainboard", (Destination) globalContext.lookup("mainboard"));
-			this.destinationMap.put("incomplete", (Destination) globalContext.lookup("incomplete"));
-			this.destinationMap.put("trashed", (Destination) globalContext.lookup("trashed"));
-			this.destinationMap.put("shipped", (Destination) globalContext.lookup("shipped"));
-			
-			
+			//JMS admin interface needed for counting messages in a queue and so on
+			this.admin = AdminConnectionFactory.create(this.adminUrl);
 			
 		} catch (NamingException e) 
 		{
@@ -96,12 +118,40 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		logger.info("Initialization done.");
 	}
-
-	private void dropMessageObject(String destinationName, Part part) throws SharedWorkspaceException
+	
+	private void initDestiantions() throws NamingException
+	{
+		logger.info("Initializing destinationMap...");
+		this.destinationMap.put("part", (Destination) this.globalContext.lookup("part"));
+		this.destinationMap.put("mainboard", (Destination) globalContext.lookup("mainboard"));
+		
+		this.destinationMap.put("incomplete", (Destination) globalContext.lookup("incomplete"));
+		this.destinationMap.put("trashed", (Destination) globalContext.lookup("trashed"));
+		this.destinationMap.put("shipped", (Destination) globalContext.lookup("shipped"));
+	}
+	private void initJMSConnection() throws NamingException, JMSException
+	{
+		logger.info("Initializing context...");
+		this.globalContext = new InitialContext();
+		
+		logger.info("Initializing connectionFactory...");
+		this.connectionFactory = (ConnectionFactory) this.globalContext.lookup("ConnectionFactory");
+		
+		logger.info("Initializing connection...");
+		this.jmsConnection = this.connectionFactory.createConnection();
+		
+		logger.info("Initializing session...");
+		this.jmsSession = this.jmsConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	}
+	
+	private void dropMessageObject(String destinationName, ObjectMessage message) throws SharedWorkspaceException
 	{
 		logger.info("Start dropping Object...");
 		
@@ -113,8 +163,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			
 			this.jmsConnection.start();
 		    MessageProducer sender = this.jmsSession.createProducer(targetDestination);
-		    ObjectMessage message = (ObjectMessage) part;
 	    
+		    // only serialized objects can be sent
 			sender.send(message);
 		} catch (JMSException e) 
 		{
@@ -124,33 +174,95 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	    logger.info("Dropping Object done...");
 	}
 	
-	private Part fetchMessageObject(String destinationName) throws SharedWorkspaceException
+	private Part fetchPartObject(String destinationName) throws SharedWorkspaceException
 	{
 		logger.info("Start fetchinging Object...");
 		Part somePart = null;
+		int messageCount = 0;
 		
 		if(!this.destinationMap.containsKey(destinationName))
+		{	
 			throw new SharedWorkspaceException("Object could not be fetched from this destination: Error in fetchMessageObject: Unknown Destination: " + destinationName + "");
-	    try 
-	    {
-			Destination targetDestination = this.destinationMap.get(destinationName);
-	
-			MessageConsumer receiver = this.jmsSession.createConsumer(targetDestination);
-		    // start the connection to enable message delivery
-			this.jmsConnection.start();
-			
-			ObjectMessage someObject = (ObjectMessage) receiver.receive();
-
-			//TODO here may be some check if the class is valid
-			somePart = (Part) someObject;
-			
-		} catch (JMSException e) 
-		{
-			throw new SharedWorkspaceException("Object could not be dropped to this destination: Error in fetchMessageObject (" + e.getMessage() + ")");
 		}
-	    
+		
+		try 
+		{
+			messageCount = this.admin.getQueueMessageCount(destinationName);
+		} catch (JMSException e1) 
+		{
+			throw new SharedWorkspaceException("Problem counting number of elements in queue: Error in fetchMessageObject: Error (" + e1.getMessage() + ")");
+		}
+		
+		if(messageCount > 0)
+		{
+			try 
+		    {
+				Destination targetDestination = this.destinationMap.get(destinationName);
+		
+				MessageConsumer receiver = this.jmsSession.createConsumer(targetDestination);
+			    // start the connection to enable message delivery
+				this.jmsConnection.start();
+				
+				ObjectMessage someObject = (ObjectMessage) receiver.receive();
+	
+				//TODO here may be some check if the class is valid
+				if(!someObject.getClass().equals(Computer.class))
+				{
+					somePart = (Part) someObject;
+				}
+				
+			} catch (JMSException e) 
+			{
+				throw new SharedWorkspaceException("Object could not be dropped to this destination: Error in fetchMessageObject (" + e.getMessage() + ")");
+			}
+		}
 	    //return part or null
 	    return somePart;
+	}
+	
+	private Computer fetchComputerObject(String destinationName) throws SharedWorkspaceException 
+	{
+		logger.info("Start fetchinging ComputerObject...");
+		
+		Computer someComputer = null;
+		int messageCount = 0;
+		
+		if(!this.destinationMap.containsKey(destinationName))
+		{	
+			throw new SharedWorkspaceException("Object could not be fetched from this destination: Error in fetchMessageObject: Unknown Destination: " + destinationName + "");
+		}
+		
+		try 
+		{
+			messageCount = this.admin.getQueueMessageCount(destinationName);
+		} catch (JMSException e1) 
+		{
+			throw new SharedWorkspaceException("Problem counting number of elements in queue: Error in fetchMessageObject: Error (" + e1.getMessage() + ")");
+		}
+		
+		if(messageCount > 0)
+		{
+			try 
+		    {
+				Destination targetDestination = this.destinationMap.get(destinationName);
+		
+				MessageConsumer receiver = this.jmsSession.createConsumer(targetDestination);
+			    // start the connection to enable message delivery
+				this.jmsConnection.start();
+				
+				ObjectMessage someObject = (ObjectMessage) receiver.receive();
+	
+				//TODO here may be some check if the class is valid
+				someComputer = (Computer) someObject;
+				
+			} catch (JMSException e) 
+			{
+				throw new SharedWorkspaceException("Object could not be dropped to this destination: Error in fetchMessageObject (" + e.getMessage() + ")");
+			}
+		}
+		logger.info("Finished fetchinging ComputerObject.");
+	    //return part or null
+	    return someComputer;
 	}
 	
 	@Override
@@ -164,6 +276,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			this.jmsConnection.close();
 			this.globalContext.close();
 			this.destinationMap.clear();
+			this.admin.close();
 		
 		} catch (JMSException e) 
 		{
@@ -182,6 +295,10 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		List<Part> result = new ArrayList<Part>();
 		// create the browser
 		Queue queue;
+		
+		// TODO optimization: only use queues with parts in it -> how can i differ without hard code it?
+		// TODO use fetchPartObject function
+		
 		// Iterate over all destinations
 		Iterator<Entry<String, Destination>> entryIterator = this.destinationMap.entrySet().iterator();
 		Entry<String,Destination> entrySet;
@@ -211,7 +328,16 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		            if (message instanceof ObjectMessage) 
 		            {
 		                ObjectMessage somePart = (ObjectMessage) message;
-		                result.add((Part) somePart);
+		                
+		                //without clearbody the object would be read only!
+		                message.clearBody();
+		                
+		                //Check if we have a part
+		                if(!somePart.getClass().equals(Computer.class))
+		                {
+		                	result.add((Part) somePart);
+		                }
+		                
 		            } else if (message != null) 
 		            {
 		                // not our problem
@@ -232,22 +358,58 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	@Override
 	public List<Computer> getIncompleteComputers() throws SharedWorkspaceException 
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<Computer> result = new ArrayList<Computer>();
+		
+		Computer someComputer = fetchComputerObject("incomplete");
+		
+		while(someComputer != null)
+		{
+			if(someComputer.getClass().equals(Computer.class))
+			{
+				result.add(someComputer);
+			}
+			someComputer = fetchComputerObject("incomplete");
+		}
+		
+		return result;
 	}
 
 	@Override
 	public List<Computer> getShippedComputers() throws SharedWorkspaceException 
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<Computer> result = new ArrayList<Computer>();
+		
+		Computer someComputer = fetchComputerObject("shipped");
+		
+		while(someComputer != null)
+		{
+			if(someComputer.getClass().equals(Computer.class))
+			{
+				result.add(someComputer);
+			}
+			someComputer = fetchComputerObject("shipped");
+		}
+		
+		return result;
 	}
 
 	@Override
 	public List<Computer> getTrashedComputers() throws SharedWorkspaceException 
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<Computer> result = new ArrayList<Computer>();
+		
+		Computer someComputer = fetchComputerObject("trashed");
+		
+		while(someComputer != null)
+		{
+			if(someComputer.getClass().equals(Computer.class))
+			{
+				result.add(someComputer);
+			}
+			someComputer = fetchComputerObject("trashed");
+		}
+		
+		return result;
 	}
 
 	@Override
@@ -286,7 +448,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 
 	@Override
 	public List<Part> takeParts(Class<?> partType, boolean blocking, int partCount) throws SharedWorkspaceException 
-			{
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -315,15 +477,13 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	@Override
 	public void shipComputer(Computer computer) throws SharedWorkspaceException 
 	{
-		// TODO Auto-generated method stub
-		
+		dropMessageObject("shipped",(ObjectMessage) computer);
 	}
 
 	@Override
 	public void addComputerToTrash(Computer computer) throws SharedWorkspaceException 
 	{
-		// TODO Auto-generated method stub
-		
+		dropMessageObject("trashed",(ObjectMessage) computer);
 	}
 
 	@Override
