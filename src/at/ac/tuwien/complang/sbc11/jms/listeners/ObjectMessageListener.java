@@ -2,13 +2,20 @@ package at.ac.tuwien.complang.sbc11.jms.listeners;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
+import at.ac.tuwien.complang.sbc11.parts.Part;
+
 public class ObjectMessageListener implements MessageListener
 {
+	private Part somePart;
+	
 	public ObjectMessageListener()
+	{
+		
+	}
+	public ObjectMessageListener(Part somePart)
 	{
 		
 	}

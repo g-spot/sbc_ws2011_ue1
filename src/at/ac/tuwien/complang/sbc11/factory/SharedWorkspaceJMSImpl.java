@@ -1,8 +1,12 @@
 package at.ac.tuwien.complang.sbc11.factory;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.jms.Connection;
@@ -11,6 +15,7 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
@@ -122,6 +127,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	private Part fetchMessageObject(String destinationName) throws SharedWorkspaceException
 	{
 		logger.info("Start fetchinging Object...");
+		Part somePart = null;
 		
 		if(!this.destinationMap.containsKey(destinationName))
 			throw new SharedWorkspaceException("Object could not be fetched from this destination: Error in fetchMessageObject: Unknown Destination: " + destinationName + "");
@@ -130,24 +136,26 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			Destination targetDestination = this.destinationMap.get(destinationName);
 	
 			MessageConsumer receiver = this.jmsSession.createConsumer(targetDestination);
-		    receiver.setMessageListener(new ObjectMessageListener());
-	
 		    // start the connection to enable message delivery
 			this.jmsConnection.start();
+			
+			ObjectMessage someObject = (ObjectMessage) receiver.receive();
+
+			//TODO here may be some check if the class is valid
+			somePart = (Part) someObject;
 			
 		} catch (JMSException e) 
 		{
 			throw new SharedWorkspaceException("Object could not be dropped to this destination: Error in fetchMessageObject (" + e.getMessage() + ")");
 		}
 	    
-	    //TODO return part
-	    return new Part();
+	    //return part or null
+	    return somePart;
 	}
 	
 	@Override
 	public void secureShutdown() throws SharedWorkspaceException 
 	{
-		// TODO Auto-generated method stub
 		
 		// probably remove all objects in queues and close connection, session...
 		try 
@@ -171,42 +179,54 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	@Override
 	public List<Part> getAvailableParts() throws SharedWorkspaceException 
 	{
-		
+		List<Part> result = new ArrayList<Part>();
 		// create the browser
 		Queue queue;
+		// Iterate over all destinations
+		Iterator<Entry<String, Destination>> entryIterator = this.destinationMap.entrySet().iterator();
+		Entry<String,Destination> entrySet;
+		
 		try 
 		{
-			queue = (Queue) this.globalContext.lookup("part");
-
-			QueueBrowser browser = this.jmsSession.createBrowser(queue);
-	
-	        // start the connection
-	        this.jmsConnection.start();
-	
-	        Enumeration messages = browser.getEnumeration();
-	        
-	        while (messages.hasMoreElements()) 
-	        {
-	            Message message = (Message) messages.nextElement();
-	            if (message instanceof ObjectMessage) 
-	            {
-	                ObjectMessage text = (ObjectMessage) message;
-	                // DO SOMETHING with the element
-	            } else if (message != null) 
-	            {
-	                // not our problem
-	            }
-	        }
+			entrySet = entryIterator.next();
+			
+			while(entrySet != null)
+			{
+				entrySet = entryIterator.next();
+				// lookup destination with name
+				queue = (Queue) this.globalContext.lookup(entrySet.getKey());
+				
+				// create a browser (not consuming)
+				QueueBrowser browser = this.jmsSession.createBrowser(queue);
+		
+		        // start the connection
+		        this.jmsConnection.start();
+		
+		        @SuppressWarnings("rawtypes")
+				Enumeration messages = browser.getEnumeration();
+		        
+		        while (messages.hasMoreElements()) 
+		        {
+		            Message message = (Message) messages.nextElement();
+		            if (message instanceof ObjectMessage) 
+		            {
+		                ObjectMessage somePart = (ObjectMessage) message;
+		                result.add((Part) somePart);
+		            } else if (message != null) 
+		            {
+		                // not our problem
+		            }
+		        }
+			}
 	        
 		} catch (NamingException e) 
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JMSException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new SharedWorkspaceException("NamingException in getAvailableParts: Error (" + e.getMessage() + ")");
+		} catch (JMSException e) 
+		{
+			throw new SharedWorkspaceException("JMSException in getAvailableParts: Error (" + e.getMessage() + ")");
 		}
-		return null;
+		return result;
 	}
 
 	@Override
@@ -233,21 +253,21 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	@Override
 	public void startTransaction() throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
-		
+		// JMS breaker @Folienblock 3, Seite 12
 	}
 
 	@Override
 	public void commitTransaction() throws SharedWorkspaceException 
 	{
 		// TODO Auto-generated method stub
-		
+		// JMS breaker @Folienblock 3, Seite 12
 	}
 
 	@Override
 	public void rollbackTransaction() throws SharedWorkspaceException 
 	{
 		// TODO Auto-generated method stub
-		
+		// JMS breaker @Folienblock 3, Seite 12
 	}
 
 	@Override
