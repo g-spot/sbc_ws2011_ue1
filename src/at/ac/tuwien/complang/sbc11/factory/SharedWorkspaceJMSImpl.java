@@ -25,7 +25,7 @@ import at.ac.tuwien.complang.sbc11.jms.listeners.ObjectMessageListener;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
-import at.ac.tuwien.complang.sbc11.workers.Assembler;
+import at.ac.tuwien.complang.sbc11.workers.AsyncAssembler;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 import at.ac.tuwien.complang.sbc11.workers.Worker;
 
@@ -317,7 +317,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 
 	@Override
 	public void takePartsAsync(Class<?> partType, boolean blocking,
-			int partCount, Assembler callback) throws SharedWorkspaceException {
+			int partCount, AsyncAssembler callback) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		
 	}

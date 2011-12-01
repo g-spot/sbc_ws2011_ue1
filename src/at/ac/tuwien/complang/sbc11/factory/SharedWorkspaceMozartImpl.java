@@ -52,7 +52,7 @@ import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
-import at.ac.tuwien.complang.sbc11.workers.Assembler;
+import at.ac.tuwien.complang.sbc11.workers.AsyncAssembler;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 import at.ac.tuwien.complang.sbc11.workers.Worker;
@@ -676,10 +676,9 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 
 	@Override
 	public void takePartsAsync(Class<?> partType, boolean blocking,
-			int partCount, Assembler callback) throws SharedWorkspaceException {
+			int partCount, AsyncAssembler callback) throws SharedWorkspaceException {
 		logger.info("Starting takePartsAsync()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
-		List<Part> result = null;
 		Selector partSelector = null;
 		ContainerReference container = null;
 		List<Selector> selectorList = new ArrayList<Selector>();
@@ -707,7 +706,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		if(blocking)
 			asyncCapi.take(container,
 							selectorList,
-							RequestTimeout.INFINITE,
+							RequestTimeout.INFINITE, // wait for the specified number of parts
 							currentTransaction,
 							IsolationLevel.READ_COMMITTED,
 							null,
@@ -715,7 +714,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		else
 			asyncCapi.take(container,
 					selectorList,
-					RequestTimeout.TRY_ONCE,
+					RequestTimeout.TRY_ONCE, // try once, do not wait
 					currentTransaction,
 					IsolationLevel.READ_COMMITTED,
 					null,
