@@ -55,7 +55,6 @@ import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.AsyncAssembler;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
-import at.ac.tuwien.complang.sbc11.workers.Worker;
 
 public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	
@@ -674,6 +673,22 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		logger.info("Finished.");
 	}
 
+	/**
+	 * asynchronously takes a part from the shared workspace, i.e. returns the object and removes it
+	 * uses the current simple transaction, if one exists
+	 * the @callback will be handed over to a new TakePartsRequestCallbackHandler
+	 * 
+	 * @param partType
+	 * 				class type of the part
+	 * @param blocking
+	 * 				if true, takePart() waits until a part can be found and returned
+	 * 				if false, takePart() tries only once to get the part
+	 * @param partCount
+	 * 				specifies the number of parts to be taken
+	 * @param callback
+	 * 				specifies the assembler to notify when the result of the
+	 *              request arrives 
+	 */
 	@Override
 	public void takePartsAsync(Class<?> partType, boolean blocking,
 			int partCount, AsyncAssembler callback) throws SharedWorkspaceException {
