@@ -46,14 +46,14 @@ public abstract class MozartContainerListener implements NotificationListener {
 	 * @return
 	 */
 	private String getEntriesDescription(List<? extends Serializable> entries) {
-		String description = "   ";
+		String description = "";
 		if(entries == null || entries.size() == 0)
-			return description + "NO ENTRIES FOUND";
+			return "   NO ENTRIES FOUND";
 		for(Serializable s:entries) {
 			if(s.getClass().equals(Entry.class))
-				description += ((Entry)s).getValue().toString() + NEWLINE;
+				description += "   " + ((Entry)s).getValue().toString() + NEWLINE;
 			else
-				description += s.toString() + NEWLINE;
+				description += "   " + s.toString() + NEWLINE;
 		}
 		return description;
 	}
