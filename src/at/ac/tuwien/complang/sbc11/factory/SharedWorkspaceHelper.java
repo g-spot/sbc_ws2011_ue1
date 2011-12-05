@@ -14,6 +14,8 @@ public class SharedWorkspaceHelper {
 	private static final String USE_IMPLEMENTATION_PROPERTY = "factory.use-implementation";
 	private static final String USE_MOZART = "mozart";
 	private static final String USE_JMS = "jms";
+	private static final String MOZART_USE_STANDALONE_PROPERTY = "factory.mozart.use-standalone";
+	private static final String MOZART_USE_STANDALONE_YES = "yes";
 	
 	/**
 	 * gets the sharedWorkspace Implementation depending on the property "factory.use-implementation"
@@ -57,5 +59,18 @@ public class SharedWorkspaceHelper {
 			throw new SharedWorkspaceException("Could not read " + PROPERTIES_FILENAME + " (" + e.getMessage() + ")");
 		}
 		return implementation;
+	}
+	
+	public static boolean useStandaloneMozartServer() {
+		boolean result = false;
+		try {
+			Properties properties = new Properties();
+			InputStream inputStream = new FileInputStream(PROPERTIES_FILENAME);
+			properties.load(inputStream);
+			if(properties.getProperty(MOZART_USE_STANDALONE_PROPERTY).equals(MOZART_USE_STANDALONE_YES))
+				return true;
+		} catch (Exception e) {
+		}
+		return result;
 	}
 }

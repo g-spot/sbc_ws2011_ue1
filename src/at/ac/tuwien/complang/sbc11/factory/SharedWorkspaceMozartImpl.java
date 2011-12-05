@@ -122,7 +122,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		try {
 			initCoreLogging();
 			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
-			core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
+			
+			if(SharedWorkspaceHelper.useStandaloneMozartServer())
+				core = DefaultMzsCore.newInstance(0);
+			else
+				core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
 			
 			// uses external standalone server:
 			//core = DefaultMzsCore.newInstance(0);
