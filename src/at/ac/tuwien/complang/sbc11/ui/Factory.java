@@ -60,8 +60,8 @@ public class Factory extends JFrame {
 		
 		// initializes the mozart implementation of the shared workspace
 		try {
-			//factory = SharedWorkspaceHelper.getWorkspaceImplementation(this);
-			factory = new SharedWorkspaceJMSImpl();
+			factory = SharedWorkspaceHelper.getWorkspaceImplementation(this);
+			//factory = new SharedWorkspaceJMSImpl();
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
