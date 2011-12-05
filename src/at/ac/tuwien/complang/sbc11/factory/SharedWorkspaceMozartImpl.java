@@ -198,6 +198,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	 */
 	@Override
 	public void secureShutdown() throws SharedWorkspaceException {
+		logger.info("Shutting down application...");
 		if(currentTransaction != null)
 			try {
 				capi.rollbackTransaction(currentTransaction);

@@ -31,7 +31,6 @@ public abstract class SharedWorkspace {
 	// distributed transactions won't work with mozart spaces
 	// so if there's a blocking request, the state of the black board
 	// is not guarenteed to be consistent with the actual state of the space
-	// e.g.: assembler takes 1 entry of a fifo-container, 
 	public abstract void startTransaction() throws SharedWorkspaceException;
 	public abstract void commitTransaction() throws SharedWorkspaceException;
 	public abstract void rollbackTransaction() throws SharedWorkspaceException;
