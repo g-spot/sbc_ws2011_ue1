@@ -2,6 +2,7 @@ package at.ac.tuwien.complang.sbc11.workers;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -16,13 +17,23 @@ import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.workers.shutdown.SecureShutdownApplication;
 import at.ac.tuwien.complang.sbc11.workers.shutdown.ShutdownInterceptor;
 
-public class Assembler extends Worker implements SecureShutdownApplication, Serializable  {
+public class AsyncAssembler extends Worker implements SecureShutdownApplication, Serializable  {
 	private static final long serialVersionUID = -4137829457317599010L;
+	
+	transient private CPU cpu = null;
+	transient private Mainboard mainboard = null;
+	transient private GraphicBoard graphicBoard = null;
+	transient private List<Part> ramList = null;
+	
+	transient private boolean responseReceivedForGraphicBoard;
+	transient private Throwable asyncException;
+	
 	
 	transient private Logger logger;
 
-	public Assembler() {
+	public AsyncAssembler() {
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.workers.Assembler");
+		ramList = new ArrayList<Part>();
 		try {
 			sharedWorkspace = SharedWorkspaceHelper.getWorkspaceImplementation();
 		} catch (SharedWorkspaceException e) {
@@ -41,53 +52,67 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 				Thread.sleep(duration);
 			} catch (InterruptedException e) { }
 			
-			CPU cpu = null;
-			Mainboard mainboard = null;
-			GraphicBoard graphicBoard = null;
-			List<Part> ramList = null;
+			// reset values
+			cpu = null;
+			mainboard = null;
+			graphicBoard = null;
+			ramList.clear();
+			responseReceivedForGraphicBoard = false;
+			asyncException = null;
 			
 			try {
 				// do all the following methods using the simple transaction support
 				sharedWorkspace.startTransaction();
 				
-				// get cpu from shared workspace
+				// async: get cpu from shared workspace
 				logger.info("Trying to take CPU from shared workspace...");
-				List<Part> cpuList = sharedWorkspace.takeParts(CPU.class, true, 1);
-				if(cpuList != null && !cpuList.isEmpty()) {
-					cpu = (CPU) cpuList.get(0);
-					logger.info("Successfully took " + cpuList.size() + " CPU(s).");
-				}
+				sharedWorkspace.takePartsAsync(CPU.class, true, 1, this);
+
 				
-				// get mainboard from shared workspace
+				// async: get mainboard from shared workspace
 				logger.info("Trying to take mainboard from shared workspace...");
-				List<Part> mainboardList = sharedWorkspace.takeParts(Mainboard.class, true, 1);
-				if(mainboardList != null && !mainboardList.isEmpty()) {
-					mainboard = (Mainboard) mainboardList.get(0);
-					logger.info("Successfully took " + mainboardList.size() + " mainboard(s).");
-				}
+				sharedWorkspace.takePartsAsync(Mainboard.class, true, 1, this);
 				
-				// get graphic board from shared workspace
+				// async: get graphic board from shared workspace
 				logger.info("Trying to take graphic board from shared workspace...");
-				List<Part> graphicBoardList = sharedWorkspace.takeParts(GraphicBoard.class, false, 1);
-				if(graphicBoardList != null && !graphicBoardList.isEmpty()) {
-					graphicBoard = (GraphicBoard) graphicBoardList.get(0);
-					logger.info("Successfully took " + graphicBoardList.size() + " graphic board(s).");
-				}
+				sharedWorkspace.takePartsAsync(GraphicBoard.class, false, 1, this);
 				
 				// get ram from shared workspace
+				// first try synchronously to fetch 4 or 2 ram modules
+				// if nothing can be fetched, try asynchronously to fetch
+				// 1 module (blocking)
 				logger.info("Trying to take ram from shared workspace...");
-				// first try to get 4 ram modules, non-blocking
 				ramList = sharedWorkspace.takeParts(RAM.class, false, 4);
-				if(ramList == null) {
+				if(ramList == null || ramList.isEmpty()) {
 					// if no 4 ram modules are available, try 2 ram modules, non-blocking
 					ramList = sharedWorkspace.takeParts(RAM.class, false, 2);
-					if(ramList == null) {
+					if(ramList == null || ramList.isEmpty()) {
 						// if no 2 ram modules are available, wait until at least 1 module can be retrieved
-						ramList = sharedWorkspace.takeParts(RAM.class, true, 1);
+						sharedWorkspace.takePartsAsync(RAM.class, true, 1, this);
 					}
 				}
-				if(ramList != null)
-					logger.info("Successfully took " + ramList.size()+ " ram module(s).");
+				
+				logger.info("NOW WAITING UNTIL ALL PARTS ARE TAKEN");
+				// wait until all parts are taken
+				while(!allPartsTaken() && asyncException == null) {
+					// wait 1/2 second between polling
+					// TODO why do i have to wait???
+					try {
+						duration = 500;
+						Thread.sleep(duration);
+					} catch (InterruptedException e) { }
+				}
+				logger.info("FINISHED WAITING FOR PARTS");
+				
+				if(asyncException != null)
+					throw new SharedWorkspaceException("Error in asynchronous call: " + asyncException.getMessage());
+				
+				// let's have it another synchronous try to retrieve a graphic board
+				if(graphicBoard == null) {
+					List<Part> graphicBoardList = sharedWorkspace.takeParts(GraphicBoard.class, false, 1);
+					if(graphicBoardList != null && !graphicBoardList.isEmpty())
+						graphicBoard = (GraphicBoard) graphicBoardList.get(0);
+				}
 				
 				// no we have all parts we need, let's construct a new computer
 				Computer computer = new Computer();
@@ -119,6 +144,49 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 		} while(true);
 	}
 	
+	/**
+	 * checks wether all needed parts are taken
+	 * @return true if at least a cpu, a mainboard and one ram module are taken
+	 * 			false otherwhise
+	 */
+	private boolean allPartsTaken() {
+		boolean result = cpu != null && mainboard != null && responseReceivedForGraphicBoard && ramList != null && !ramList.isEmpty();
+		//logger.info("cpu!=null (" + (cpu!=null) + ") mainboard!=null (" + (mainboard!=null) + ") responseGraphic (" + responseReceivedForGraphicBoard + ") ramlist!=null (" + (ramList!=null) + ")");
+		return result;
+	}
+	
+	public void setAsyncException(Throwable asyncException) {
+		this.asyncException = asyncException;
+	}
+
+	public void setResponseReceivedForGraphicBoard(
+			boolean responseReceivedForGraphicBoard) {
+		this.responseReceivedForGraphicBoard = responseReceivedForGraphicBoard;
+	}
+
+	public void setParts(List<Part> parts) {
+		for(Part part:parts) {
+			if(part.getClass().equals(CPU.class)) {
+				cpu = (CPU)part;
+				break;
+			}
+			if(part.getClass().equals(Mainboard.class)) {
+				mainboard = (Mainboard)part;
+				break;
+			}
+			if(part.getClass().equals(GraphicBoard.class)) {
+				graphicBoard = (GraphicBoard)part;
+				responseReceivedForGraphicBoard = true;
+				break;
+			}
+			if(part.getClass().equals(RAM.class)) {
+				if(ramList == null)
+					ramList = new ArrayList<Part>();
+				ramList.add(part);
+			}
+		}
+	}
+	
 	@SuppressWarnings("unused")
 	private boolean assembleAnotherComputer() {
 		char command = ' ';
@@ -137,7 +205,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 	}
 	
 	public static void main(String args[]) throws IOException {
-		Assembler assembler = new Assembler();
+		AsyncAssembler asyncAssembler = new AsyncAssembler();
 		
 		long id = 0;
 		if(args.length > 0)
@@ -149,11 +217,11 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 				id = 0;
 			}
 		}
-		assembler.setId(id);
+		asyncAssembler.setId(id);
 		
-		ShutdownInterceptor interceptor = new ShutdownInterceptor(assembler);
+		ShutdownInterceptor interceptor = new ShutdownInterceptor(asyncAssembler);
 		Runtime.getRuntime().addShutdownHook(interceptor);
-		assembler.run();
+		asyncAssembler.run();
 		//Executors.defaultThreadFactory().newThread(assembler).start();
 	}
 

@@ -41,6 +41,7 @@ import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
+import at.ac.tuwien.complang.sbc11.workers.AsyncAssembler;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
 /* Implements the shared workspace with an alternative technology.
@@ -684,5 +685,12 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	{
 		Date theDate = new Date();
 		return theDate.getTime();
+	}
+
+	@Override
+	public void takePartsAsync(Class<?> partType, boolean blocking, int partCount, AsyncAssembler callback) throws SharedWorkspaceException 
+	{
+		// TODO Auto-generated method stub
+		
 	}
 }
