@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.jms.Connection;
@@ -24,6 +25,7 @@ import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
+import javax.jms.Topic;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -74,18 +76,22 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		
 		this.factory = null;
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceJMSImpl");
-				
+		this.adminUrl = "tcp://localhost:3035/";
+		
+		this.destinationMap = new HashMap<String,Destination>();
+		
 		try 
 		{
+			//JMS admin interface needed for counting messages in a queue and so on
+			this.admin = AdminConnectionFactory.create(this.adminUrl);
+			//createDestinations();
+			
 			//JMS Connection
 			initJMSConnection();
 			
 			//Destinations used
 			initDestiantions();
-			
-			//JMS admin interface needed for counting messages in a queue and so on
-			this.admin = AdminConnectionFactory.create(this.adminUrl);
-			
+
 		} catch (NamingException e) 
 		{
 			// TODO Auto-generated catch block
@@ -108,16 +114,20 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceJMSImpl");
 		this.factory = factory;
+		this.destinationMap = new HashMap<String,Destination>();
+		this.adminUrl = "tcp://localhost:3035/";
+		
 		try 
 		{
+			//JMS admin interface needed for counting messages in a queue and so on
+			this.admin = AdminConnectionFactory.create(this.adminUrl);
+			createDestinations();
+			
 			//JMS Connection
 			initJMSConnection();
 			
 			//Destinations used
 			initDestiantions();
-			
-			//JMS admin interface needed for counting messages in a queue and so on
-			this.admin = AdminConnectionFactory.create(this.adminUrl);
 			
 		} catch (NamingException e) 
 		{
@@ -138,13 +148,11 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	private void initDestiantions() throws NamingException
 	{
 		logger.info("Initializing destinationMap...");
-		
-		
-		
+			
 		//this.destinationMap.put("part", (Destination) this.globalContext.lookup("part"));
-		this.destinationMap.put("ram", (Destination) this.globalContext.lookup("part"));
+		this.destinationMap.put("ram", (Destination) this.globalContext.lookup("ram"));
 		this.destinationMap.put("graphicboard", (Destination) this.globalContext.lookup("graphicboard"));
-		this.destinationMap.put("cpu", (Destination) this.globalContext.lookup("part"));
+		this.destinationMap.put("cpu", (Destination) this.globalContext.lookup("cpu"));
 		this.destinationMap.put("mainboard", (Destination) globalContext.lookup("mainboard"));
 		
 		this.destinationMap.put("incomplete", (Destination) globalContext.lookup("incomplete"));
@@ -154,6 +162,67 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		this.destinationMap.put("complete", (Destination) globalContext.lookup("complete"));
 		this.destinationMap.put("trashed", (Destination) globalContext.lookup("trashed"));
 		this.destinationMap.put("shipped", (Destination) globalContext.lookup("shipped"));
+	}
+	
+	private void createDestinations()
+	{
+		try 
+		{
+			//Create Destinations - second argument is if it's a queue
+			if (!admin.destinationExists("ram"))
+				this.admin.addDestination("ram", Boolean.TRUE);
+			if (!admin.destinationExists("graphicboard"))
+				this.admin.addDestination("graphicboard", Boolean.TRUE);
+			if (!admin.destinationExists("cpu"))
+				this.admin.addDestination("cpu", Boolean.TRUE);
+			if (!admin.destinationExists("mainboard"))
+				this.admin.addDestination("mainboard", Boolean.TRUE);
+			
+			if (!admin.destinationExists("incomplete"))
+				this.admin.addDestination("incomplete", Boolean.TRUE);
+			if (!admin.destinationExists("incompletetested"))
+				this.admin.addDestination("incompletetested", Boolean.TRUE);
+			if (!admin.destinationExists("incorrecttested"))
+				this.admin.addDestination("incorrecttested", Boolean.TRUE);
+			
+			if (!admin.destinationExists("complete"))
+				this.admin.addDestination("complete", Boolean.TRUE);
+			if (!admin.destinationExists("trashed"))
+				this.admin.addDestination("trashed", Boolean.TRUE);
+			if (!admin.destinationExists("shipped"))
+				this.admin.addDestination("shipped", Boolean.TRUE);
+			
+		} catch (JMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//Destination listing
+		    @SuppressWarnings("rawtypes")
+			Vector destinations;
+			try 
+			{
+				destinations = admin.getAllDestinations();
+			    @SuppressWarnings("rawtypes")
+				Iterator iterator = destinations.iterator();
+			    while (iterator.hasNext()) 
+			    {
+			      Destination destination = (Destination) iterator.next();
+			      if (destination instanceof Queue) 
+			      {
+			         Queue queue = (Queue) destination;
+			         logger.info("queue:" + queue.getQueueName());
+			      } 
+			      else 
+			      {
+			         Topic topic = (Topic) destination;
+			         logger.info("topic:" + topic.getTopicName());
+			      }
+			    }
+			} catch (JMSException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 	
 	@SuppressWarnings("unchecked")
