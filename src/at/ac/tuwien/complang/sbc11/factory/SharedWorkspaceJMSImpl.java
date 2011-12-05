@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -42,8 +41,8 @@ import at.ac.tuwien.complang.sbc11.parts.Mainboard;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
-import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.AsyncAssembler;
+import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
 /* Implements the shared workspace with an alternative technology.
@@ -145,57 +144,58 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		logger.info("Initialization done.");
 	}
 	
-	private void initDestiantions() throws NamingException
+	private void initDestiantions() throws NamingException, JMSException
 	{
 		logger.info("Initializing destinationMap...");
 			
 		//this.destinationMap.put("part", (Destination) this.globalContext.lookup("part"));
-		this.destinationMap.put("ram", (Destination) this.globalContext.lookup("ram"));
-		this.destinationMap.put("graphicboard", (Destination) this.globalContext.lookup("graphicboard"));
-		this.destinationMap.put("cpu", (Destination) this.globalContext.lookup("cpu"));
-		this.destinationMap.put("mainboard", (Destination) globalContext.lookup("mainboard"));
+		this.destinationMap.put("ram", (Destination) this.jmsSession.createQueue("ram"));
+		this.destinationMap.put("graphicboard", (Destination) this.jmsSession.createQueue("graphicboard"));
+		this.destinationMap.put("cpu", (Destination) this.jmsSession.createQueue("cpu"));
+		this.destinationMap.put("mainboard", (Destination) jmsSession.createQueue("mainboard"));
 		
-		this.destinationMap.put("incomplete", (Destination) globalContext.lookup("incomplete"));
-		this.destinationMap.put("incompletetested", (Destination) globalContext.lookup("incompletetested"));
-		this.destinationMap.put("incorrecttested", (Destination) globalContext.lookup("incorrecttested"));
+		this.destinationMap.put("incomplete", (Destination) jmsSession.createQueue("incomplete"));
+		this.destinationMap.put("incompletetested", (Destination) jmsSession.createQueue("incompletetested"));
+		this.destinationMap.put("incorrecttested", (Destination) jmsSession.createQueue("incorrecttested"));
 		
-		this.destinationMap.put("complete", (Destination) globalContext.lookup("complete"));
-		this.destinationMap.put("trashed", (Destination) globalContext.lookup("trashed"));
-		this.destinationMap.put("shipped", (Destination) globalContext.lookup("shipped"));
+		this.destinationMap.put("complete", (Destination) jmsSession.createQueue("complete"));
+		this.destinationMap.put("trashed", (Destination) jmsSession.createQueue("trashed"));
+		this.destinationMap.put("shipped", (Destination) jmsSession.createQueue("shipped"));
 	}
 	
 	private void createDestinations()
 	{
-		try 
-		{
+//		try 
+//		{
+			
 			//Create Destinations - second argument is if it's a queue
-			if (!admin.destinationExists("ram"))
-				this.admin.addDestination("ram", Boolean.TRUE);
-			if (!admin.destinationExists("graphicboard"))
-				this.admin.addDestination("graphicboard", Boolean.TRUE);
-			if (!admin.destinationExists("cpu"))
-				this.admin.addDestination("cpu", Boolean.TRUE);
-			if (!admin.destinationExists("mainboard"))
-				this.admin.addDestination("mainboard", Boolean.TRUE);
-			
-			if (!admin.destinationExists("incomplete"))
-				this.admin.addDestination("incomplete", Boolean.TRUE);
-			if (!admin.destinationExists("incompletetested"))
-				this.admin.addDestination("incompletetested", Boolean.TRUE);
-			if (!admin.destinationExists("incorrecttested"))
-				this.admin.addDestination("incorrecttested", Boolean.TRUE);
-			
-			if (!admin.destinationExists("complete"))
-				this.admin.addDestination("complete", Boolean.TRUE);
-			if (!admin.destinationExists("trashed"))
-				this.admin.addDestination("trashed", Boolean.TRUE);
-			if (!admin.destinationExists("shipped"))
-				this.admin.addDestination("shipped", Boolean.TRUE);
-			
-		} catch (JMSException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//			if (!admin.destinationExists("ram"))
+//				this.admin.addDestination("ram", Boolean.TRUE);
+//			if (!admin.destinationExists("graphicboard"))
+//				this.admin.addDestination("graphicboard", Boolean.TRUE);
+//			if (!admin.destinationExists("cpu"))
+//				this.admin.addDestination("cpu", Boolean.TRUE);
+//			if (!admin.destinationExists("mainboard"))
+//				this.admin.addDestination("mainboard", Boolean.TRUE);
+//			
+//			if (!admin.destinationExists("incomplete"))
+//				this.admin.addDestination("incomplete", Boolean.TRUE);
+//			if (!admin.destinationExists("incompletetested"))
+//				this.admin.addDestination("incompletetested", Boolean.TRUE);
+//			if (!admin.destinationExists("incorrecttested"))
+//				this.admin.addDestination("incorrecttested", Boolean.TRUE);
+//			
+//			if (!admin.destinationExists("complete"))
+//				this.admin.addDestination("complete", Boolean.TRUE);
+//			if (!admin.destinationExists("trashed"))
+//				this.admin.addDestination("trashed", Boolean.TRUE);
+//			if (!admin.destinationExists("shipped"))
+//				this.admin.addDestination("shipped", Boolean.TRUE);
+//			
+//		} catch (JMSException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 		//Destination listing
 		    @SuppressWarnings("rawtypes")
@@ -297,7 +297,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		
 		if(messageCount > 0)
 		{
-			try 
+			try
 		    {
 				Destination targetDestination = this.destinationMap.get(destinationName);
 		
@@ -306,7 +306,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 				this.jmsConnection.start();
 				
 				ObjectMessage someObject = (ObjectMessageImpl) receiver.receive();
-				someObject.clearBody();	
+				someObject.clearBody();
 				
 				//TODO here may be some check if the class is valid
 				if(!someObject.getClass().equals(Computer.class))
@@ -381,7 +381,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			this.jmsConnection.close();
 			this.globalContext.close();
 			this.destinationMap.clear();
-			this.admin.close();
+			//this.admin.close();
 		
 		} catch (JMSException e) 
 		{
@@ -400,66 +400,72 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	{
 		logger.info("Listing available parts.");
 		List<Part> result = new ArrayList<Part>();
+		
 		// create the browser
-		Queue queue;
+
+		result.addAll(fetchParts("ram"));
+		result.addAll(fetchParts("graphicboard"));
+		result.addAll(fetchParts("cpu"));
+		result.addAll(fetchParts("mainboard"));
 		
-		// TODO optimization: only use queues with parts in it -> how can i differ without hard code it?
-		// TODO use fetchPartObject function
-		
-		// Iterate over all destinations
-		Iterator<Entry<String, Destination>> entryIterator = this.destinationMap.entrySet().iterator();
-		Entry<String,Destination> entrySet;
-		
+
+		logger.info("Finished listing parts.("+result.size()+")");
+		return result;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private List<Part> fetchParts(String destination) throws SharedWorkspaceException
+	{
+		List<Part> result = new ArrayList<Part>();
 		try 
 		{
-			entrySet = entryIterator.next();
+			        Queue queue = (Queue) this.globalContext.lookup(destination);
+			        //System.out.println("queue:" + queue.getQueueName());
+	
+					// create a browser (not consuming)
+					QueueBrowser browser = this.jmsSession.createBrowser(queue);
 			
-			while(entrySet != null)
-			{
-				entrySet = entryIterator.next();
-				// lookup destination with name
-				queue = (Queue) this.globalContext.lookup(entrySet.getKey());
-				
-				// create a browser (not consuming)
-				QueueBrowser browser = this.jmsSession.createBrowser(queue);
-		
-		        // start the connection
-		        this.jmsConnection.start();
-		
-		        @SuppressWarnings("rawtypes")
-				Enumeration messages = browser.getEnumeration();
-		        
-		        while (messages.hasMoreElements()) 
-		        {
-		            Message message = (Message) messages.nextElement();
-		            if (message instanceof ObjectMessage) 
-		            {
-		                ObjectMessage somePart = (ObjectMessageImpl) message;
-		                
-		                //without clearbody the object would be read only!
-		                somePart.clearBody();
-		                
-		                //Check if we have a part
-		                if(!somePart.getClass().equals(Computer.class))
-		                {
-		                	result.add((Part) somePart.getObject());
-		                }
-		                
-		            } else if (message != null) 
-		            {
-		                // not our problem
-		            }
-		        }
-			}
-	        
-		} catch (NamingException e) 
-		{
-			throw new SharedWorkspaceException("NamingException in getAvailableParts: Error (" + e.getMessage() + ")");
+			        // start the connection
+			        this.jmsConnection.start();
+			
+					Enumeration messages = browser.getEnumeration();
+			        
+			        while (messages.hasMoreElements()) 
+			        {
+			            Message message = (Message) messages.nextElement();
+			            if (message instanceof ObjectMessage) 
+			            {
+			                ObjectMessage somePart = (ObjectMessageImpl) message;
+			                
+			                //without clearbody the object would be read only!
+			                somePart.clearBody();
+			                
+			                //Check if we have a part
+			                if(!somePart.getClass().equals(Computer.class))
+			                {
+			                	Part resultPart = (Part) somePart.getObject();
+			                	if(resultPart != null)
+			                	{
+			                		result.add(resultPart);
+			                		logger.info("Added Part to result: " + resultPart.toString() + resultPart.getClass());
+			                	}
+			                }
+			                
+			            } else if (message != null) 
+			            {
+			                // not our problem
+			            }
+			        }
+			      
+			  
 		} catch (JMSException e) 
 		{
+			e.printStackTrace();
 			throw new SharedWorkspaceException("JMSException in getAvailableParts: Error (" + e.getMessage() + ")");
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		logger.info("Finished listing parts.");
 		return result;
 	}
 
@@ -469,21 +475,57 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		logger.info("Fetching incomplete computers...");
 		List<Computer> result = new ArrayList<Computer>();
 		
-		Computer someComputer = fetchComputerObject("incomplete");
+		//Computer someComputer = fetchComputerObject("incomplete");
+		//Computer someComputer;
 		
-		while(someComputer != null)
+		try 
 		{
-			if(someComputer.getClass().equals(Computer.class))
-			{
-				result.add(someComputer);
-			}
-			someComputer = fetchComputerObject("incomplete");
+	        Queue queue = (Queue) this.globalContext.lookup("incomplete");
+	        //System.out.println("queue:" + queue.getQueueName());
+	
+			// create a browser (not consuming)
+			QueueBrowser browser;
+		
+			browser = this.jmsSession.createBrowser(queue);
+			
+	        // start the connection
+	        this.jmsConnection.start();
+	
+			@SuppressWarnings("rawtypes")
+			Enumeration messages = browser.getEnumeration();
+			
+	
+			
+	        while (messages.hasMoreElements()) 
+	        {
+	            Message message = (Message) messages.nextElement();
+	            if (message instanceof ObjectMessage) 
+	            {
+	                ObjectMessage somePart = (ObjectMessageImpl) message;
+	                
+	                //without clearbody the object would be read only!
+	                somePart.clearBody();
+	                
+	                //Check if we have a part
+	                if(somePart.getClass().equals(Computer.class))
+	                {
+	                	result.add((Computer) somePart.getObject());
+	                }
+	                
+	            } else if (message != null) 
+	            {
+	                // not our problem
+	            }
+	        }
+		} catch (JMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		logger.info("Fetching incomplete computers finished.");
-		if(this.factory != null)
-		{
-			this.factory.updateComputerList();
-		}
+        
+		logger.info("Fetching incomplete computers finished. ("+result.size()+")");
 		return result;
 	}
 
@@ -491,24 +533,60 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	public List<Computer> getShippedComputers() throws SharedWorkspaceException 
 	{
 		logger.info("Fetching shipped computers...");
+		
+		//Computer someComputer = fetchComputerObject("shipped");
 		List<Computer> result = new ArrayList<Computer>();
 		
-		Computer someComputer = fetchComputerObject("shipped");
+		//Computer someComputer;
 		
-		while(someComputer != null)
+        Queue queue;
+		try 
 		{
-			if(someComputer.getClass().equals(Computer.class))
-			{
-				result.add(someComputer);
-			}
-			someComputer = fetchComputerObject("shipped");
+			queue = (Queue) this.globalContext.lookup("shipped");
+
+	        //System.out.println("queue:" + queue.getQueueName());
+	
+			// create a browser (not consuming)
+			QueueBrowser browser;
+
+			browser = this.jmsSession.createBrowser(queue);
+			
+	        // start the connection
+	        this.jmsConnection.start();
+	
+			@SuppressWarnings("rawtypes")
+			Enumeration messages = browser.getEnumeration();
+			
+	
+			
+	        while (messages.hasMoreElements()) 
+	        {
+	            Message message = (Message) messages.nextElement();
+	            if (message instanceof ObjectMessage) 
+	            {
+	                ObjectMessage someComputer = (ObjectMessageImpl) message;
+	                
+	                //without clearbody the object would be read only!
+	                someComputer.clearBody();
+	                
+	                //Check if we have a part
+	                if(someComputer.getClass().equals(Computer.class))
+	                {
+	                	Computer resultComputer = (Computer) someComputer.getObject();
+	                	if(resultComputer != null)
+	                		result.add(resultComputer);
+	                }
+	                
+	            }
+	        }
+		} catch (JMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		if(this.factory != null)
-		{
-			this.factory.updateComputerList();
-			this.factory.updateShippedList();
-		}
-		logger.info("Fetching shipped computers done.");
+		logger.info("Fetching shipped computers done. ("+result.size()+")");
 		return result;
 	}
 
@@ -518,22 +596,54 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		logger.info("Fetching trashed computers...");
 		List<Computer> result = new ArrayList<Computer>();
 		
-		Computer someComputer = fetchComputerObject("trashed");
-		
-		while(someComputer != null)
+        Queue queue;
+		try 
 		{
-			if(someComputer.getClass().equals(Computer.class))
-			{
-				result.add(someComputer);
-			}
-			someComputer = fetchComputerObject("trashed");
+			queue = (Queue) this.globalContext.lookup("trashed");
+
+	        //System.out.println("queue:" + queue.getQueueName());
+	
+			// create a browser (not consuming)
+			QueueBrowser browser;
+
+			browser = this.jmsSession.createBrowser(queue);
+			
+	        // start the connection
+	        this.jmsConnection.start();
+	
+			@SuppressWarnings("rawtypes")
+			Enumeration messages = browser.getEnumeration();
+			
+	
+			
+	        while (messages.hasMoreElements()) 
+	        {
+	            Message message = (Message) messages.nextElement();
+	            if (message instanceof ObjectMessage) 
+	            {
+	                ObjectMessage someComputer = (ObjectMessageImpl) message;
+	                
+	                //without clearbody the object would be read only!
+	                someComputer.clearBody();
+	                
+	                //Check if we have a part
+	                if(someComputer.getClass().equals(Computer.class))
+	                {
+	                	Computer resultComputer = (Computer) someComputer.getObject();
+	                	if(resultComputer != null)
+	                		result.add(resultComputer);
+	                }
+	                
+	            }
+	        }
+		} catch (JMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		if(this.factory != null)
-		{
-			this.factory.updateComputerList();
-			this.factory.updateTrashBinList();
-		}
-		logger.info("Fetching trashed computers done.");
+		logger.info("Fetching trashed computers done. ("+result.size()+")");
 		return result;
 	}
 
@@ -541,6 +651,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	public void startTransaction() throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		// JMS breaker @Folienblock 3, Seite 12
+		// mšglich mit alternativen implementierungen
 	}
 
 	@Override
@@ -548,6 +659,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	{
 		// TODO Auto-generated method stub
 		// JMS breaker @Folienblock 3, Seite 12
+		// mšglich mit alternativen implementierungen
 	}
 
 	@Override
@@ -555,6 +667,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	{
 		// TODO Auto-generated method stub
 		// JMS breaker @Folienblock 3, Seite 12
+		// mšglich mit alternativen implementierungen
 	}
 
 	@Override
@@ -740,7 +853,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	public void addComputerToTrash(Computer computer) throws SharedWorkspaceException 
 	{
 		logger.info("Trashing computer...");
-		dropMessageObject("trashed",(ObjectMessage) computer);
+		dropMessageObject("trashed", (ObjectMessage) computer);
 		if(this.factory != null)
 		{
 			this.factory.updateComputerList();
