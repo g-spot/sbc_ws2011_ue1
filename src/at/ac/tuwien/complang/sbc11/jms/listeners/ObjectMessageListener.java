@@ -9,7 +9,7 @@ import at.ac.tuwien.complang.sbc11.parts.Part;
 
 public class ObjectMessageListener implements MessageListener
 {
-	private Part somePart;
+	//private Part somePart;
 	
 	public ObjectMessageListener()
 	{
