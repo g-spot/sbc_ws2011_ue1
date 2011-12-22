@@ -9,6 +9,7 @@ public class Order implements Serializable {
 	private static final long serialVersionUID = -4183337383419669910L;
 
 	private long id;
+	private int computerCount;
 	private CPUType cpuType;
 	private int ramCount;
 	private boolean usingGraphicBoard;
@@ -18,6 +19,12 @@ public class Order implements Serializable {
 	}
 	public void setId(long id) {
 		this.id = id;
+	}
+	public int getComputerCount() {
+		return computerCount;
+	}
+	public void setComputerCount(int computerCount) {
+		this.computerCount = computerCount;
 	}
 	public CPUType getCpuType() {
 		return cpuType;

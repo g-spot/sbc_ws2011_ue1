@@ -32,6 +32,9 @@ public class Computer implements Serializable {
 	// who did the work
 	private List<Worker> workers;
 	
+	// is the computer part of an order?
+	private Order order;
+	
 	public Computer() {
 		ramModules = new ArrayList<RAM>();
 		workers = new ArrayList<Worker>();
@@ -186,5 +189,13 @@ public class Computer implements Serializable {
 		}
 		result += ")";
 		return result;
+	}
+
+	public Order getOrder() {
+		return order;
+	}
+
+	public void setOrder(Order order) {
+		this.order = order;
 	}
 }
