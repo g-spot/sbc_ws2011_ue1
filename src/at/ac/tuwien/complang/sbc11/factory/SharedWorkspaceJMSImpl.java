@@ -875,4 +875,11 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public List<Computer> getDeconstructedComputers()
+			throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

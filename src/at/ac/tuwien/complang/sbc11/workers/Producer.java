@@ -38,8 +38,8 @@ public class Producer extends Worker implements Runnable, Serializable {
 			long duration = (long)((Math.random() * 10000)%2000 + 1000);
 			try {
 				logger.info("Producing part " + (producedSoFar + 1) + " of " + productionLimit + "...");
-				Thread.sleep(duration);
-				//Thread.sleep(0);
+				//Thread.sleep(duration);
+				Thread.sleep(0);
 				Part part = (Part)partClass.newInstance();
 				logger.info("Done. Production took " + duration + " milliseconds.");
 

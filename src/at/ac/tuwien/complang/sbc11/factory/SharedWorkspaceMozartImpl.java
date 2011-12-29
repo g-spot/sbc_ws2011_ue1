@@ -369,7 +369,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	}
 	
 	/**
-	 * returns all incomplete computers in the shared workspace
+	 * returns all incomplete computers in the shared workspace, except deconstructed computers
 	 * uses the current simple transaction, if one exists
 	 * @return list of computers
 	 */
@@ -379,8 +379,9 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		logger.info("Starting getIncompleteComputers()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		Computer pattern = new Computer();
-		pattern.setCompletenessTested(null); // take any computers
+		pattern.setCompletenessTested(null); // take any computers that are not deconstructed
 		pattern.setCorrectnessTested(null);
+		pattern.setDeconstructed(false);
 		Selector computerSelector = LindaCoordinator.newSelector(pattern, Selecting.COUNT_MAX);
 		try {
 			logger.info("Finished.");
@@ -421,6 +422,27 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		try {
 			logger.info("Finished.");
 			return capi.read(trashedContainer, computerSelector, RequestTimeout.TRY_ONCE, currentTransaction);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Parts could not be read: Error in MzsCore (" + e.getMessage() + ")");
+		}
+	}
+	
+	/**
+	 * returns all deconstructed computers
+	 * @return list of computers
+	 */
+	@Override
+	public List<Computer> getDeconstructedComputers() throws SharedWorkspaceException {
+		logger.info("Starting getDeconstructedComputers()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		Computer pattern = new Computer();
+		pattern.setCompletenessTested(null);
+		pattern.setCorrectnessTested(null);
+		pattern.setDeconstructed(true);
+		Selector computerSelector = LindaCoordinator.newSelector(pattern, Selecting.COUNT_MAX);
+		try {
+			logger.info("Finished.");
+			return capi.read(incompleteContainer, computerSelector, RequestTimeout.TRY_ONCE, currentTransaction);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Parts could not be read: Error in MzsCore (" + e.getMessage() + ")");
 		}
@@ -543,9 +565,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		if(untestedFor.equals(TestType.COMPLETENESS)) {
 			pattern.setCompletenessTested(TestState.NOT_TESTED);
 			pattern.setCorrectnessTested(null);
+			pattern.setDeconstructed(null);
 		} else if(untestedFor.equals(TestType.CORRECTNESS)) {
 			pattern.setCompletenessTested(null);
 			pattern.setCorrectnessTested(TestState.NOT_TESTED);
+			pattern.setDeconstructed(null);
 		}
 		Selector computerSelector = LindaCoordinator.newSelector(pattern, 1);
 		

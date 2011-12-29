@@ -2,6 +2,8 @@ package at.ac.tuwien.complang.sbc11.workers;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Logger;
 
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
@@ -77,6 +79,33 @@ public class Tester extends Worker implements SecureShutdownApplication, Seriali
 						}
 					}
 					logger.info("Test result: " + computer.getCompletenessTested().toString());
+				}
+				
+				if(computer.isDefect()) {
+					// deconstruct the computer
+					// = write all good parts back to the shared workspace
+					if(computer.getCpu() != null && !computer.getCpu().isDefect()) {
+						sharedWorkspace.addPart(computer.getCpu());
+						computer.setCpu(null);
+					}
+					if(computer.getMainboard() != null && !computer.getMainboard().isDefect()) {
+						sharedWorkspace.addPart(computer.getMainboard());
+						computer.setMainboard(null);
+					}
+					if(computer.getGraphicBoard() != null && !computer.getGraphicBoard().isDefect()) {
+						sharedWorkspace.addPart(computer.getGraphicBoard());
+						computer.setGraphicBoard(null);
+					}
+					Collection<RAM> partsToRemove = new ArrayList<RAM>();
+					for(RAM ram:computer.getRamModules()) {
+						if(!ram.isDefect()) {
+							partsToRemove.add(ram);
+							sharedWorkspace.addPart(ram);
+						}
+					}
+					computer.getRamModules().removeAll(partsToRemove);
+					// finally mark the computer as deconstructed
+					computer.setDeconstructed(true);
 				}
 				
 				// finally write tested computer back to the space

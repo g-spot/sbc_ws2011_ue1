@@ -26,6 +26,7 @@ public abstract class SharedWorkspace {
 	public abstract List<Computer> getIncompleteComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getShippedComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getTrashedComputers() throws SharedWorkspaceException;
+	public abstract List<Computer> getDeconstructedComputers() throws SharedWorkspaceException;
 	
 	// simple transaction control
 	// distributed transactions won't work with mozart spaces

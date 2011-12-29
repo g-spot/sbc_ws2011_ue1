@@ -40,7 +40,8 @@ public class Factory extends JFrame {
 	private JTextField textPartCount;
 	private JTextField textErrorRate;
 	private JTextArea textAreaLogParts;
-	private JTextArea textAreaLogComputers;
+	private JTextArea textAreaLogUntestedComputers;
+	private JTextArea textAreaLogDeconstructedComputers;
 	private JTextArea textAreaLogTrashBin;
 	private JTextArea textAreaLogShipped;
 	private JTextArea textAreaActionLog;
@@ -98,10 +99,14 @@ public class Factory extends JFrame {
 	}
 	
 	public void updateComputerList() {
-		textAreaLogComputers.setText("");
+		textAreaLogUntestedComputers.setText("");
+		textAreaLogDeconstructedComputers.setText("");
 		try {
 			for(Computer c:factory.getIncompleteComputers()) {
-				textAreaLogComputers.append(c.toString() + NEWLINE + NEWLINE);
+				textAreaLogUntestedComputers.append(c.toString() + NEWLINE + NEWLINE);
+			}
+			for(Computer c:factory.getDeconstructedComputers()) {
+				textAreaLogDeconstructedComputers.append(c.toString() + NEWLINE + NEWLINE);
 			}
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -259,11 +264,19 @@ public class Factory extends JFrame {
 		logPartsPanel.add(scrollPaneLogParts);
 		centerPanel.add(logPartsPanel);
 		
-		JPanel logComputersPanel = new JPanel(new GridLayout(1, 1));
-		logComputersPanel.setBorder(BorderFactory.createTitledBorder("Unused computers in workspace"));
-		textAreaLogComputers = new JTextArea();
-		JScrollPane scrollPaneLogUntested = new JScrollPane(textAreaLogComputers);
-		logComputersPanel.add(scrollPaneLogUntested);
+		JPanel logComputersPanel = new JPanel(new GridLayout(2, 1));
+		JPanel logUntestedComputersPanel = new JPanel(new GridLayout(1, 1));
+		logUntestedComputersPanel.setBorder(BorderFactory.createTitledBorder("Unused computers in workspace"));
+		textAreaLogUntestedComputers = new JTextArea();
+		JScrollPane scrollPaneLogUntested = new JScrollPane(textAreaLogUntestedComputers);
+		logUntestedComputersPanel.add(scrollPaneLogUntested);
+		logComputersPanel.add(logUntestedComputersPanel);
+		JPanel logDeconstructedComputersPanel = new JPanel(new GridLayout(1, 1));
+		logDeconstructedComputersPanel.setBorder(BorderFactory.createTitledBorder("Deconstructed computers"));
+		textAreaLogDeconstructedComputers = new JTextArea();
+		JScrollPane scrollPaneLogDeconstructed = new JScrollPane(textAreaLogDeconstructedComputers);
+		logDeconstructedComputersPanel.add(scrollPaneLogDeconstructed);
+		logComputersPanel.add(logDeconstructedComputersPanel);
 		centerPanel.add(logComputersPanel);
 		
 		JPanel logTrashPanel = new JPanel(new GridLayout(1, 1));

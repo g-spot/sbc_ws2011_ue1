@@ -22,6 +22,8 @@ public class Computer implements Serializable {
 	private TestState completenessTested;
 	@Index
 	private TestState correctnessTested;
+	@Index
+	private Boolean deconstructed;
 	
 	// parts
 	private CPU cpu = null;
@@ -40,6 +42,7 @@ public class Computer implements Serializable {
 		workers = new ArrayList<Worker>();
 		completenessTested = TestState.NOT_TESTED;
 		correctnessTested = TestState.NOT_TESTED;
+		deconstructed = false;
 	}
 	
 	/**
@@ -131,6 +134,7 @@ public class Computer implements Serializable {
 		String result = "COMPUTER[" + getId() + "]" + NEWLINE;
 		result += INDENT + toStringParts() + NEWLINE;
 		result += INDENT + toStringTests() + NEWLINE;
+		result += INDENT + toStringDeconstructed() + NEWLINE;
 		result += INDENT + toStringWorkers();
 		return result;
 	}
@@ -179,6 +183,10 @@ public class Computer implements Serializable {
 		return result;
 	}
 	
+	private String toStringDeconstructed() {
+		return "DECONSTRUCTED=" + this.deconstructed;
+	}
+	
 	private String toStringWorkers() {
 		String result = "WORKERS(";
 		if(workers != null && workers.size() > 0) {
@@ -197,5 +205,13 @@ public class Computer implements Serializable {
 
 	public void setOrder(Order order) {
 		this.order = order;
+	}
+
+	public Boolean isDeconstructed() {
+		return deconstructed;
+	}
+
+	public void setDeconstructed(Boolean deconstructed) {
+		this.deconstructed = deconstructed;
 	}
 }
