@@ -11,12 +11,14 @@ import java.util.concurrent.Executors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -26,6 +28,7 @@ import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
+import at.ac.tuwien.complang.sbc11.parts.CPU.CPUType;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
@@ -46,6 +49,11 @@ public class Factory extends JFrame {
 	private JTextArea textAreaLogShipped;
 	private JTextArea textAreaActionLog;
 	private JButton buttonAddProducer;
+	private JTextField textOrderComputerCount;
+	private JComboBox comboOrderCPUType;
+	private JCheckBox checkOrderUseGraphicBoard;
+	private JTextField textOrderRAMCount;
+	private JButton buttonAddOrder;
 	
 	private int workerCount = 0;
 	private int producerCount = 0;
@@ -153,6 +161,10 @@ public class Factory extends JFrame {
 		Executors.defaultThreadFactory().newThread(producer).start();
 	}
 	
+	private void addOrder(int computerCount, CPUType cpuType, int ramCount, boolean useGraphicBoard) {
+		JOptionPane.showMessageDialog(this, "TODO add Order: " + computerCount + ", " + cpuType + ", " + ramCount + ", " + useGraphicBoard);
+	}
+	
 	//TODO remove test code
 	public void test2() {
 		try {
@@ -171,7 +183,7 @@ public class Factory extends JFrame {
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		
-		JPanel topPanel = new JPanel(new GridLayout(1, 2));
+		JPanel topPanel = new JPanel(new GridLayout(1, 1));
 		topPanel.setPreferredSize(new Dimension(200,200));
 		JPanel actionLogPanel = new JPanel(new GridLayout(1, 1));
 		TitledBorder titleActionLog = BorderFactory.createTitledBorder("Action log");
@@ -180,33 +192,33 @@ public class Factory extends JFrame {
 		JScrollPane scrollPaneActionLog = new JScrollPane(textAreaActionLog);
 		actionLogPanel.add(scrollPaneActionLog);
 		
-		JPanel formPanel = new JPanel(new GridLayout(4, 2));
+		JPanel formProducerPanel = new JPanel(new GridLayout(4, 2));
 		
 		JLabel labelPartType = new JLabel("Part type");
-		formPanel.add(labelPartType);
+		formProducerPanel.add(labelPartType);
 		comboPartType = new JComboBox();
 		comboPartType.addItem(new String("CPU"));
 		comboPartType.addItem(new String("Mainboard"));
 		comboPartType.addItem(new String("RAM"));
 		comboPartType.addItem(new String("GraphicBoard"));
-		formPanel.add(comboPartType);
+		formProducerPanel.add(comboPartType);
 		JLabel labelPartCount = new JLabel("Part count");
-		formPanel.add(labelPartCount);
+		formProducerPanel.add(labelPartCount);
 		textPartCount = new JTextField("10");
-		formPanel.add(textPartCount);
+		formProducerPanel.add(textPartCount);
 		JLabel labelPartErrorRate = new JLabel("Error rate");
-		formPanel.add(labelPartErrorRate);
+		formProducerPanel.add(labelPartErrorRate);
 		textErrorRate = new JTextField("0.1");
-		formPanel.add(textErrorRate);
+		formProducerPanel.add(textErrorRate);
 		//topPanel.add(new JLabel());
 		JPanel testPanel = new JPanel();
 		JButton buttonTest = new JButton("Update blackboard manually");
 		JButton buttonTest2 = new JButton("Test");
-		testPanel.add(buttonTest);
+		//testPanel.add(buttonTest);
 		//testPanel.add(buttonTest2);
-		formPanel.add(testPanel);
+		formProducerPanel.add(testPanel);
 		buttonAddProducer = new JButton("Add Producer (currently: " + producerCount + ")");
-		formPanel.add(buttonAddProducer);
+		formProducerPanel.add(buttonAddProducer);
 		
 		// TODO remove test code
 		buttonTest.addActionListener(new ActionListener() {
@@ -248,9 +260,48 @@ public class Factory extends JFrame {
 			}
 		});
 		
-		TitledBorder title = BorderFactory.createTitledBorder("New Producer");
-		formPanel.setBorder(title);
-		topPanel.add(formPanel);
+		JPanel formOrderPanel = new JPanel(new GridLayout(5, 2));
+		JLabel labelOrderComputerCount = new JLabel("Computer count");
+		textOrderComputerCount = new JTextField("10");
+		JLabel labelOrderCPUType = new JLabel("CPU type");
+		comboOrderCPUType = new JComboBox();
+		comboOrderCPUType.addItem(CPUType.SINGLE_CORE.toString());
+		comboOrderCPUType.addItem(CPUType.DUAL_CORE.toString());
+		comboOrderCPUType.addItem(CPUType.QUAD_CORE.toString());
+		JLabel labelOrderUseGraphicBoard = new JLabel("Use graphic board");
+		checkOrderUseGraphicBoard = new JCheckBox();
+		JLabel labelOrderRAMCount = new JLabel("RAM count");
+		textOrderRAMCount = new JTextField("2");
+		buttonAddOrder = new JButton("Submit Order");
+		formOrderPanel.add(labelOrderComputerCount);
+		formOrderPanel.add(textOrderComputerCount);
+		formOrderPanel.add(labelOrderCPUType);
+		formOrderPanel.add(comboOrderCPUType);
+		formOrderPanel.add(labelOrderRAMCount);
+		formOrderPanel.add(textOrderRAMCount);
+		formOrderPanel.add(labelOrderUseGraphicBoard);
+		formOrderPanel.add(checkOrderUseGraphicBoard);
+		formOrderPanel.add(new JPanel());
+		formOrderPanel.add(buttonAddOrder);
+		
+		formProducerPanel.setBorder(BorderFactory.createTitledBorder("New Producer"));
+		formOrderPanel.setBorder(BorderFactory.createTitledBorder("New Order"));
+		
+		buttonAddOrder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					int computerCount = Integer.parseInt(textOrderComputerCount.getText());
+					CPUType cpuType = CPUType.valueOf((String) comboOrderCPUType.getSelectedItem());
+					int ramCount = Integer.parseInt(textOrderRAMCount.getText());
+					boolean useGraphicBoard = checkOrderUseGraphicBoard.isSelected();
+					addOrder(computerCount, cpuType, ramCount, useGraphicBoard);
+				} catch(Exception ex) {
+					JOptionPane.showMessageDialog(null, "Fehler: " + ex.getMessage());
+					ex.printStackTrace();
+				}
+			}
+		});
+		
 		topPanel.add(actionLogPanel);
 		
 		mainPanel.add(topPanel, BorderLayout.PAGE_START);
@@ -295,7 +346,21 @@ public class Factory extends JFrame {
 		
 		mainPanel.add(centerPanel, BorderLayout.CENTER);
 		
-		this.setContentPane(mainPanel);
+		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.add("Log", mainPanel);
+		
+		JPanel inputPanel = new JPanel(new GridLayout(4, 2));
+		inputPanel.add(formProducerPanel);
+		inputPanel.add(new JPanel());
+		inputPanel.add(formOrderPanel);
+		inputPanel.add(new JPanel());
+		inputPanel.add(new JPanel());
+		inputPanel.add(new JPanel());
+		inputPanel.add(new JPanel());
+		inputPanel.add(new JPanel());
+		tabbedPane.add("Input", inputPanel);
+		
+		this.setContentPane(tabbedPane);
 		this.setVisible(true);
 	}
 
