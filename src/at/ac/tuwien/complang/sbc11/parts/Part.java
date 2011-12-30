@@ -13,9 +13,9 @@ public class Part implements Serializable {
 	private static final long serialVersionUID = 7132593689392643018L;
 	
 	@Index
-	private long id;
-	private Producer producer;
-	private boolean isDefect;
+	protected long id;
+	protected Producer producer;
+	protected boolean isDefect;
 	
 	public long getId() {
 		return id;

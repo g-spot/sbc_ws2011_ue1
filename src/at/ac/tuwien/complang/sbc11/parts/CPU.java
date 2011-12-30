@@ -20,5 +20,9 @@ public class CPU extends Part {
 	public void setCpuType(CPUType cpuType) {
 		this.cpuType = cpuType;
 	}
-
+	
+	@Override
+	public String toString() {
+		return this.getCpuType().toString() + "[" + id + "], DEFECT=" + isDefect + ", PRODUCER[" + producer.getId() + "]";
+	}
 }
