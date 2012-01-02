@@ -38,6 +38,7 @@ import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
+import at.ac.tuwien.complang.sbc11.parts.Order;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
@@ -879,6 +880,24 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	@Override
 	public List<Computer> getDeconstructedComputers()
 			throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Order> getOrders() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void addOrder(Order order) throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Order takeOrder(boolean blocking) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -4,6 +4,7 @@ import java.util.List;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
+import at.ac.tuwien.complang.sbc11.parts.Order;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.AsyncAssembler;
@@ -27,6 +28,7 @@ public abstract class SharedWorkspace {
 	public abstract List<Computer> getShippedComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getTrashedComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getDeconstructedComputers() throws SharedWorkspaceException;
+	public abstract List<Order> getOrders() throws SharedWorkspaceException;
 	
 	// simple transaction control
 	// distributed transactions won't work with mozart spaces
@@ -53,6 +55,10 @@ public abstract class SharedWorkspace {
 	public abstract Computer takeCompletelyTestedComputer() throws SharedWorkspaceException;
 	public abstract void shipComputer(Computer computer) throws SharedWorkspaceException;
 	public abstract void addComputerToTrash(Computer computer) throws SharedWorkspaceException;
+	
+	// methods for dealing with orders
+	public abstract void addOrder(Order order) throws SharedWorkspaceException;
+	public abstract Order takeOrder(boolean blocking) throws SharedWorkspaceException;
 	
 	// asynchronous takesParts
 	public abstract void takePartsAsync(Class<?> partType, boolean blocking, int partCount, AsyncAssembler callback) throws SharedWorkspaceException;

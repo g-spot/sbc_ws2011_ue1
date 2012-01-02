@@ -13,6 +13,7 @@ import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.CoordinationData;
 import org.mozartspaces.capi3.CountNotMetException;
 import org.mozartspaces.capi3.FifoCoordinator;
+import org.mozartspaces.capi3.FifoCoordinator.FifoSelector;
 import org.mozartspaces.capi3.IsolationLevel;
 import org.mozartspaces.capi3.KeyCoordinator;
 import org.mozartspaces.capi3.LabelCoordinator;
@@ -42,6 +43,7 @@ import at.ac.tuwien.complang.sbc11.mozart.SpaceUtils;
 import at.ac.tuwien.complang.sbc11.mozart.StandaloneServer;
 import at.ac.tuwien.complang.sbc11.mozart.TakePartsRequestCallbackHandler;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.IncompleteComputerNotificationListener;
+import at.ac.tuwien.complang.sbc11.mozart.listeners.OrderNotificationListener;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.PartNotificationListener;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.ShippedComputerNotificationListener;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.TrashedComputerNotificationListener;
@@ -49,6 +51,7 @@ import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
+import at.ac.tuwien.complang.sbc11.parts.Order;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
@@ -71,6 +74,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	private ContainerReference incompleteContainer;
 	private ContainerReference trashedContainer;
 	private ContainerReference shippedContainer;
+	private ContainerReference orderContainer;
 	private Logger logger;
 	
 	// for transaction purposes
@@ -146,6 +150,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			containerMap.put(incompleteContainer.getStringRepresentation(), SpaceUtils.CONTAINER_INCOMPLETE);
 			containerMap.put(trashedContainer.getStringRepresentation(), SpaceUtils.CONTAINER_TRASHED);
 			containerMap.put(shippedContainer.getStringRepresentation(), SpaceUtils.CONTAINER_SHIPPED);
+			containerMap.put(orderContainer.getStringRepresentation(), SpaceUtils.CONTAINER_ORDERS);
 			
 			// init notifications
 			logger.info("Registering notifications...");
@@ -159,6 +164,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			notificationManager.createNotification(incompleteContainer, new IncompleteComputerNotificationListener(factory, containerMap), operations, null, null);
 			notificationManager.createNotification(trashedContainer, new TrashedComputerNotificationListener(factory, containerMap), operations, null, null);
 			notificationManager.createNotification(shippedContainer, new ShippedComputerNotificationListener(factory, containerMap), operations, null, null);
+			notificationManager.createNotification(orderContainer, new OrderNotificationListener(factory, containerMap), operations, null, null);
 			
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error in MzsCore (" + e.getMessage() + ")");
@@ -195,6 +201,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		incompleteContainer = SpaceUtils.getOrCreateIncompleteContainer(spaceURI, capi);
 		trashedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_TRASHED, spaceURI, capi);
 		shippedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_SHIPPED, spaceURI, capi);
+		orderContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_ORDERS, spaceURI, capi);
 	}
 	
 	/**
@@ -445,6 +452,23 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 			return capi.read(incompleteContainer, computerSelector, RequestTimeout.TRY_ONCE, currentTransaction);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Parts could not be read: Error in MzsCore (" + e.getMessage() + ")");
+		}
+	}
+	
+	/**
+	 * returns all orders
+	 * @return list of orders
+	 */
+	@Override
+	public List<Order> getOrders() throws SharedWorkspaceException {
+		logger.info("Starting getOrders()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		Selector orderSelector = FifoCoordinator.newSelector(Selecting.COUNT_MAX);
+		try {
+			logger.info("Finished.");
+			return capi.read(orderContainer, orderSelector, RequestTimeout.TRY_ONCE, currentTransaction);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Orders could not be read: Error in MzsCore (" + e.getMessage() + ")");
 		}
 	}
 
@@ -764,6 +788,72 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 					null,
 					new TakePartsRequestCallbackHandler(callback));
 		logger.info("Finished.");
+	}
+	
+	/**
+	 * adds a new order to the orderContainer
+	 * uses the current simple transaction, if one exists
+	 * @param order
+	 * 				the order to insert
+	 */
+	@Override
+	public void addOrder(Order order) throws SharedWorkspaceException {
+		logger.info("Starting addOrder()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		try {
+			capi.write(new Entry(order, FifoCoordinator.newCoordinationData()), orderContainer, RequestTimeout.DEFAULT, currentTransaction);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Order could not be written: Error in MzsCore (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
+	}
+	
+	/**
+	 * takes the next order from the shared workspace, i.e. returns the object and removes it
+	 * uses the current simple transaction, if one exists
+	 * @param blocking
+	 * 			if set to true, the method waits until an order arrives
+	 * @return the next order in the fifo list, or null if @blocking=false and no order exists
+	 */
+	@Override
+	public Order takeOrder(boolean blocking) throws SharedWorkspaceException {
+		logger.info("Starting takeOrder()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		List<Order> result = null;
+		Order order = null;
+
+		List<FifoSelector> selectors = Arrays.asList(FifoCoordinator.newSelector(1));
+		
+		try {
+			if(blocking)
+				result = capi.take(orderContainer, selectors, RequestTimeout.INFINITE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
+			else
+			{
+				try {
+					result = capi.take(orderContainer, selectors, RequestTimeout.TRY_ONCE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
+				} catch(CountNotMetException e) {
+					// ok with that, return null
+					logger.info("Finished.");
+					return null;
+				}
+			}
+			
+			if(result.isEmpty())
+			{
+				logger.info("Finished.");
+				return null;
+			}
+			
+			order = result.get(0);
+			
+		} catch (MzsCoreException e) {
+			e.printStackTrace();
+			throw new SharedWorkspaceException("Order could not be taken: Error in MzsCore (" + e.getMessage() + ")");
+		} catch (IndexOutOfBoundsException e) {
+			throw new SharedWorkspaceException("Order could not be taken: Index out of bounds (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
+		return order;
 	}
 
 }

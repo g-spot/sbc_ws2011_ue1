@@ -24,6 +24,7 @@ public class SpaceUtils {
 	public static final String CONTAINER_INCOMPLETE = "<Incomplete>";
 	public static final String CONTAINER_TRASHED = "<Trashed>";
 	public static final String CONTAINER_SHIPPED = "<Shipped>";
+	public static final String CONTAINER_ORDERS = "<Orders>";
 	
 	/**
 	 * searches for a named fifo container, creates a new named container, if nothing is found

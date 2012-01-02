@@ -32,6 +32,7 @@ import at.ac.tuwien.complang.sbc11.parts.CPU.CPUType;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
+import at.ac.tuwien.complang.sbc11.parts.Order;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.workers.Producer;
@@ -48,6 +49,7 @@ public class Factory extends JFrame {
 	private JTextArea textAreaLogTrashBin;
 	private JTextArea textAreaLogShipped;
 	private JTextArea textAreaActionLog;
+	private JTextArea textAreaOrders;
 	private JButton buttonAddProducer;
 	private JTextField textOrderComputerCount;
 	private JComboBox comboOrderCPUType;
@@ -57,6 +59,7 @@ public class Factory extends JFrame {
 	
 	private int workerCount = 0;
 	private int producerCount = 0;
+	private int orderCount = 0;
 	
 	private SharedWorkspace factory;
 	private List<Part> partList = null;
@@ -146,6 +149,18 @@ public class Factory extends JFrame {
 		}
 	}
 	
+	public void updateOrderList() {
+		textAreaOrders.setText("");
+		try {
+			for(Order o:factory.getOrders()) {
+				textAreaOrders.append(o.toString() + NEWLINE + NEWLINE);
+			}
+		} catch (SharedWorkspaceException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+	}
+	
 	public void appendActionLog(String message) {
 		//String text = textAreaActionLog.getText();
 		//textAreaActionLog.setText(text + message); // workaround for automatic scrolling
@@ -162,7 +177,14 @@ public class Factory extends JFrame {
 	}
 	
 	private void addOrder(int computerCount, CPUType cpuType, int ramCount, boolean useGraphicBoard) {
-		JOptionPane.showMessageDialog(this, "TODO add Order: " + computerCount + ", " + cpuType + ", " + ramCount + ", " + useGraphicBoard);
+		Order order = new Order((long)++orderCount, computerCount, cpuType, ramCount, useGraphicBoard);
+		try {
+			factory.addOrder(order);
+			JOptionPane.showMessageDialog(this, "Successfully added order with ID=" + orderCount);
+		} catch (SharedWorkspaceException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
 	}
 	
 	//TODO remove test code
@@ -183,7 +205,7 @@ public class Factory extends JFrame {
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		
-		JPanel topPanel = new JPanel(new GridLayout(1, 1));
+		JPanel topPanel = new JPanel(new GridLayout(1, 2));
 		topPanel.setPreferredSize(new Dimension(200,200));
 		JPanel actionLogPanel = new JPanel(new GridLayout(1, 1));
 		TitledBorder titleActionLog = BorderFactory.createTitledBorder("Action log");
@@ -191,6 +213,13 @@ public class Factory extends JFrame {
 		textAreaActionLog = new JTextArea();
 		JScrollPane scrollPaneActionLog = new JScrollPane(textAreaActionLog);
 		actionLogPanel.add(scrollPaneActionLog);
+		
+		JPanel orderLogPanel = new JPanel(new GridLayout(1, 1));
+		TitledBorder titleOrderLog = BorderFactory.createTitledBorder("Orders");
+		orderLogPanel.setBorder(titleOrderLog);
+		textAreaOrders = new JTextArea();
+		JScrollPane scrollPaneOrderLog = new JScrollPane(textAreaOrders);
+		orderLogPanel.add(scrollPaneOrderLog);
 		
 		JPanel formProducerPanel = new JPanel(new GridLayout(4, 2));
 		
@@ -303,6 +332,7 @@ public class Factory extends JFrame {
 		});
 		
 		topPanel.add(actionLogPanel);
+		topPanel.add(orderLogPanel);
 		
 		mainPanel.add(topPanel, BorderLayout.PAGE_START);
 		

@@ -14,6 +14,14 @@ public class Order implements Serializable {
 	private int ramCount;
 	private boolean usingGraphicBoard;
 	
+	public Order(long id, int computerCount, CPUType cpuType, int ramCount, boolean usingGraphicBoard) {
+		this.id = id;
+		this.computerCount = computerCount;
+		this.cpuType = cpuType;
+		this.ramCount = ramCount;
+		this.usingGraphicBoard = usingGraphicBoard;
+	}
+	
 	public long getId() {
 		return id;
 	}
@@ -43,5 +51,22 @@ public class Order implements Serializable {
 	}
 	public void setUsingGraphicBoard(boolean useGraphicBoard) {
 		this.usingGraphicBoard = useGraphicBoard;
+	}
+	
+	@Override
+	public String toString() {
+		String result;
+		final char NEWLINE = '\n';
+		final String INDENT = "   ";
+		
+		result = "ORDER[" + id + "]" + NEWLINE;
+		result += INDENT + "COUNT=" + computerCount + ", ";
+		if(cpuType != null)
+			result += "CPU=" + cpuType.toString() + NEWLINE;
+		else
+			result += "CPU=[n.a.]" + NEWLINE;
+		result += INDENT + "RAM=" + ramCount + ", ";
+		result += "GRAPHICS=" + usingGraphicBoard;
+		return result;
 	}
 }
