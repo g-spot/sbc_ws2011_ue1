@@ -135,7 +135,8 @@ public class Computer implements Serializable {
 		result += INDENT + toStringParts() + NEWLINE;
 		result += INDENT + toStringTests() + NEWLINE;
 		result += INDENT + toStringDeconstructed() + NEWLINE;
-		result += INDENT + toStringWorkers();
+		result += INDENT + toStringWorkers() + NEWLINE;
+		result += INDENT + toStringOrder();
 		return result;
 	}
 	
@@ -196,6 +197,15 @@ public class Computer implements Serializable {
 			result = result.substring(0, result.length() - 1);
 		}
 		result += ")";
+		return result;
+	}
+	
+	private String toStringOrder() {
+		String result = "";
+		if(order != null)
+			result = "ORDER[" + order.getId() + "]";
+		else
+			result = "NO ORDER";
 		return result;
 	}
 

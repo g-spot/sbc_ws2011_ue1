@@ -1,6 +1,8 @@
 package at.ac.tuwien.complang.sbc11.parts;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import at.ac.tuwien.complang.sbc11.parts.CPU.CPUType;
 
@@ -14,12 +16,15 @@ public class Order implements Serializable {
 	private int ramCount;
 	private boolean usingGraphicBoard;
 	
+	private List<Computer> producedComputer;
+	
 	public Order(long id, int computerCount, CPUType cpuType, int ramCount, boolean usingGraphicBoard) {
 		this.id = id;
 		this.computerCount = computerCount;
 		this.cpuType = cpuType;
 		this.ramCount = ramCount;
 		this.usingGraphicBoard = usingGraphicBoard;
+		this.setProducedComputer(new ArrayList<Computer>());
 	}
 	
 	public long getId() {
@@ -52,7 +57,15 @@ public class Order implements Serializable {
 	public void setUsingGraphicBoard(boolean useGraphicBoard) {
 		this.usingGraphicBoard = useGraphicBoard;
 	}
-	
+
+	public List<Computer> getProducedComputer() {
+		return producedComputer;
+	}
+
+	public void setProducedComputer(List<Computer> producedComputer) {
+		this.producedComputer = producedComputer;
+	}
+
 	@Override
 	public String toString() {
 		String result;
@@ -66,7 +79,8 @@ public class Order implements Serializable {
 		else
 			result += "CPU=[n.a.]" + NEWLINE;
 		result += INDENT + "RAM=" + ramCount + ", ";
-		result += "GRAPHICS=" + usingGraphicBoard;
+		result += "GRAPHICS=" + usingGraphicBoard + NEWLINE;
+		result += INDENT + "FINISHED " + producedComputer.size() + "/" + computerCount + " COMPUTERS";
 		return result;
 	}
 }
