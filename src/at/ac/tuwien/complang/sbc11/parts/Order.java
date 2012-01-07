@@ -16,7 +16,7 @@ public class Order implements Serializable {
 	private int ramCount;
 	private boolean usingGraphicBoard;
 	
-	private List<Computer> producedComputer;
+	private List<Computer> producedComputers;
 	
 	public Order(long id, int computerCount, CPUType cpuType, int ramCount, boolean usingGraphicBoard) {
 		this.id = id;
@@ -24,7 +24,7 @@ public class Order implements Serializable {
 		this.cpuType = cpuType;
 		this.ramCount = ramCount;
 		this.usingGraphicBoard = usingGraphicBoard;
-		this.setProducedComputer(new ArrayList<Computer>());
+		this.setProducedComputers(new ArrayList<Computer>());
 	}
 	
 	public long getId() {
@@ -58,12 +58,20 @@ public class Order implements Serializable {
 		this.usingGraphicBoard = useGraphicBoard;
 	}
 
-	public List<Computer> getProducedComputer() {
-		return producedComputer;
+	public List<Computer> getProducedComputers() {
+		return producedComputers;
 	}
 
-	public void setProducedComputer(List<Computer> producedComputer) {
-		this.producedComputer = producedComputer;
+	public void setProducedComputers(List<Computer> producedComputers) {
+		this.producedComputers = producedComputers;
+	}
+	
+	public boolean isFinished() {
+		if(producedComputers == null)
+			return false;
+		if(producedComputers.size() == computerCount)
+			return true;
+		return false;
 	}
 
 	@Override
@@ -80,7 +88,7 @@ public class Order implements Serializable {
 			result += "CPU=[n.a.]" + NEWLINE;
 		result += INDENT + "RAM=" + ramCount + ", ";
 		result += "GRAPHICS=" + usingGraphicBoard + NEWLINE;
-		result += INDENT + "FINISHED " + producedComputer.size() + "/" + computerCount + " COMPUTERS";
+		result += INDENT + "FINISHED " + producedComputers.size() + "/" + computerCount + " COMPUTERS";
 		return result;
 	}
 }
