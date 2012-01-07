@@ -48,6 +48,7 @@ import at.ac.tuwien.complang.sbc11.mozart.listeners.PartNotificationListener;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.ShippedComputerNotificationListener;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.TrashedComputerNotificationListener;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
+import at.ac.tuwien.complang.sbc11.parts.CPU.CPUType;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
@@ -79,7 +80,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	
 	// for transaction purposes
 	private TransactionReference currentTransaction = null;
-	
+
 	// global constants
 	private final String LABEL_COMPLETELY_TESTED = "label_completely_tested";
 	private final String LABEL_NOT_COMPLETELY_TESTED = "label_not_completely_tested";
@@ -854,6 +855,62 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		}
 		logger.info("Finished.");
 		return order;
+	}
+
+	/**
+	 * takes a cpu from the shared workspace, i.e. returns the object and removes it
+	 * uses the current simple transaction, if one exists
+	 * @param cpuType
+	 * 				type of the cpu
+	 * @param blocking
+	 * 				if true, takeCPU() waits until a cpu can be found and returned
+	 * 				if false, takeCPU() tries only once to get the part
+	 * @param partCount
+	 * 				specifies the number of parts to be taken
+	 * @return a cpu with @cpuType, null if @blocking = false and no @partCount parts can be found
+	 */
+	@Override
+	public List<CPU> takeCPU(CPUType cpuType, boolean blocking, int partCount)
+			throws SharedWorkspaceException {
+		logger.info("Starting takeCPU()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		List<CPU> result = null;
+		Selector partSelector = null;
+		List<Selector> selectorList = new ArrayList<Selector>();
+
+		CPU pattern = new CPU();
+		pattern.setCpuType(cpuType);
+		partSelector = LindaCoordinator.newSelector(pattern, partCount);
+		selectorList.add(partSelector);
+		
+		try {
+			if(blocking)
+				result = capi.take(partContainer, selectorList, RequestTimeout.INFINITE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
+			else
+			{
+				try {
+					result = capi.take(partContainer, selectorList, RequestTimeout.TRY_ONCE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
+				} catch(CountNotMetException e) {
+					// ok with that, return null
+					logger.info("Finished.");
+					return null;
+				}
+			}
+			
+			if(result.isEmpty())
+			{
+				logger.info("Finished.");
+				return null;
+			}
+			
+		} catch (MzsCoreException e) {
+			e.printStackTrace();
+			throw new SharedWorkspaceException("CPU could not be taken: Error in MzsCore (" + e.getMessage() + ")");
+		} catch (IndexOutOfBoundsException e) {
+			throw new SharedWorkspaceException("CPU could not be taken: Index out of bounds (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
+		return result;
 	}
 
 }

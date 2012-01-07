@@ -35,6 +35,7 @@ import org.exolab.jms.message.ObjectMessageImpl;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
+import at.ac.tuwien.complang.sbc11.parts.CPU.CPUType;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
@@ -898,6 +899,13 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 
 	@Override
 	public Order takeOrder(boolean blocking) throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<CPU> takeCPU(CPUType cpuType, boolean blocking, int partCount)
+			throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}

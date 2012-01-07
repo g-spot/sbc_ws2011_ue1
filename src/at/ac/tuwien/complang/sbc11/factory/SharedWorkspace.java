@@ -3,6 +3,8 @@ package at.ac.tuwien.complang.sbc11.factory;
 import java.util.List;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
+import at.ac.tuwien.complang.sbc11.parts.CPU;
+import at.ac.tuwien.complang.sbc11.parts.CPU.CPUType;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.Order;
 import at.ac.tuwien.complang.sbc11.parts.Part;
@@ -45,6 +47,7 @@ public abstract class SharedWorkspace {
 	// methods for assembling computers (tasks of the assembler)
 	public abstract long getNextComputerId() throws SharedWorkspaceException;
 	public abstract List<Part> takeParts(Class<?> partType, boolean blocking, int partCount) throws SharedWorkspaceException;
+	public abstract List<CPU> takeCPU(CPUType cpuType, boolean blocking, int partCount) throws SharedWorkspaceException;
 	public abstract void addComputer(Computer computer) throws SharedWorkspaceException;
 	
 	// methods for testing computers (tasks of the tester)

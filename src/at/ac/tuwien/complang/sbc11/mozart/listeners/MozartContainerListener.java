@@ -15,7 +15,7 @@ public abstract class MozartContainerListener implements NotificationListener {
 	
 	protected Factory factory;
 	protected HashMap<String, String> containerMap;
-	private final char NEWLINE = '\n';
+	protected final char NEWLINE = '\n';
 	
 	/**
 	 * calls the right UI update callback method
@@ -29,7 +29,7 @@ public abstract class MozartContainerListener implements NotificationListener {
 	 * 			a key to search for in the containerMap
 	 * @return the value corresponding to the found key in the containerMap
 	 */
-	private String getContainerName(String containerId) {
+	protected String getContainerName(String containerId) {
 		String containerName = "UNKNOWN CONTAINER";
 		for(String key:containerMap.keySet()) {
 			if(key.equals(containerId)) {
@@ -45,7 +45,7 @@ public abstract class MozartContainerListener implements NotificationListener {
 	 * @param entries
 	 * @return
 	 */
-	private String getEntriesDescription(List<? extends Serializable> entries) {
+	protected String getEntriesDescription(List<? extends Serializable> entries) {
 		String description = "";
 		if(entries == null || entries.size() == 0)
 			return "   NO ENTRIES FOUND";

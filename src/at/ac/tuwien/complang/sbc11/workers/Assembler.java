@@ -11,6 +11,7 @@ import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
 import at.ac.tuwien.complang.sbc11.parts.GraphicBoard;
 import at.ac.tuwien.complang.sbc11.parts.Mainboard;
+import at.ac.tuwien.complang.sbc11.parts.Order;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.parts.RAM;
 import at.ac.tuwien.complang.sbc11.workers.shutdown.SecureShutdownApplication;
@@ -28,6 +29,14 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 		} catch (SharedWorkspaceException e) {
 			System.out.println(e.getMessage());
 		}
+	}
+	
+	public Computer assembleForOrder(Order order) {
+		// TODO assemble a computer for the given order
+		// non-blocking
+		// return null (not all parts available) or the computer object
+		// run in transaction
+		return null;
 	}
 	
 	public void assemble() {

@@ -191,8 +191,11 @@ public class Factory extends JFrame {
 	public void test2() {
 		try {
 			//Computer computer = factory.takeCompletelyTestedComputer();
-			List<Part> p = factory.takeParts(CPU.class, false, 1);
-			JOptionPane.showMessageDialog(this, "Took: " + p.get(0).toString());
+			List<CPU> p = factory.takeCPU(CPUType.DUAL_CORE, false, 1);
+			if(p != null)
+				JOptionPane.showMessageDialog(this, "Took: " + p.get(0).toString());
+			else
+				JOptionPane.showMessageDialog(this, "Result is null");
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage());
 		}
@@ -244,7 +247,7 @@ public class Factory extends JFrame {
 		JButton buttonTest = new JButton("Update blackboard manually");
 		JButton buttonTest2 = new JButton("Test");
 		//testPanel.add(buttonTest);
-		//testPanel.add(buttonTest2);
+		testPanel.add(buttonTest2);
 		formProducerPanel.add(testPanel);
 		buttonAddProducer = new JButton("Add Producer (currently: " + producerCount + ")");
 		formProducerPanel.add(buttonAddProducer);
