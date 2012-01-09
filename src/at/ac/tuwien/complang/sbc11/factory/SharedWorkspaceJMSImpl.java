@@ -814,7 +814,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	}
 
 	@Override
-	public Computer takeCompletelyTestedComputer() throws SharedWorkspaceException 
+	public Computer takeNormalCompletelyTestedComputer() throws SharedWorkspaceException 
 	{
 		logger.info("Taking completely tested computer...");
 		Computer someComputer = fetchComputerObject("complete");
@@ -905,6 +905,20 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 
 	@Override
 	public List<CPU> takeCPU(CPUType cpuType, boolean blocking, int partCount)
+			throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean testOrderCountMet(Order order)
+			throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<Computer> takeAllOrderedComputers(Order order)
 			throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;

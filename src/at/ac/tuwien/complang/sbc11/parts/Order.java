@@ -4,12 +4,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mozartspaces.capi3.Index;
+import org.mozartspaces.capi3.Queryable;
+
 import at.ac.tuwien.complang.sbc11.parts.CPU.CPUType;
 
+@Queryable
 public class Order implements Serializable {
 
 	private static final long serialVersionUID = -4183337383419669910L;
 
+	@Index
 	private long id;
 	private int computerCount;
 	private CPUType cpuType;
@@ -87,8 +92,8 @@ public class Order implements Serializable {
 		else
 			result += "CPU=[n.a.]" + NEWLINE;
 		result += INDENT + "RAM=" + ramCount + ", ";
-		result += "GRAPHICS=" + usingGraphicBoard + NEWLINE;
-		result += INDENT + "FINISHED " + producedComputers.size() + "/" + computerCount + " COMPUTERS";
+		result += "GRAPHICS=" + usingGraphicBoard;/* + NEWLINE;
+		result += INDENT + "FINISHED " + producedComputers.size() + "/" + computerCount + " COMPUTERS";*/
 		return result;
 	}
 }

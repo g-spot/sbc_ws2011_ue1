@@ -34,7 +34,7 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 				
 				logger.info("Trying to take completely tested computer from the space...");
 				// first get a completely tested computer from the shared workspace
-				Computer computer = sharedWorkspace.takeCompletelyTestedComputer();
+				Computer computer = sharedWorkspace.takeNormalCompletelyTestedComputer();
 				if(computer == null)
 					throw new SharedWorkspaceException("No computer found.");
 				logger.info("Took computer[" + computer.getId() + "]");

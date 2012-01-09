@@ -84,6 +84,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	// global constants
 	private final String LABEL_COMPLETELY_TESTED = "label_completely_tested";
 	private final String LABEL_NOT_COMPLETELY_TESTED = "label_not_completely_tested";
+	private final String LABEL_ORDER_COMPLETELY_TESTED = "label_order_completely_tested";
 	private final String KEY_ID_PART = "key_id_part";
 	private final String KEY_ID_COMPUTER = "key_id_computer";
 	
@@ -557,7 +558,12 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		
 		String label = null;
 		if(computer.isCompletelyTested())
-			label = LABEL_COMPLETELY_TESTED;
+		{
+			if(computer.getOrder() == null)
+				label = LABEL_COMPLETELY_TESTED;
+			else
+				label = LABEL_ORDER_COMPLETELY_TESTED;
+		}
 		else
 			label = LABEL_NOT_COMPLETELY_TESTED;
 		
@@ -652,7 +658,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	 * @return the computer
 	 */
 	@Override
-	public Computer takeCompletelyTestedComputer()
+	public Computer takeNormalCompletelyTestedComputer()
 			throws SharedWorkspaceException {
 		logger.info("Starting takeCompletelyTestedComputer()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
@@ -667,9 +673,74 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 				return computerList.get(0);
 			}
 		} catch (MzsCoreException e) {
-			throw new SharedWorkspaceException("Parts could not be read: Error in MzsCore (" + e.getMessage() + ")");
+			throw new SharedWorkspaceException("Computers could not be read: Error in MzsCore (" + e.getMessage() + ")");
 		}
 		return null;
+	}
+	
+	/**
+	 * tests whether the required amount of computers for the given order has been produced
+	 * @param order
+	 * 			the order
+	 * @return false if there are still computers missing, true otherwise
+	 */
+	@Override
+	public boolean testOrderCountMet(Order order) throws SharedWorkspaceException {
+		logger.info("Starting testOrderCountMet()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		
+		Selector labelSelector = LabelCoordinator.newSelector(LABEL_ORDER_COMPLETELY_TESTED, Selecting.COUNT_MAX);
+		Computer template = new Computer();
+		template.setCompletenessTested(null);
+		template.setCorrectnessTested(null);
+		template.setDeconstructed(null);
+		template.setOrder(order);
+		Selector orderSelector = LindaCoordinator.newSelector(template, Selecting.COUNT_MAX);
+		List<Selector> selectors = new ArrayList<Selector>();
+		selectors.add(labelSelector);
+		selectors.add(orderSelector);
+		
+		try {
+			int computerCount = capi.test(incompleteContainer, selectors, RequestTimeout.INFINITE, currentTransaction);
+			logger.info("Finished.");
+			if(computerCount < order.getComputerCount())
+				return false;
+			return true;
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Computers could not be read: Error in MzsCore (" + e.getMessage() + ")");
+		}
+	}
+	
+	/**
+	 * takes all completely tested computers that are part of the given order
+	 * @param order
+	 * 			the order
+	 * @return all completely tested computers that are part of the given order
+	 */
+	@Override
+	public List<Computer> takeAllOrderedComputers(Order order)
+			throws SharedWorkspaceException {
+		logger.info("Starting takeAllOrderedComputers()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		
+		Selector labelSelector = LabelCoordinator.newSelector(LABEL_ORDER_COMPLETELY_TESTED, Selecting.COUNT_MAX);
+		Computer template = new Computer();
+		template.setCompletenessTested(null);
+		template.setCorrectnessTested(null);
+		template.setDeconstructed(null);
+		template.setOrder(order);
+		Selector orderSelector = LindaCoordinator.newSelector(template, Selecting.COUNT_MAX);
+		List<Selector> selectors = new ArrayList<Selector>();
+		selectors.add(labelSelector);
+		selectors.add(orderSelector);
+		
+		try {
+			List<Computer> computerList = capi.take(incompleteContainer, selectors, RequestTimeout.INFINITE, currentTransaction);
+			logger.info("Finished.");
+			return computerList;
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Computers could not be read: Error in MzsCore (" + e.getMessage() + ")");
+		}
 	}
 
 	/**

@@ -35,6 +35,7 @@ public class Computer implements Serializable {
 	private List<Worker> workers;
 	
 	// is the computer part of an order?
+	@Index
 	private Order order;
 	
 	public Computer() {
@@ -141,11 +142,11 @@ public class Computer implements Serializable {
 	}
 	
 	private String toStringParts() {
-		String result = "CPU";
+		String result = "";
 		if(cpu != null)
-			result += "[" + cpu.getId() + "]";
+			result += cpu.getCpuType().toString() + "[" + cpu.getId() + "]";
 		else
-			result += "[n.a.]";
+			result += "CPU[n.a.]";
 		result += ", MAINBOARD";
 		if(mainboard != null)
 			result += "[" + mainboard.getId() + "]";
@@ -165,6 +166,8 @@ public class Computer implements Serializable {
 			result = result.substring(0, result.length() - 1);
 			result += "]";
 		}
+		else
+			result += "[n.a.]";
 		return result;
 	}
 	

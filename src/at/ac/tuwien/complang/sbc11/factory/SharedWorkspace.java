@@ -55,7 +55,9 @@ public abstract class SharedWorkspace {
 	// uses also addComputer to put the tested computer back into space
 	
 	// methods for shipping computers (tasks of the logistician)
-	public abstract Computer takeCompletelyTestedComputer() throws SharedWorkspaceException;
+	public abstract Computer takeNormalCompletelyTestedComputer() throws SharedWorkspaceException;
+	public abstract boolean testOrderCountMet(Order order) throws SharedWorkspaceException;
+	public abstract List<Computer> takeAllOrderedComputers(Order order) throws SharedWorkspaceException;
 	public abstract void shipComputer(Computer computer) throws SharedWorkspaceException;
 	public abstract void addComputerToTrash(Computer computer) throws SharedWorkspaceException;
 	
