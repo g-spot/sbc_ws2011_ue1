@@ -59,7 +59,7 @@ public class Computer implements Serializable {
 	 */
 	public boolean isCompletelyTested() {
 		// returns false if at least one test has not been done yet
-		return (completenessTested != TestState.NOT_TESTED && correctnessTested != TestState.NOT_TESTED);
+		return (completenessTested != null && correctnessTested != null && completenessTested != TestState.NOT_TESTED && correctnessTested != TestState.NOT_TESTED);
 	}
 	
 	/**
@@ -158,7 +158,7 @@ public class Computer implements Serializable {
 		else
 			result += "[n.a.]";
 		result += ", RAM";
-		if(ramModules != null) {
+		if(ramModules != null && ramModules.size() > 0) {
 			result +="[";
 			for(RAM ram:ramModules) {
 				result += ram.getId() + ",";

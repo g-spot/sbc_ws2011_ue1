@@ -2,11 +2,13 @@ package at.ac.tuwien.complang.sbc11.workers;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.logging.Logger;
 
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
+import at.ac.tuwien.complang.sbc11.parts.Order;
 import at.ac.tuwien.complang.sbc11.workers.shutdown.SecureShutdownApplication;
 import at.ac.tuwien.complang.sbc11.workers.shutdown.ShutdownInterceptor;
 
@@ -116,7 +118,19 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 
 	@Override
 	public void run() {
-		distribute();
+		//distribute();
+		Order order = new Order(null, 5, null, 0, false);
+		try {
+			boolean result = sharedWorkspace.testOrderCountMet(order);
+			logger.info("RESULT OF TEST: " + result);
+			/*List<Computer> computers = sharedWorkspace.takeAllOrderedComputers(order);
+			for(Computer computer:computers) {
+				logger.info("FOUND PC: " + computer);
+			}*/
+		} catch (SharedWorkspaceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override

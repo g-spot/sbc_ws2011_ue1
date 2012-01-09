@@ -694,15 +694,17 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		template.setCompletenessTested(null);
 		template.setCorrectnessTested(null);
 		template.setDeconstructed(null);
-		template.setOrder(order);
+		template.setOrder(new Order());
+		logger.info("PATTERN: " + template);
+		logger.info("PATTERN - ORDER:" + order);
 		Selector orderSelector = LindaCoordinator.newSelector(template, Selecting.COUNT_MAX);
 		List<Selector> selectors = new ArrayList<Selector>();
-		selectors.add(labelSelector);
+		//selectors.add(labelSelector);
 		selectors.add(orderSelector);
 		
 		try {
-			int computerCount = capi.test(incompleteContainer, selectors, RequestTimeout.INFINITE, currentTransaction);
-			logger.info("Finished.");
+			int computerCount = capi.test(incompleteContainer, selectors, RequestTimeout.TRY_ONCE, currentTransaction);
+			logger.info("Finished computerCount=" + computerCount);
 			if(computerCount < order.getComputerCount())
 				return false;
 			return true;
@@ -731,11 +733,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		template.setOrder(order);
 		Selector orderSelector = LindaCoordinator.newSelector(template, Selecting.COUNT_MAX);
 		List<Selector> selectors = new ArrayList<Selector>();
-		selectors.add(labelSelector);
+		//selectors.add(labelSelector);
 		selectors.add(orderSelector);
 		
 		try {
-			List<Computer> computerList = capi.take(incompleteContainer, selectors, RequestTimeout.INFINITE, currentTransaction);
+			List<Computer> computerList = capi.take(incompleteContainer, selectors, RequestTimeout.TRY_ONCE, currentTransaction);
 			logger.info("Finished.");
 			return computerList;
 		} catch (MzsCoreException e) {
