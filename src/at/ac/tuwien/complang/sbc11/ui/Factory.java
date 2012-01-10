@@ -46,10 +46,10 @@ public class Factory extends JFrame {
 	private JTextArea textAreaLogParts;
 	private JTextArea textAreaLogUntestedComputers;
 	private JTextArea textAreaLogDeconstructedComputers;
-	private JTextArea textAreaLogTrashBin;
+	private JTextArea textAreaLogFinishedOrders;
 	private JTextArea textAreaLogShipped;
 	private JTextArea textAreaActionLog;
-	private JTextArea textAreaOrders;
+	private JTextArea textAreaLogUnfinishedOrders;
 	private JButton buttonAddProducer;
 	private JTextField textOrderComputerCount;
 	private JComboBox comboOrderCPUType;
@@ -83,7 +83,7 @@ public class Factory extends JFrame {
 	public void updateAllLists() {
 		updatePartList();
 		updateComputerList();
-		updateTrashBinList();
+		updateFinishedOrderList();
 		updateShippedList();
 	}
 	
@@ -125,11 +125,11 @@ public class Factory extends JFrame {
 		}
 	}
 	
-	public void updateTrashBinList() {
-		textAreaLogTrashBin.setText("");
+	public void updateFinishedOrderList() {
+		textAreaLogFinishedOrders.setText("");
 		try {
-			for(Computer c:factory.getTrashedComputers()) {
-				textAreaLogTrashBin.append(c.toString() + NEWLINE + NEWLINE);
+			for(Order o:factory.getFinishedOrders()) {
+				textAreaLogFinishedOrders.append(o.toString() + NEWLINE + NEWLINE);
 			}
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -149,11 +149,11 @@ public class Factory extends JFrame {
 		}
 	}
 	
-	public void updateOrderList() {
-		textAreaOrders.setText("");
+	public void updateUnfinishedOrderList() {
+		textAreaLogUnfinishedOrders.setText("");
 		try {
-			for(Order o:factory.getOrders()) {
-				textAreaOrders.append(o.toString() + NEWLINE + NEWLINE);
+			for(Order o:factory.getUnfinishedOrders()) {
+				textAreaLogUnfinishedOrders.append(o.toString() + NEWLINE + NEWLINE);
 			}
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -218,10 +218,10 @@ public class Factory extends JFrame {
 		actionLogPanel.add(scrollPaneActionLog);
 		
 		JPanel orderLogPanel = new JPanel(new GridLayout(1, 1));
-		TitledBorder titleOrderLog = BorderFactory.createTitledBorder("Orders");
+		TitledBorder titleOrderLog = BorderFactory.createTitledBorder("Unfinished Orders");
 		orderLogPanel.setBorder(titleOrderLog);
-		textAreaOrders = new JTextArea();
-		JScrollPane scrollPaneOrderLog = new JScrollPane(textAreaOrders);
+		textAreaLogUnfinishedOrders = new JTextArea();
+		JScrollPane scrollPaneOrderLog = new JScrollPane(textAreaLogUnfinishedOrders);
 		orderLogPanel.add(scrollPaneOrderLog);
 		
 		JPanel formProducerPanel = new JPanel(new GridLayout(4, 2));
@@ -363,12 +363,12 @@ public class Factory extends JFrame {
 		logComputersPanel.add(logDeconstructedComputersPanel);
 		centerPanel.add(logComputersPanel);
 		
-		JPanel logTrashPanel = new JPanel(new GridLayout(1, 1));
-		logTrashPanel.setBorder(BorderFactory.createTitledBorder("Computers in trash bin"));
-		textAreaLogTrashBin = new JTextArea();
-		JScrollPane scrollPaneLogTrashBin = new JScrollPane(textAreaLogTrashBin);
-		logTrashPanel.add(scrollPaneLogTrashBin);
-		centerPanel.add(logTrashPanel);
+		JPanel logFinishedOrderPanel = new JPanel(new GridLayout(1, 1));
+		logFinishedOrderPanel.setBorder(BorderFactory.createTitledBorder("Finished orders"));
+		textAreaLogFinishedOrders = new JTextArea();
+		JScrollPane scrollPaneLogFinishedOrders = new JScrollPane(textAreaLogFinishedOrders);
+		logFinishedOrderPanel.add(scrollPaneLogFinishedOrders);
+		centerPanel.add(logFinishedOrderPanel);
 		
 		JPanel logShippedPanel = new JPanel(new GridLayout(1, 1));
 		logShippedPanel.setBorder(BorderFactory.createTitledBorder("Shipped computers"));

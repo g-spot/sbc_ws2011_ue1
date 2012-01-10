@@ -15,7 +15,7 @@ public class Order implements Serializable {
 	private static final long serialVersionUID = -4183337383419669910L;
 
 	@Index
-	private Long id;
+	private long id;
 	
 	private int computerCount;
 	private CPUType cpuType;
@@ -27,7 +27,7 @@ public class Order implements Serializable {
 	public Order() {
 	}
 	
-	public Order(Long id, int computerCount, CPUType cpuType, int ramCount, boolean usingGraphicBoard) {
+	public Order(long id, int computerCount, CPUType cpuType, int ramCount, boolean usingGraphicBoard) {
 		this.id = id;
 		this.computerCount = computerCount;
 		this.cpuType = cpuType;
@@ -36,10 +36,10 @@ public class Order implements Serializable {
 		this.setProducedComputers(new ArrayList<Computer>());
 	}
 	
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
-	public void setId(Long id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 	public int getComputerCount() {

@@ -13,9 +13,9 @@ import org.mozartspaces.capi3.AnyCoordinator;
 import org.mozartspaces.capi3.CoordinationData;
 import org.mozartspaces.capi3.CountNotMetException;
 import org.mozartspaces.capi3.FifoCoordinator;
-import org.mozartspaces.capi3.FifoCoordinator.FifoSelector;
 import org.mozartspaces.capi3.IsolationLevel;
 import org.mozartspaces.capi3.KeyCoordinator;
+import org.mozartspaces.capi3.KeyCoordinator.KeySelector;
 import org.mozartspaces.capi3.LabelCoordinator;
 import org.mozartspaces.capi3.LindaCoordinator;
 import org.mozartspaces.capi3.Selector;
@@ -87,6 +87,8 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	private final String LABEL_ORDER_COMPLETELY_TESTED = "label_order_completely_tested";
 	private final String KEY_ID_PART = "key_id_part";
 	private final String KEY_ID_COMPUTER = "key_id_computer";
+	private final String LABEL_ORDER_FINISHED = "label_order_finished";
+	private final String LABEL_ORDER_NOT_FINISHED = "label_order_not_finished";
 	
 	/**
 	 * the default constructor is used by assembler, testers and logisticians
@@ -203,7 +205,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		incompleteContainer = SpaceUtils.getOrCreateIncompleteContainer(spaceURI, capi);
 		trashedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_TRASHED, spaceURI, capi);
 		shippedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_SHIPPED, spaceURI, capi);
-		orderContainer = SpaceUtils.getOrCreateFIFOContainer(SpaceUtils.CONTAINER_ORDERS, spaceURI, capi);
+		orderContainer = SpaceUtils.getOrCreateOrderContainer(spaceURI, capi);
 	}
 	
 	/**
@@ -458,17 +460,38 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	}
 	
 	/**
-	 * returns all orders
+	 * returns unfinished all orders
 	 * @return list of orders
 	 */
 	@Override
-	public List<Order> getOrders() throws SharedWorkspaceException {
-		logger.info("Starting getOrders()...");
+	public List<Order> getUnfinishedOrders() throws SharedWorkspaceException {
+		logger.info("Starting getUnfinishedOrders()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
-		Selector orderSelector = FifoCoordinator.newSelector(Selecting.COUNT_MAX);
+		List<Selector> selectors = new ArrayList<Selector>();
+		selectors.add(FifoCoordinator.newSelector(Selecting.COUNT_MAX));
+		selectors.add(LabelCoordinator.newSelector(LABEL_ORDER_NOT_FINISHED, Selecting.COUNT_MAX));
 		try {
 			logger.info("Finished.");
-			return capi.read(orderContainer, orderSelector, RequestTimeout.TRY_ONCE, currentTransaction);
+			return capi.read(orderContainer, selectors, RequestTimeout.TRY_ONCE, currentTransaction);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Orders could not be read: Error in MzsCore (" + e.getMessage() + ")");
+		}
+	}
+	
+	/**
+	 * returns finished orders
+	 * @return list of orders
+	 */
+	@Override
+	public List<Order> getFinishedOrders() throws SharedWorkspaceException {
+		logger.info("Starting getFinishedOrders()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		List<Selector> selectors = new ArrayList<Selector>();
+		selectors.add(FifoCoordinator.newSelector(Selecting.COUNT_MAX));
+		selectors.add(LabelCoordinator.newSelector(LABEL_ORDER_FINISHED, Selecting.COUNT_MAX));
+		try {
+			logger.info("Finished.");
+			return capi.read(orderContainer, selectors, RequestTimeout.TRY_ONCE, currentTransaction);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Orders could not be read: Error in MzsCore (" + e.getMessage() + ")");
 		}
@@ -693,14 +716,13 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		Computer template = new Computer();
 		template.setCompletenessTested(null);
 		template.setCorrectnessTested(null);
-		template.setDeconstructed(null);
-		template.setOrder(new Order());
-		logger.info("PATTERN: " + template);
-		logger.info("PATTERN - ORDER:" + order);
+		template.setDeconstructed(false);
+		template.setOrder(order);
 		Selector orderSelector = LindaCoordinator.newSelector(template, Selecting.COUNT_MAX);
 		List<Selector> selectors = new ArrayList<Selector>();
-		//selectors.add(labelSelector);
 		selectors.add(orderSelector);
+		selectors.add(labelSelector);
+		
 		
 		try {
 			int computerCount = capi.test(incompleteContainer, selectors, RequestTimeout.TRY_ONCE, currentTransaction);
@@ -729,12 +751,12 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		Computer template = new Computer();
 		template.setCompletenessTested(null);
 		template.setCorrectnessTested(null);
-		template.setDeconstructed(null);
+		template.setDeconstructed(false);
 		template.setOrder(order);
 		Selector orderSelector = LindaCoordinator.newSelector(template, Selecting.COUNT_MAX);
 		List<Selector> selectors = new ArrayList<Selector>();
-		//selectors.add(labelSelector);
 		selectors.add(orderSelector);
+		selectors.add(labelSelector);
 		
 		try {
 			List<Computer> computerList = capi.take(incompleteContainer, selectors, RequestTimeout.TRY_ONCE, currentTransaction);
@@ -875,7 +897,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		logger.info("Starting addOrder()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		try {
-			capi.write(new Entry(order, FifoCoordinator.newCoordinationData()), orderContainer, RequestTimeout.DEFAULT, currentTransaction);
+			List<CoordinationData> coords = new ArrayList<CoordinationData>();
+			coords.add(FifoCoordinator.newCoordinationData());
+			coords.add(LabelCoordinator.newCoordinationData(LABEL_ORDER_NOT_FINISHED));
+			coords.add(KeyCoordinator.newCoordinationData(String.valueOf(order.getId())));
+			capi.write(new Entry(order, coords), orderContainer, RequestTimeout.DEFAULT, currentTransaction);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Order could not be written: Error in MzsCore (" + e.getMessage() + ")");
 		}
@@ -883,13 +909,43 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	}
 	
 	/**
-	 * takes the next order from the shared workspace, i.e. returns the object and removes it
-	 * uses the current simple transaction, if one exists
-	 * @param blocking
-	 * 			if set to true, the method waits until an order arrives
-	 * @return the next order in the fifo list, or null if @blocking=false and no order exists
+	 * deletes the given order from the order container
+	 * @param order
+	 * 			the order to delete
 	 */
 	@Override
+	public void finishOrder(Order order) throws SharedWorkspaceException {
+		logger.info("Starting finishOrder()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+
+		List<KeySelector> selectors = Arrays.asList(KeyCoordinator.newSelector(String.valueOf(order.getId())));
+		List<CoordinationData> coords = new ArrayList<CoordinationData>();
+		coords.add(FifoCoordinator.newCoordinationData());
+		coords.add(LabelCoordinator.newCoordinationData(LABEL_ORDER_FINISHED));
+		coords.add(KeyCoordinator.newCoordinationData(String.valueOf(order.getId())));
+		
+		try {
+			//if(currentTransaction == null) {
+			//	this.startTransaction();
+			//TODO add transaction control (nested transaction possible?)
+				capi.delete(orderContainer, selectors, RequestTimeout.TRY_ONCE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
+				capi.write(new Entry(order, coords), orderContainer, RequestTimeout.DEFAULT, currentTransaction);
+			//	this.commitTransaction();
+			//}
+		} catch (MzsCoreException e) {
+			e.printStackTrace();
+			throw new SharedWorkspaceException("Order could not be finished: Error in MzsCore (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
+	}
+	
+	/**
+	 * takes the next order from the shared workspace, i.e. returns the object and removes it
+	 * uses the current simple transaction, if one exists
+	 * @param order
+	 * 			if set to true, the method waits until an order arrives
+	 */
+	/*@Override
 	public Order takeOrder(boolean blocking) throws SharedWorkspaceException {
 		logger.info("Starting takeOrder()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
@@ -899,7 +955,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		List<FifoSelector> selectors = Arrays.asList(FifoCoordinator.newSelector(1));
 		
 		try {
-			if(blocking)
+			if(order)
 				result = capi.take(orderContainer, selectors, RequestTimeout.INFINITE, currentTransaction, IsolationLevel.READ_COMMITTED, null);
 			else
 			{
@@ -928,7 +984,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		}
 		logger.info("Finished.");
 		return order;
-	}
+	}*/
 
 	/**
 	 * takes a cpu from the shared workspace, i.e. returns the object and removes it

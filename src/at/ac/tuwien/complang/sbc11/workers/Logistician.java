@@ -15,6 +15,7 @@ import at.ac.tuwien.complang.sbc11.workers.shutdown.ShutdownInterceptor;
 public class Logistician extends Worker implements SecureShutdownApplication, Serializable {
 
 	private static final long serialVersionUID = 9093226385712963149L;
+	transient private static final long ORDER_NORMAL_PRODUCTION_ID = -1;
 	transient private Logger logger;
 	
 	public Logistician() {
@@ -26,6 +27,99 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 		}
 	}
 	
+	public void distributeWithOrders() {
+		logger.info("Starting distributing...");
+		do {
+			// 1. get all orders from the container
+			List<Order> orderList = null;
+			try {
+				orderList = sharedWorkspace.getUnfinishedOrders();
+				// add marked "order" to the end of the order list
+				// if the for loop reaches this "order" a normal computer is produced
+				Order orderNormalProduction = new Order(ORDER_NORMAL_PRODUCTION_ID, 0, null, 0, false);
+				orderList.add(orderNormalProduction);
+			} catch (SharedWorkspaceException e2) {
+				logger.severe(e2.getMessage());
+			}
+			
+			// 2. process orders in given (fifo) order
+			for(Order order:orderList) {
+				try {
+					if(order.getId() == ORDER_NORMAL_PRODUCTION_ID) {
+						distributeNormalComputer();
+						break;
+					}
+					
+					sharedWorkspace.startTransaction();
+					// check if all computers for this order are ready
+					if(sharedWorkspace.testOrderCountMet(order)) {
+						List<Computer> computerList = sharedWorkspace.takeAllOrderedComputers(order);
+						int i = 1;
+						for(Computer computer:computerList) {
+							computer.getWorkers().add(this);
+							// if too much computers have been produced for this order
+							// ship the rest as normal computers
+							if(i > order.getComputerCount())
+								computer.setOrder(null);
+							sharedWorkspace.shipComputer(computer);
+							i++;
+						}
+					}
+					sharedWorkspace.finishOrder(order);
+					sharedWorkspace.commitTransaction();
+					
+				} catch(SharedWorkspaceException e) {
+					logger.severe(e.getMessage());
+					try {
+						sharedWorkspace.rollbackTransaction();
+					} catch (SharedWorkspaceException e1) {
+						logger.severe(e1.getMessage());
+					}
+				}
+			}
+		} while(true);
+	}
+	
+	public void distributeNormalComputer() {
+		try {
+			// do all the following methods using the simple transaction support
+			sharedWorkspace.startTransaction();
+			
+			logger.info("Trying to take completely tested computer from the space...");
+			// first get a completely tested computer from the shared workspace
+			Computer computer = sharedWorkspace.takeNormalCompletelyTestedComputer();
+			if(computer == null)
+				throw new SharedWorkspaceException("No computer found.");
+			logger.info("Took computer[" + computer.getId() + "]");
+			
+			computer.getWorkers().add(this);
+			
+			// now check if the computer is defect or not and distribute it to the right place
+			if(computer.isDefect())
+			{
+				logger.info("Computer is defect, try to move it to the trash...");
+				sharedWorkspace.addComputerToTrash(computer);
+			}
+			else
+			{
+				logger.info("Computer is fine, try to ship it...");
+				sharedWorkspace.shipComputer(computer);
+			}
+			
+			logger.info("Finished.");
+			
+			sharedWorkspace.commitTransaction();
+		} catch (SharedWorkspaceException e) {
+			logger.severe(e.getMessage());
+			try {
+				sharedWorkspace.rollbackTransaction();
+			} catch (SharedWorkspaceException e1) {
+				logger.severe(e1.getMessage());
+			}
+		}
+	}
+	
+	@Deprecated
 	public void distribute() {
 		logger.info("Starting distributing...");
 		
@@ -119,18 +213,21 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 	@Override
 	public void run() {
 		//distribute();
-		Order order = new Order(null, 5, null, 0, false);
+		distributeWithOrders();
+		/*Order order = new Order((long)1, 5, null, 0, false);
 		try {
 			boolean result = sharedWorkspace.testOrderCountMet(order);
 			logger.info("RESULT OF TEST: " + result);
-			/*List<Computer> computers = sharedWorkspace.takeAllOrderedComputers(order);
+			sharedWorkspace.startTransaction();
+			List<Computer> computers = sharedWorkspace.takeAllOrderedComputers(order);
+			sharedWorkspace.rollbackTransaction();
 			for(Computer computer:computers) {
 				logger.info("FOUND PC: " + computer);
-			}*/
+			}
 		} catch (SharedWorkspaceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 	}
 
 	@Override

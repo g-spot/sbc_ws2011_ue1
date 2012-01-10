@@ -21,7 +21,8 @@ public class OrderNotificationListener extends MozartContainerListener {
 
 	@Override
 	protected void updateBlackboard() {
-		factory.updateOrderList();
+		factory.updateUnfinishedOrderList();
+		factory.updateFinishedOrderList();
 	}
 	
 	@Override

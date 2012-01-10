@@ -30,7 +30,8 @@ public abstract class SharedWorkspace {
 	public abstract List<Computer> getShippedComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getTrashedComputers() throws SharedWorkspaceException;
 	public abstract List<Computer> getDeconstructedComputers() throws SharedWorkspaceException;
-	public abstract List<Order> getOrders() throws SharedWorkspaceException;
+	public abstract List<Order> getUnfinishedOrders() throws SharedWorkspaceException;
+	public abstract List<Order> getFinishedOrders() throws SharedWorkspaceException;
 	
 	// simple transaction control
 	// distributed transactions won't work with mozart spaces
@@ -63,8 +64,8 @@ public abstract class SharedWorkspace {
 	
 	// methods for dealing with orders
 	public abstract void addOrder(Order order) throws SharedWorkspaceException;
-	public abstract Order takeOrder(boolean blocking) throws SharedWorkspaceException;
+	public abstract void finishOrder(Order order) throws SharedWorkspaceException;
 	
-	// asynchronous takesParts
+	// asynchronous takeParts
 	public abstract void takePartsAsync(Class<?> partType, boolean blocking, int partCount, AsyncAssembler callback) throws SharedWorkspaceException;
 }

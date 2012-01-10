@@ -33,7 +33,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 		}
 	}
 	
-	public Computer assembleWithOrders() {
+	public void assembleWithOrders() {
 		logger.info("Starting assembling...");
 		long productionCount = 0;
 		do {
@@ -53,7 +53,7 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 			// 1. get all orders from the container
 			List<Order> orderList = null;
 			try {
-				orderList = sharedWorkspace.getOrders();
+				orderList = sharedWorkspace.getUnfinishedOrders();
 				// add marked "order" to the end of the order list
 				// if the for loop reaches this "order" a normal computer is produced
 				Order orderNormalProduction = new Order(ORDER_NORMAL_PRODUCTION_ID, 0, null, 0, false);

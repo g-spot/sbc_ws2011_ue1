@@ -59,12 +59,12 @@ public class Producer extends Worker implements Runnable, Serializable {
 				
 				// if part is a cpu, choose type of cpu randomly
 				if(part.getClass().equals(CPU.class)) {
-					int ordinal = (int) (Math.floor(Math.random() * 100) % 3);
+					/*int ordinal = (int) (Math.floor(Math.random() * 100) % 3);
 					if(ordinal == CPUType.SINGLE_CORE.ordinal())
 						((CPU)part).setCpuType(CPUType.SINGLE_CORE);
 					else if(ordinal == CPUType.DUAL_CORE.ordinal())
 						((CPU)part).setCpuType(CPUType.DUAL_CORE);
-					else if(ordinal == CPUType.QUAD_CORE.ordinal())
+					else if(ordinal == CPUType.QUAD_CORE.ordinal())*/
 						((CPU)part).setCpuType(CPUType.QUAD_CORE);
 				}
 				

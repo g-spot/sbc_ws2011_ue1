@@ -859,7 +859,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		if(this.factory != null)
 		{
 			this.factory.updateComputerList();
-			this.factory.updateTrashBinList();
+			this.factory.updateFinishedOrderList();
 		}
 		logger.info("Trashing computer done.");
 	}
@@ -886,7 +886,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	}
 
 	@Override
-	public List<Order> getOrders() throws SharedWorkspaceException {
+	public List<Order> getUnfinishedOrders() throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -898,9 +898,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	}
 
 	@Override
-	public Order takeOrder(boolean blocking) throws SharedWorkspaceException {
+	public void finishOrder(Order order) throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -920,6 +919,12 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	@Override
 	public List<Computer> takeAllOrderedComputers(Order order)
 			throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Order> getFinishedOrders() throws SharedWorkspaceException {
 		// TODO Auto-generated method stub
 		return null;
 	}

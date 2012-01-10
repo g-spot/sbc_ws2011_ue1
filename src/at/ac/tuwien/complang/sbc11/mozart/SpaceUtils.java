@@ -150,4 +150,21 @@ public class SpaceUtils {
 		}
 		return container;
 	}
+
+	public static ContainerReference getOrCreateOrderContainer(URI spaceURI, Capi capi) throws MzsCoreException {
+		ContainerReference container = null;
+		try
+		{
+			container = capi.lookupContainer(CONTAINER_ORDERS, spaceURI, RequestTimeout.DEFAULT, null);
+		}
+		catch(MzsCoreException e)
+		{
+			List<Coordinator> obligatoryCoords = new ArrayList<Coordinator>();
+			obligatoryCoords.add(new FifoCoordinator());
+			obligatoryCoords.add(new KeyCoordinator());
+			obligatoryCoords.add(new LabelCoordinator());
+			container = capi.createContainer(CONTAINER_ORDERS, spaceURI, Container.UNBOUNDED, obligatoryCoords, null, null);
+		}
+		return container;
+	}
 }

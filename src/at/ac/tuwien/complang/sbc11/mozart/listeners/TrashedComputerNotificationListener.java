@@ -15,7 +15,7 @@ public class TrashedComputerNotificationListener extends MozartContainerListener
 
 	@Override
 	protected void updateBlackboard() {
-		factory.updateTrashBinList();
+		factory.updateFinishedOrderList();
 	}
 
 }
