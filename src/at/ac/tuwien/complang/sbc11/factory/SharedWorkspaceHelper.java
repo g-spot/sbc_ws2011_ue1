@@ -23,14 +23,14 @@ public class SharedWorkspaceHelper {
 	 * factory.use-implementation can take the values "mozart" or "jms"
 	 * @return the shared workspace implementation
 	 */
-	public static SharedWorkspace getWorkspaceImplementation() throws SharedWorkspaceException {
+	public static SharedWorkspace getWorkspaceImplementation(int serverPort) throws SharedWorkspaceException {
 		SharedWorkspace implementation = null;
 		try {
 			Properties properties = new Properties();
 			InputStream inputStream = new FileInputStream(PROPERTIES_FILENAME);
 			properties.load(inputStream);
 			if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_MOZART))
-				implementation = new SharedWorkspaceMozartImpl();
+				implementation = new SharedWorkspaceMozartImpl(serverPort);
 			else if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_JMS))
 				implementation = new SharedWorkspaceJMSImpl();
 		} catch (IOException e) {
@@ -45,20 +45,36 @@ public class SharedWorkspaceHelper {
 	 * factory.use-implementation can take the values "mozart" or "jms"
 	 * @return the shared workspace implementation
 	 */
-	public static SharedWorkspace getWorkspaceImplementation(Factory factory) throws SharedWorkspaceException {
+	public static SharedWorkspace getWorkspaceImplementation(Factory factory, int serverPort) throws SharedWorkspaceException {
 		SharedWorkspace implementation = null;
 		try {
 			Properties properties = new Properties();
 			InputStream inputStream = new FileInputStream(PROPERTIES_FILENAME);
 			properties.load(inputStream);
 			if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_MOZART))
-				implementation = new SharedWorkspaceMozartImpl(factory);
+				implementation = new SharedWorkspaceMozartImpl(factory, serverPort);
 			else if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_JMS))
 				implementation = new SharedWorkspaceJMSImpl(factory);
 		} catch (IOException e) {
 			throw new SharedWorkspaceException("Could not read " + PROPERTIES_FILENAME + " (" + e.getMessage() + ")");
 		}
 		return implementation;
+	}
+	
+	/**
+	 * returns true if the mozart implementation should be used, false otherwise
+	 */
+	public static boolean useMozartImplementation() throws SharedWorkspaceException {
+		try {
+			Properties properties = new Properties();
+			InputStream inputStream = new FileInputStream(PROPERTIES_FILENAME);
+			properties.load(inputStream);
+			if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_MOZART))
+				return true;
+			return false;
+		} catch(IOException e) {
+			throw new SharedWorkspaceException("Could not read " + PROPERTIES_FILENAME + " (" + e.getMessage() + ")");
+		}
 	}
 	
 	public static boolean useStandaloneMozartServer() {

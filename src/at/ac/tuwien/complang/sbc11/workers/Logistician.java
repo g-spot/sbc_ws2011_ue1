@@ -18,10 +18,10 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 	transient private static final long ORDER_NORMAL_PRODUCTION_ID = -1;
 	transient private Logger logger;
 	
-	public Logistician() {
+	public Logistician(int serverPort) {
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.workers.Tester");
 		try {
-			sharedWorkspace = SharedWorkspaceHelper.getWorkspaceImplementation();
+			sharedWorkspace = SharedWorkspaceHelper.getWorkspaceImplementation(serverPort);
 		} catch (SharedWorkspaceException e) {
 			System.out.println(e.getMessage());
 		}
@@ -184,11 +184,13 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 	public static void main(String args[]) {
 		// parse command line arguments (id and testType)
 		long id = 0;
-		if(args.length == 1)
+		int serverPort = 0;
+		if(args.length == 2)
 		{
 			// parse first command line argument as long
 			try {
 				id = Long.parseLong(args[0]);
+				serverPort = Integer.parseInt(args[1]);
 			} catch(Exception e) {
 				usage();
 			}
@@ -196,7 +198,7 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 		else
 			usage();
 		
-		Logistician logistician = new Logistician();
+		Logistician logistician = new Logistician(serverPort);
 		logistician.setId(id);
 		
 		// add shutdown interceptor and run tester
@@ -207,6 +209,7 @@ public class Logistician extends Worker implements SecureShutdownApplication, Se
 	
 	public static void usage() {
 		System.out.println("Argument 1: ID of Logistician (long)");
+		System.out.println("Argument 2: Port of shared workspace server (int)");
 		System.exit(-1);
 	}
 

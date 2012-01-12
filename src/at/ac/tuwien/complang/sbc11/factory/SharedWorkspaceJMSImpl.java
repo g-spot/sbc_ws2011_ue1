@@ -928,4 +928,10 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public String getWorkspaceID() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

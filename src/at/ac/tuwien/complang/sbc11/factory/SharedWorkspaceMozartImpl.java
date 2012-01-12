@@ -40,7 +40,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.mozart.SpaceUtils;
-import at.ac.tuwien.complang.sbc11.mozart.StandaloneServer;
 import at.ac.tuwien.complang.sbc11.mozart.TakePartsRequestCallbackHandler;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.IncompleteComputerNotificationListener;
 import at.ac.tuwien.complang.sbc11.mozart.listeners.OrderNotificationListener;
@@ -85,6 +84,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	private final String LABEL_COMPLETELY_TESTED = "label_completely_tested";
 	private final String LABEL_NOT_COMPLETELY_TESTED = "label_not_completely_tested";
 	private final String LABEL_ORDER_COMPLETELY_TESTED = "label_order_completely_tested";
+	private final String LABEL_DECONSTRUCTED = "label_deconstructed";
 	private final String KEY_ID_PART = "key_id_part";
 	private final String KEY_ID_COMPUTER = "key_id_computer";
 	private final String LABEL_ORDER_FINISHED = "label_order_finished";
@@ -95,13 +95,13 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	 * it does no things that should be done only once, e.g. initializing system wide notifications
 	 * @throws SharedWorkspaceException
 	 */
-	public SharedWorkspaceMozartImpl() throws SharedWorkspaceException {
+	public SharedWorkspaceMozartImpl(int serverPort) throws SharedWorkspaceException {
 		super(null);
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl");
 		try {
 			initCoreLogging();
 			
-			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
+			spaceURI = new URI("xvsm://localhost:" + String.valueOf(serverPort));
 			core = DefaultMzsCore.newInstance(0);
 			capi = new Capi(core);
 			asyncCapi = new AsyncCapi(core);
@@ -124,20 +124,18 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	 * 				callback object for notification of workspace changes to the ui
 	 * @throws SharedWorkspaceException
 	 */
-	public SharedWorkspaceMozartImpl(Factory factory) throws SharedWorkspaceException {
+	public SharedWorkspaceMozartImpl(Factory factory, int serverPort) throws SharedWorkspaceException {
 		super(factory);
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl");
 		try {
 			initCoreLogging();
-			spaceURI = new URI("xvsm://localhost:" + String.valueOf(StandaloneServer.SERVER_PORT));
+			spaceURI = new URI("xvsm://localhost:" + String.valueOf(serverPort));
 			
-			if(SharedWorkspaceHelper.useStandaloneMozartServer())
-				core = DefaultMzsCore.newInstance(0);
-			else
-				core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
-			
-			// uses external standalone server:
-			//core = DefaultMzsCore.newInstance(0);
+			//if(SharedWorkspaceHelper.useStandaloneMozartServer())
+			//	core = DefaultMzsCore.newInstance(0);
+			//else
+			//	core = DefaultMzsCore.newInstance(StandaloneServer.SERVER_PORT); // port 0 = choose a free port
+			core = DefaultMzsCore.newInstance(serverPort);
 			
 			capi = new Capi(core);
 			asyncCapi = new AsyncCapi(core);
@@ -177,6 +175,17 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		} catch (InterruptedException e) {
 			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error with UI notification (" + e.getMessage() + ")");
 		}
+	}
+	
+	/**
+	 * returns the identifier (i.e. the uri of the space)
+	 */
+	@Override
+	public String getWorkspaceID() {
+		if(spaceURI != null) {
+			return spaceURI.toString();
+		}
+		return null;
 	}
 	
 	/**
@@ -582,13 +591,22 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		String label = null;
 		if(computer.isCompletelyTested())
 		{
-			if(computer.getOrder() == null)
-				label = LABEL_COMPLETELY_TESTED;
-			else
-				label = LABEL_ORDER_COMPLETELY_TESTED;
+			if(computer.isDeconstructed())
+				label = LABEL_DECONSTRUCTED;
+			else {
+				if(computer.getOrder() == null)
+					label = LABEL_COMPLETELY_TESTED;
+				else
+					label = LABEL_ORDER_COMPLETELY_TESTED;
+			}
 		}
 		else
-			label = LABEL_NOT_COMPLETELY_TESTED;
+		{
+			if(computer.isDeconstructed())
+				label = LABEL_DECONSTRUCTED;
+			else
+				label = LABEL_NOT_COMPLETELY_TESTED;
+		}
 		
 		List<CoordinationData> coordinationData = new ArrayList<CoordinationData>();
 		coordinationData.add(LindaCoordinator.newCoordinationData());
@@ -683,7 +701,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	@Override
 	public Computer takeNormalCompletelyTestedComputer()
 			throws SharedWorkspaceException {
-		logger.info("Starting takeCompletelyTestedComputer()...");
+		logger.info("Starting takeNormalCompletelyTestedComputer()...");
 		logger.info("CURRENT TRANSACTION=" + currentTransaction);
 		
 		Selector computerSelector = LabelCoordinator.newSelector(LABEL_COMPLETELY_TESTED, 1);

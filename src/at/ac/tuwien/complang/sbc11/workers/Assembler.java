@@ -24,10 +24,10 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 	
 	transient private Logger logger;
 
-	public Assembler() {
+	public Assembler(int serverPort) {
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.workers.Assembler");
 		try {
-			sharedWorkspace = SharedWorkspaceHelper.getWorkspaceImplementation();
+			sharedWorkspace = SharedWorkspaceHelper.getWorkspaceImplementation(serverPort);
 		} catch (SharedWorkspaceException e) {
 			System.out.println(e.getMessage());
 		}
@@ -336,24 +336,31 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 	}
 	
 	public static void main(String args[]) throws IOException {
-		Assembler assembler = new Assembler();
-		
 		long id = 0;
-		if(args.length > 0)
+		int serverPort = 0;
+		if(args.length > 1)
 		{
 			// parse first command line argument as long
 			try {
 				id = Long.parseLong(args[0]);
+				serverPort = Integer.parseInt(args[1]);
 			} catch(NumberFormatException e) {
-				id = 0;
+				usage();
 			}
 		}
+		Assembler assembler = new Assembler(serverPort);
 		assembler.setId(id);
 		
 		ShutdownInterceptor interceptor = new ShutdownInterceptor(assembler);
 		Runtime.getRuntime().addShutdownHook(interceptor);
 		assembler.run();
 		//Executors.defaultThreadFactory().newThread(assembler).start();
+	}
+	
+	public static void usage() {
+		System.out.println("Argument 1: ID of Assembler (long)");
+		System.out.println("Argument 2: Port of shared workspace server");
+		System.exit(-1);
 	}
 
 	@Override

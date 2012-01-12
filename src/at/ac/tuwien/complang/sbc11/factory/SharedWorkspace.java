@@ -23,6 +23,7 @@ public abstract class SharedWorkspace {
 	
 	// safely shuts down current instance of the shared workspace
 	public abstract void secureShutdown() throws SharedWorkspaceException;
+	public abstract String getWorkspaceID();
 	
 	// general methods
 	public abstract List<Part> getAvailableParts() throws SharedWorkspaceException;

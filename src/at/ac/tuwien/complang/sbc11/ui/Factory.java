@@ -26,6 +26,7 @@ import javax.swing.border.TitledBorder;
 
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
+import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
 import at.ac.tuwien.complang.sbc11.parts.CPU.CPUType;
@@ -69,9 +70,29 @@ public class Factory extends JFrame {
 	public Factory() {
 		this.initUI();
 		
+		
 		// initializes the mozart implementation of the shared workspace
 		try {
-			factory = SharedWorkspaceHelper.getWorkspaceImplementation(this);
+			if(SharedWorkspaceHelper.useMozartImplementation())
+			{
+				int serverPort;
+				do {
+					try {
+						serverPort = Integer.parseInt(JOptionPane.showInputDialog("Port:"));
+						factory = new SharedWorkspaceMozartImpl(this, serverPort);
+						break;
+					} catch(SharedWorkspaceException e1) {
+						JOptionPane.showMessageDialog(this, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					} catch(NumberFormatException e2) {
+						JOptionPane.showMessageDialog(this, e2.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					} catch(Exception e3) {
+						JOptionPane.showMessageDialog(this, e3.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					}
+				} while(true);
+				this.setTitle(factory.getWorkspaceID());
+			}
+			else
+				factory = SharedWorkspaceHelper.getWorkspaceImplementation(this, 0);
 		} catch (SharedWorkspaceException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();

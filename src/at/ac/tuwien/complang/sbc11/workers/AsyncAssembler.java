@@ -31,11 +31,11 @@ public class AsyncAssembler extends Worker implements SecureShutdownApplication,
 	
 	transient private Logger logger;
 
-	public AsyncAssembler() {
+	public AsyncAssembler(int serverPort) {
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.workers.Assembler");
 		ramList = new ArrayList<Part>();
 		try {
-			sharedWorkspace = SharedWorkspaceHelper.getWorkspaceImplementation();
+			sharedWorkspace = SharedWorkspaceHelper.getWorkspaceImplementation(serverPort);
 		} catch (SharedWorkspaceException e) {
 			System.out.println(e.getMessage());
 		}
@@ -205,24 +205,31 @@ public class AsyncAssembler extends Worker implements SecureShutdownApplication,
 	}
 	
 	public static void main(String args[]) throws IOException {
-		AsyncAssembler asyncAssembler = new AsyncAssembler();
-		
 		long id = 0;
+		int serverPort = 0;
 		if(args.length > 0)
 		{
 			// parse first command line argument as long
 			try {
 				id = Long.parseLong(args[0]);
+				serverPort = Integer.parseInt(args[1]);
 			} catch(NumberFormatException e) {
-				id = 0;
+				usage();
 			}
 		}
+		AsyncAssembler asyncAssembler = new AsyncAssembler(serverPort);
 		asyncAssembler.setId(id);
 		
 		ShutdownInterceptor interceptor = new ShutdownInterceptor(asyncAssembler);
 		Runtime.getRuntime().addShutdownHook(interceptor);
 		asyncAssembler.run();
 		//Executors.defaultThreadFactory().newThread(assembler).start();
+	}
+	
+	public static void usage() {
+		System.out.println("Argument 1: ID of Assembler (long)");
+		System.out.println("Argument 2: Port of shared workspace server");
+		System.exit(-1);
 	}
 
 	@Override

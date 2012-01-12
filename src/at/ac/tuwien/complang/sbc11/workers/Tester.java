@@ -22,10 +22,10 @@ public class Tester extends Worker implements SecureShutdownApplication, Seriali
 	
 	transient private Logger logger;
 	
-	public Tester() {
+	public Tester(int serverPort) {
 		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.workers.Tester");
 		try {
-			sharedWorkspace = SharedWorkspaceHelper.getWorkspaceImplementation();
+			sharedWorkspace = SharedWorkspaceHelper.getWorkspaceImplementation(serverPort);
 		} catch (SharedWorkspaceException e) {
 			System.out.println(e.getMessage());
 		}
@@ -158,8 +158,9 @@ public class Tester extends Worker implements SecureShutdownApplication, Seriali
 		// parse command line arguments (id and testType)
 		long id = 0;
 		int testTypeOrdinal = 0;
+		int serverPort = 0;
 		TestType testType = null;
-		if(args.length == 2)
+		if(args.length == 3)
 		{
 			// parse first command line argument as long
 			try {
@@ -171,6 +172,7 @@ public class Tester extends Worker implements SecureShutdownApplication, Seriali
 					testType = TestType.CORRECTNESS;
 				else
 					throw new Exception();
+				serverPort = Integer.parseInt(args[2]);
 			} catch(Exception e) {
 				usage();
 			}
@@ -179,7 +181,7 @@ public class Tester extends Worker implements SecureShutdownApplication, Seriali
 			usage();
 		
 		// create new tester
-		Tester tester = new Tester();
+		Tester tester = new Tester(serverPort);
 		tester.setId(id);
 		tester.setTestType(testType);
 		
@@ -192,6 +194,7 @@ public class Tester extends Worker implements SecureShutdownApplication, Seriali
 	public static void usage() {
 		System.out.println("Argument 1: ID of Tester (long)");
 		System.out.println("Argument 2: TestType (" + TestType.COMPLETENESS.ordinal() + "=" + TestType.COMPLETENESS.toString() + ", " + TestType.CORRECTNESS.ordinal() + "=" + TestType.CORRECTNESS.toString() + ")");
+		System.out.println("Argument 3: Port of shared workspace server");
 		System.exit(-1);
 	}
 
