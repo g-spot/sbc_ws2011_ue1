@@ -27,10 +27,12 @@ import at.ac.tuwien.complang.sbc11.workers.shutdown.SecureShutdownApplication;
 public class LoadBalancer extends JFrame implements SecureShutdownApplication, Serializable {
 
 	private static final long serialVersionUID = -7849712771488583918L;
+	transient private static final int BALANCE_LIMIT = 10;
 	transient private static final String NEWLINE = "\n";
 	
 	transient private Logger logger;
 	transient private List<SharedWorkspace> factoryList;
+	transient private Map<SharedWorkspace, PartCount> partCountMap;
 	
 	transient private JTextArea textAreaParts;
 	transient private JTextArea textAreaLog;
@@ -53,7 +55,7 @@ public class LoadBalancer extends JFrame implements SecureShutdownApplication, S
 	
 	private void initUI() {
 		this.setTitle("Load Balancer");
-		this.setSize(800, 400);
+		this.setSize(1024, 400);
 		
 		JPanel mainPanel = new JPanel(new GridLayout(1, 2));
 		JPanel leftPanel = new JPanel(new GridLayout(1, 1));
@@ -130,7 +132,6 @@ public class LoadBalancer extends JFrame implements SecureShutdownApplication, S
 	
 	public void balance() {
 		logger.info("Starting balancing...");
-		Map<SharedWorkspace, PartCount> partCountMap;
 		do
 		{
 			partCountMap = new HashMap<SharedWorkspace, PartCount>();
@@ -151,8 +152,13 @@ public class LoadBalancer extends JFrame implements SecureShutdownApplication, S
 					}
 					partCountMap.put(sharedWorkspace, partCount);
 				}
-				printPartCount(partCountMap);
+				printPartCount();
+				balanceParts();
+				for(SharedWorkspace sharedWorkspace:factoryList) {
+					sharedWorkspace.commitTransaction();
+				}
 			} catch(SharedWorkspaceException e) {
+				// rollback all transactions
 				for(SharedWorkspace sharedWorkspace:factoryList) {
 					try {
 						sharedWorkspace.rollbackTransaction();
@@ -163,19 +169,71 @@ public class LoadBalancer extends JFrame implements SecureShutdownApplication, S
 			}
 			// wait a second
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		} while(true);
 	}
 	
-	private void printPartCount(Map<SharedWorkspace, PartCount> partCountMap) {
+	private void balanceParts() throws SharedWorkspaceException {
+		List<Class<?>> partTypes = new ArrayList<Class<?>>();
+		partTypes.add(CPU.class);
+		partTypes.add(Mainboard.class);
+		partTypes.add(RAM.class);
+		partTypes.add(GraphicBoard.class);
+		
+		// check for every factory and every part type, if there is a shortage
+		for(SharedWorkspace sharedWorkspaceLow:partCountMap.keySet()) {
+			for(Class<?> partType:partTypes) {
+				
+				// found a factory with low resources of this part type
+				if(partCountMap.get(sharedWorkspaceLow).lowParts(partType)) {
+					
+					SharedWorkspace sharedWorkspaceLoadFrom = null;
+					appendActionLog(sharedWorkspaceLow.getWorkspaceID() + " needs " + partType.getSimpleName() + " (only " + partCountMap.get(sharedWorkspaceLow).getCount(partType) + " left)");
+					
+					// search for another factory with enough resources of this part type
+					// take the factory with the highest amount of resources of this part type
+					for(SharedWorkspace sharedWorkspaceHigh:partCountMap.keySet()) {
+						
+						if(!partCountMap.get(sharedWorkspaceHigh).lowParts(partType)) {
+							if(sharedWorkspaceLoadFrom == null || 
+									partCountMap.get(sharedWorkspaceHigh).getCount(partType) >
+									partCountMap.get(sharedWorkspaceLoadFrom).getCount(partType))
+								sharedWorkspaceLoadFrom = sharedWorkspaceHigh;
+						}
+					}
+					
+					// there is no factory with enough resources of this part type
+					if(sharedWorkspaceLoadFrom == null) {
+						appendActionLog("Not able to balance - not enough resources in other factories" + NEWLINE);
+					}
+					else {
+						// found a factory with enough resources --> balance
+						List<Part> partList = sharedWorkspaceLoadFrom.takeParts(partType, false, partCountMap.get(sharedWorkspaceLoadFrom).getCount(partType) / 2);
+						if(partList != null) {
+							sharedWorkspaceLow.addParts(partList);
+							partCountMap.get(sharedWorkspaceLoadFrom).setCount(partType, partCountMap.get(sharedWorkspaceLoadFrom).getCount(partType) - partList.size());
+							partCountMap.get(sharedWorkspaceLow).setCount(partType, partCountMap.get(sharedWorkspaceLow).getCount(partType) + partList.size());
+							appendActionLog("Loaded " + partList.size() + " " + partType.getSimpleName() + "s from " + sharedWorkspaceLoadFrom.getWorkspaceID() + NEWLINE);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private void printPartCount() {
 		textAreaParts.setText("");
 		for(SharedWorkspace sharedWorkspace:partCountMap.keySet()) {
 			textAreaParts.append(sharedWorkspace.getWorkspaceID() + NEWLINE);
 			textAreaParts.append(partCountMap.get(sharedWorkspace).toString() + NEWLINE + NEWLINE);
 		}
+	}
+	
+	private void appendActionLog(String message) {
+		textAreaLog.append(message + NEWLINE);
 	}
 	
 	private class PartCount {
@@ -198,6 +256,41 @@ public class LoadBalancer extends JFrame implements SecureShutdownApplication, S
 			result += "  #RAM: " + ram + NEWLINE;
 			result += "  #GRAPHICBOARD: " + graphicBoard;
 			return result;
+		}
+		
+		public boolean lowParts(Class<?> partType) {
+			if(partType.equals(CPU.class))
+				return cpu < BALANCE_LIMIT;
+			if(partType.equals(Mainboard.class))
+				return mainboard < BALANCE_LIMIT;
+			if(partType.equals(RAM.class))
+				return ram < BALANCE_LIMIT;
+			if(partType.equals(GraphicBoard.class))
+				return graphicBoard < BALANCE_LIMIT;
+			return false;
+		}
+		
+		public int getCount(Class<?> partType) {
+			if(partType.equals(CPU.class))
+				return cpu;
+			if(partType.equals(Mainboard.class))
+				return mainboard;
+			if(partType.equals(RAM.class))
+				return ram;
+			if(partType.equals(GraphicBoard.class))
+				return graphicBoard;
+			return 0;
+		}
+		
+		public void setCount(Class<?> partType, int count) {
+			if(partType.equals(CPU.class))
+				cpu = count;
+			if(partType.equals(Mainboard.class))
+				mainboard = count;
+			if(partType.equals(RAM.class))
+				ram = count;
+			if(partType.equals(GraphicBoard.class))
+				graphicBoard = count;
 		}
 	}
 
