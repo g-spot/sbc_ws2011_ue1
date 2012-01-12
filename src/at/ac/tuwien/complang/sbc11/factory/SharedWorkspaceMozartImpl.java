@@ -118,6 +118,33 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	}
 	
 	/**
+	 * the default constructor is used by load balancers
+	 * it does no things that should be done only once, e.g. initializing system wide notifications
+	 * @throws SharedWorkspaceException
+	 */
+	public SharedWorkspaceMozartImpl(String serverURI) throws SharedWorkspaceException {
+		super(null);
+		logger = Logger.getLogger("at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceMozartImpl");
+		try {
+			initCoreLogging();
+			
+			spaceURI = new URI(serverURI);
+			core = DefaultMzsCore.newInstance(0);
+			capi = new Capi(core);
+			asyncCapi = new AsyncCapi(core);
+			
+			// get container
+			logger.info("Retrieving containers...");
+			initContainers();
+			
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error in MzsCore (" + e.getMessage() + ")");
+		} catch (URISyntaxException e) {
+			throw new SharedWorkspaceException("Shared workspace could not be initialized: Error with URI (" + e.getMessage() + ")");
+		}
+	}
+	
+	/**
 	 * creates the space based implementation of the shared workspace
 	 * should be called only once in the system - by the ui
 	 * @param factory
@@ -333,6 +360,39 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 				capi.write(new Entry(part, LindaCoordinator.newCoordinationData()), partContainer, RequestTimeout.DEFAULT, currentTransaction);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Part could not be written: Error in MzsCore (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
+	}
+	
+	/**
+	 * adds a new part to either the mainboardContainer (if the part is a mainboard)
+	 * or the partContainer (for all other parts)
+	 * uses the current simple transaction, if one exists
+	 * @param part
+	 * 				the part to insert
+	 */
+	@Override
+	public void addParts(List<Part> parts) throws SharedWorkspaceException {
+		logger.info("Starting addParts()...");
+		logger.info("CURRENT TRANSACTION=" + currentTransaction);
+		try {
+			List<Entry> partList = new ArrayList<Entry>();
+			List<Entry> mainboardList = new ArrayList<Entry>();
+			for(Part part:parts) {
+				if(part.getClass().equals(Mainboard.class))
+					mainboardList.add(new Entry(part, FifoCoordinator.newCoordinationData()));
+				else
+					partList.add(new Entry(part, LindaCoordinator.newCoordinationData()));
+			}
+			if(!partList.isEmpty()) {
+				capi.write(partList, partContainer, RequestTimeout.DEFAULT, currentTransaction);
+			}
+			// if part is a mainboard, insert into mainboardContainer
+			if(!mainboardList.isEmpty()) {
+				capi.write(mainboardList, mainboardContainer, RequestTimeout.DEFAULT, currentTransaction);
+			}
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Part(s) could not be written: Error in MzsCore (" + e.getMessage() + ")");
 		}
 		logger.info("Finished.");
 	}

@@ -39,6 +39,22 @@ public class SharedWorkspaceHelper {
 		return implementation;
 	}
 	
+	public static SharedWorkspace getWorkspaceImplementation(String uri) throws SharedWorkspaceException {
+		SharedWorkspace implementation = null;
+		try {
+			Properties properties = new Properties();
+			InputStream inputStream = new FileInputStream(PROPERTIES_FILENAME);
+			properties.load(inputStream);
+			if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_MOZART))
+				implementation = new SharedWorkspaceMozartImpl(uri);
+			else if(properties.getProperty(USE_IMPLEMENTATION_PROPERTY).equals(USE_JMS))
+				implementation = new SharedWorkspaceJMSImpl();
+		} catch (IOException e) {
+			throw new SharedWorkspaceException("Could not read " + PROPERTIES_FILENAME + " (" + e.getMessage() + ")");
+		}
+		return implementation;
+	}
+	
 	/**
 	 * gets the sharedWorkspace Implementation depending on the property "factory.use-implementation"
 	 * in the configuration file factory.properties

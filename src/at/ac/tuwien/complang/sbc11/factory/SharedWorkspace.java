@@ -45,6 +45,7 @@ public abstract class SharedWorkspace {
 	// methods for dealing with parts (tasks of the producer)
 	public abstract long getNextPartId() throws SharedWorkspaceException;
 	public abstract void addPart(Part part) throws SharedWorkspaceException;
+	public abstract void addParts(List<Part> parts) throws SharedWorkspaceException;
 	
 	// methods for assembling computers (tasks of the assembler)
 	public abstract long getNextComputerId() throws SharedWorkspaceException;

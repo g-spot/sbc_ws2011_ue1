@@ -934,4 +934,10 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public void addParts(List<Part> parts) throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
 }
