@@ -26,6 +26,8 @@ public class SpaceUtils {
 	public static final String CONTAINER_SHIPPED = "<Shipped>";
 	public static final String CONTAINER_ORDERS = "<Orders>";
 	
+	public static final String CONTAINER_START_SIGNAL = "<StartSignal>";
+	
 	/**
 	 * searches for a named fifo container, creates a new named container, if nothing is found
 	 * @param containerName
@@ -164,6 +166,20 @@ public class SpaceUtils {
 			obligatoryCoords.add(new KeyCoordinator());
 			obligatoryCoords.add(new LabelCoordinator());
 			container = capi.createContainer(CONTAINER_ORDERS, spaceURI, Container.UNBOUNDED, obligatoryCoords, null, null);
+		}
+		return container;
+	}
+	
+	public static final ContainerReference getOrCreateStartSignalContainer(URI spaceURI, Capi capi) throws MzsCoreException {
+		ContainerReference container = null;
+		
+		try
+		{
+			container = capi.lookupContainer(CONTAINER_START_SIGNAL, spaceURI, RequestTimeout.DEFAULT, null);
+		}
+		catch(MzsCoreException e)
+		{
+			container = capi.createContainer(CONTAINER_START_SIGNAL, spaceURI, Container.UNBOUNDED, null, new FifoCoordinator());
 		}
 		return container;
 	}

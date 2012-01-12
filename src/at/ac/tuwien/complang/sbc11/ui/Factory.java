@@ -105,6 +105,7 @@ public class Factory extends JFrame {
 		updatePartList();
 		updateComputerList();
 		updateFinishedOrderList();
+		updateUnfinishedOrderList();
 		updateShippedList();
 	}
 	
@@ -118,10 +119,9 @@ public class Factory extends JFrame {
 		}
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				//textAreaLogParts.setText("Unused parts in workspace" + NEWLINE);
-				//textAreaLogParts.append("-------------------------" + NEWLINE);
 				textAreaLogParts.setText("");
 				if(partList != null)
+					textAreaLogParts.append(partList.size() + " total." + NEWLINE + NEWLINE);
 					for(Part p:partList) {
 						textAreaLogParts.append(p.toString() + NEWLINE);
 					}
@@ -134,10 +134,16 @@ public class Factory extends JFrame {
 		textAreaLogUntestedComputers.setText("");
 		textAreaLogDeconstructedComputers.setText("");
 		try {
-			for(Computer c:factory.getIncompleteComputers()) {
+			List<Computer> incompleteComputers = factory.getIncompleteComputers();
+			if(incompleteComputers != null)
+				textAreaLogUntestedComputers.append(incompleteComputers.size() + " total." + NEWLINE + NEWLINE);
+			for(Computer c:incompleteComputers) {
 				textAreaLogUntestedComputers.append(c.toString() + NEWLINE + NEWLINE);
 			}
-			for(Computer c:factory.getDeconstructedComputers()) {
+			List<Computer> deconstructedComputers = factory.getDeconstructedComputers();
+			if(deconstructedComputers != null)
+				textAreaLogDeconstructedComputers.append(deconstructedComputers.size() + " total." + NEWLINE + NEWLINE);
+			for(Computer c:deconstructedComputers) {
 				textAreaLogDeconstructedComputers.append(c.toString() + NEWLINE + NEWLINE);
 			}
 		} catch (SharedWorkspaceException e) {
@@ -149,7 +155,10 @@ public class Factory extends JFrame {
 	public void updateFinishedOrderList() {
 		textAreaLogFinishedOrders.setText("");
 		try {
-			for(Order o:factory.getFinishedOrders()) {
+			List<Order> finishedOrders = factory.getFinishedOrders();
+			if(finishedOrders != null)
+				textAreaLogFinishedOrders.append(finishedOrders.size() + " total." + NEWLINE + NEWLINE);
+			for(Order o:finishedOrders) {
 				textAreaLogFinishedOrders.append(o.toString() + NEWLINE + NEWLINE);
 			}
 		} catch (SharedWorkspaceException e) {
@@ -161,7 +170,10 @@ public class Factory extends JFrame {
 	public void updateShippedList() {
 		textAreaLogShipped.setText("");
 		try {
-			for(Computer c:factory.getShippedComputers()) {
+			List<Computer> shippedComputers = factory.getShippedComputers();
+			if(shippedComputers != null)
+				textAreaLogShipped.append(shippedComputers.size() + " total." + NEWLINE + NEWLINE);
+			for(Computer c:shippedComputers) {
 				textAreaLogShipped.append(c.toString() + NEWLINE + NEWLINE);
 			}
 		} catch (SharedWorkspaceException e) {
@@ -173,7 +185,10 @@ public class Factory extends JFrame {
 	public void updateUnfinishedOrderList() {
 		textAreaLogUnfinishedOrders.setText("");
 		try {
-			for(Order o:factory.getUnfinishedOrders()) {
+			List<Order> unfinishedOrders = factory.getUnfinishedOrders();
+			if(unfinishedOrders != null)
+				textAreaLogUnfinishedOrders.append(unfinishedOrders.size() + " total." + NEWLINE + NEWLINE);
+			for(Order o:unfinishedOrders) {
 				textAreaLogUnfinishedOrders.append(o.toString() + NEWLINE + NEWLINE);
 			}
 		} catch (SharedWorkspaceException e) {

@@ -3,7 +3,12 @@ package at.ac.tuwien.complang.sbc11.factory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Properties;
+
+import org.mozartspaces.core.Capi;
+import org.mozartspaces.core.DefaultMzsCore;
+import org.mozartspaces.core.MzsCore;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
@@ -16,6 +21,10 @@ public class SharedWorkspaceHelper {
 	private static final String USE_JMS = "jms";
 	private static final String MOZART_USE_STANDALONE_PROPERTY = "factory.mozart.use-standalone";
 	private static final String MOZART_USE_STANDALONE_YES = "yes";
+	private static final String WAIT_FOR_START_SIGNAL = "factory.wait-for-start-signal";
+	private static final String WAIT_FOR_START_SIGNAL_YES = "yes";
+	
+	private static final int PORT_START_SIGNAL = 1337;
 	
 	/**
 	 * gets the sharedWorkspace Implementation depending on the property "factory.use-implementation"
@@ -104,5 +113,25 @@ public class SharedWorkspaceHelper {
 		} catch (Exception e) {
 		}
 		return result;
+	}
+	
+	/**
+	 * blocks and waits for the start signal
+	 * if the property factory.wait-for-start-signal is set to yes
+	 */
+	public static void waitForStartSignal() {
+		try {
+			Properties properties = new Properties();
+			InputStream inputStream = new FileInputStream(PROPERTIES_FILENAME);
+			properties.load(inputStream);
+			if(properties.getProperty(WAIT_FOR_START_SIGNAL).equals(WAIT_FOR_START_SIGNAL_YES))
+			{
+				// TODO BLOCK AND WAIT FOR START SIGNAL
+				URI spaceURI = new URI("xvsm://localhost:" + String.valueOf(PORT_START_SIGNAL));
+				MzsCore core = DefaultMzsCore.newInstance(0);
+				Capi capi = new Capi(core);
+			}
+		} catch (Exception e) {
+		}
 	}
 }
