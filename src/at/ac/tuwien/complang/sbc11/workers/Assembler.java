@@ -3,8 +3,10 @@ package at.ac.tuwien.complang.sbc11.workers;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
+import at.ac.tuwien.complang.sbc11.benchmark.BenchmarkStopper;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
@@ -365,7 +367,12 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 
 	@Override
 	public void run() {
-		//assemble();
+		logger.info("Waiting for start signal...");
+		SharedWorkspaceHelper.waitForStartSignal();
+		logger.info("Got start signal");
+		if(SharedWorkspaceHelper.usesSignal()) {
+			Executors.defaultThreadFactory().newThread(new BenchmarkStopper()).start();
+		}
 		assembleWithOrders();
 	}
 

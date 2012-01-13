@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
@@ -14,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import at.ac.tuwien.complang.sbc11.benchmark.BenchmarkStopper;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspace;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
@@ -27,7 +29,7 @@ import at.ac.tuwien.complang.sbc11.workers.shutdown.SecureShutdownApplication;
 public class LoadBalancer extends JFrame implements SecureShutdownApplication, Serializable {
 
 	private static final long serialVersionUID = -7849712771488583918L;
-	transient private static final int BALANCE_LIMIT = 10;
+	transient private static final int BALANCE_LIMIT = 51;
 	transient private static final String NEWLINE = "\n";
 	
 	transient private Logger logger;
@@ -113,6 +115,12 @@ public class LoadBalancer extends JFrame implements SecureShutdownApplication, S
 
 	@Override
 	public void run() {
+		logger.info("Waiting for start signal...");
+		SharedWorkspaceHelper.waitForStartSignal();
+		logger.info("Got start signal");
+		if(SharedWorkspaceHelper.usesSignal()) {
+			Executors.defaultThreadFactory().newThread(new BenchmarkStopper()).start();
+		}
 		balance();
 	}
 
@@ -169,7 +177,7 @@ public class LoadBalancer extends JFrame implements SecureShutdownApplication, S
 			}
 			// wait a second
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

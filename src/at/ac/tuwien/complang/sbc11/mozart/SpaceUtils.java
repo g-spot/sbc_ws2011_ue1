@@ -179,7 +179,7 @@ public class SpaceUtils {
 		}
 		catch(MzsCoreException e)
 		{
-			container = capi.createContainer(CONTAINER_START_SIGNAL, spaceURI, Container.UNBOUNDED, null, new FifoCoordinator());
+			container = capi.createContainer(CONTAINER_START_SIGNAL, spaceURI, Container.UNBOUNDED, null, new LabelCoordinator());
 		}
 		return container;
 	}

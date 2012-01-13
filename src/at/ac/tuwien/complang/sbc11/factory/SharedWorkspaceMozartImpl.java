@@ -385,11 +385,12 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 					partList.add(new Entry(part, LindaCoordinator.newCoordinationData()));
 			}
 			if(!partList.isEmpty()) {
-				capi.write(partList, partContainer, RequestTimeout.DEFAULT, currentTransaction);
+				//System.out.println(partList.size() + " FUCK FUCK FUCK");
+				capi.write(partList, partContainer, RequestTimeout.INFINITE, currentTransaction);
 			}
 			// if part is a mainboard, insert into mainboardContainer
 			if(!mainboardList.isEmpty()) {
-				capi.write(mainboardList, mainboardContainer, RequestTimeout.DEFAULT, currentTransaction);
+				capi.write(mainboardList, mainboardContainer, RequestTimeout.INFINITE, currentTransaction);
 			}
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Part(s) could not be written: Error in MzsCore (" + e.getMessage() + ")");

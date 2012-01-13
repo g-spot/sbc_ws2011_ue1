@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
+import at.ac.tuwien.complang.sbc11.benchmark.BenchmarkStopper;
 import at.ac.tuwien.complang.sbc11.factory.SharedWorkspaceHelper;
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.Computer;
@@ -200,6 +202,12 @@ public class Tester extends Worker implements SecureShutdownApplication, Seriali
 
 	@Override
 	public void run() {
+		logger.info("Waiting for start signal...");
+		SharedWorkspaceHelper.waitForStartSignal();
+		logger.info("Got start signal");
+		if(SharedWorkspaceHelper.usesSignal()) {
+			Executors.defaultThreadFactory().newThread(new BenchmarkStopper()).start();
+		}
 		test();
 	}
 

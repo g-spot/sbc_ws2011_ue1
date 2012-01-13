@@ -282,8 +282,8 @@ public class Factory extends JFrame {
 		JPanel testPanel = new JPanel();
 		JButton buttonTest = new JButton("Update blackboard manually");
 		JButton buttonTest2 = new JButton("Test");
-		//testPanel.add(buttonTest);
-		testPanel.add(buttonTest2);
+		testPanel.add(buttonTest);
+		//testPanel.add(buttonTest2);
 		formProducerPanel.add(testPanel);
 		buttonAddProducer = new JButton("Add Producer (currently: " + producerCount + ")");
 		formProducerPanel.add(buttonAddProducer);

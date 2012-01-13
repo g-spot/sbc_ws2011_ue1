@@ -23,6 +23,9 @@ public class CPU extends Part {
 	
 	@Override
 	public String toString() {
-		return this.getCpuType().toString() + "[" + id + "], DEFECT=" + isDefect + ", PRODUCER[" + producer.getId() + "]";
+		String result = this.getCpuType().toString() + "[" + id + "], DEFECT=" + isDefect;
+		if(producer != null)
+			result += ", PRODUCER[" + producer.getId() + "]";
+		return result;
 	}
 }
