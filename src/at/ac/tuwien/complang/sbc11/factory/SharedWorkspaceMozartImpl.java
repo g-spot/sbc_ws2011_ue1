@@ -75,6 +75,7 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	private ContainerReference trashedContainer;
 	private ContainerReference shippedContainer;
 	private ContainerReference orderContainer;
+	private ContainerReference balanceContainer;
 	private Logger logger;
 	
 	// for transaction purposes
@@ -242,6 +243,8 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		trashedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_TRASHED, spaceURI, capi);
 		shippedContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_SHIPPED, spaceURI, capi);
 		orderContainer = SpaceUtils.getOrCreateOrderContainer(spaceURI, capi);
+		balanceContainer = SpaceUtils.getOrCreateAnyContainer(SpaceUtils.CONTAINER_BALANCE, spaceURI, capi);
+		capi.write(new Entry(new String("Whatever")), balanceContainer);
 	}
 	
 	/**
@@ -1119,6 +1122,66 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 		}
 		logger.info("Finished.");
 		return result;
+	}
+
+	/**
+	 * removes (all=1) entries from the container <balance>
+	 */
+	@Override
+	public void startBalancing() throws SharedWorkspaceException {
+		logger.info("Starting startBalancing()...");
+		try {
+			capi.take(balanceContainer, AnyCoordinator.newSelector(1), RequestTimeout.TRY_ONCE, null);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Balancing could not be started: Error in MzsCore (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
+	}
+
+	/**
+	 * adds one entry to the container <balance>
+	 */
+	@Override
+	public void stopBalancing() throws SharedWorkspaceException {
+		logger.info("Starting stopBalancing()...");
+		try {
+			capi.write(new Entry(new String("Whatever"), AnyCoordinator.newCoordinationData()), balanceContainer);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Balancing could not be started: Error in MzsCore (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
+	}
+
+	/** 
+	 * waits until an entry in the container <balance> arrives
+	 */
+	@Override
+	public void waitForBalancing() throws SharedWorkspaceException {
+		logger.info("Starting waitForBalancing()...");
+		try {
+			capi.test(balanceContainer, AnyCoordinator.newSelector(1), RequestTimeout.INFINITE, null);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Balancing could not be started: Error in MzsCore (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
+	}
+
+	/** 
+	 * returns true if there is currently no entry in the container <balance>
+	 */
+	@Override
+	public boolean isCurrentlyBalancing() throws SharedWorkspaceException {
+		logger.info("Starting waitForBalancing()...");
+		int result;
+		try {
+			result = capi.test(balanceContainer, AnyCoordinator.newSelector(1), RequestTimeout.TRY_ONCE, null);
+		} catch (MzsCoreException e) {
+			throw new SharedWorkspaceException("Balancing could not be started: Error in MzsCore (" + e.getMessage() + ")");
+		}
+		logger.info("Finished.");
+		if(result > 0)
+			return false;
+		return true;
 	}
 
 }

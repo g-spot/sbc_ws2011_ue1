@@ -42,6 +42,12 @@ public abstract class SharedWorkspace {
 	public abstract void commitTransaction() throws SharedWorkspaceException;
 	public abstract void rollbackTransaction() throws SharedWorkspaceException;
 	
+	// methods needed for load balancing
+	public abstract void startBalancing() throws SharedWorkspaceException;
+	public abstract void stopBalancing() throws SharedWorkspaceException;
+	public abstract void waitForBalancing() throws SharedWorkspaceException;
+	public abstract boolean isCurrentlyBalancing() throws SharedWorkspaceException;
+	
 	// methods for dealing with parts (tasks of the producer)
 	public abstract long getNextPartId() throws SharedWorkspaceException;
 	public abstract void addPart(Part part) throws SharedWorkspaceException;

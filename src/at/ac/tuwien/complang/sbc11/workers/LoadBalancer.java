@@ -145,6 +145,7 @@ public class LoadBalancer extends JFrame implements SecureShutdownApplication, S
 			partCountMap = new HashMap<SharedWorkspace, PartCount>();
 			try {
 				for(SharedWorkspace sharedWorkspace:factoryList) {
+					sharedWorkspace.startBalancing();
 					sharedWorkspace.startTransaction();
 					List<Part> partList = sharedWorkspace.getAvailableParts();
 					PartCount partCount = new PartCount();
@@ -164,12 +165,15 @@ public class LoadBalancer extends JFrame implements SecureShutdownApplication, S
 				balanceParts();
 				for(SharedWorkspace sharedWorkspace:factoryList) {
 					sharedWorkspace.commitTransaction();
+					sharedWorkspace.stopBalancing();
 				}
 			} catch(SharedWorkspaceException e) {
 				// rollback all transactions
 				for(SharedWorkspace sharedWorkspace:factoryList) {
 					try {
 						sharedWorkspace.rollbackTransaction();
+						if(sharedWorkspace.isCurrentlyBalancing())
+							sharedWorkspace.stopBalancing();
 					} catch(SharedWorkspaceException e1) {
 						logger.severe(e1.getMessage());
 					}

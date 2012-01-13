@@ -162,6 +162,9 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 		List<Part> ramList = null;
 		
 		try {
+			// wait for load balancer
+			sharedWorkspace.waitForBalancing();
+			
 			// do all the following methods using the simple transaction support
 			sharedWorkspace.startTransaction();
 			
@@ -192,15 +195,15 @@ public class Assembler extends Worker implements SecureShutdownApplication, Seri
 			// get ram from shared workspace
 			logger.info("Trying to take ram from shared workspace...");
 			// first try to get 4 ram modules, non-blocking
-			ramList = sharedWorkspace.takeParts(RAM.class, false, 4);
+			/*ramList = sharedWorkspace.takeParts(RAM.class, false, 4);
 			if(ramList == null) {
 				// if no 4 ram modules are available, try 2 ram modules, non-blocking
 				ramList = sharedWorkspace.takeParts(RAM.class, false, 2);
 				if(ramList == null) {
 					// if no 2 ram modules are available, wait until at least 1 module can be retrieved
-					ramList = sharedWorkspace.takeParts(RAM.class, true, 1);
+					*/ramList = sharedWorkspace.takeParts(RAM.class, true, 1);/*
 				}
-			}
+			}*/
 			if(ramList != null)
 				logger.info("Successfully took " + ramList.size()+ " ram module(s).");
 			

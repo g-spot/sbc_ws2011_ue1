@@ -173,7 +173,7 @@ public class Benchmark {
 		benchmark.startBenchmark();
 		System.out.println("Benchmark running...");
 		
-		for(int i=1;i<=60;i++) {
+		for(int i=1;i<=120;i++) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {

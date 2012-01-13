@@ -25,6 +25,7 @@ public class SpaceUtils {
 	public static final String CONTAINER_TRASHED = "<Trashed>";
 	public static final String CONTAINER_SHIPPED = "<Shipped>";
 	public static final String CONTAINER_ORDERS = "<Orders>";
+	public static final String CONTAINER_BALANCE = "<Balance>";
 	
 	public static final String CONTAINER_START_SIGNAL = "<StartSignal>";
 	

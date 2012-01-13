@@ -940,4 +940,28 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void startBalancing() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void stopBalancing() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void waitForBalancing() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isCurrentlyBalancing() throws SharedWorkspaceException {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }
