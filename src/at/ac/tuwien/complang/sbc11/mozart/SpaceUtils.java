@@ -180,7 +180,11 @@ public class SpaceUtils {
 		}
 		catch(MzsCoreException e)
 		{
-			container = capi.createContainer(CONTAINER_START_SIGNAL, spaceURI, Container.UNBOUNDED, null, new LabelCoordinator());
+			try {
+				container = capi.createContainer(CONTAINER_START_SIGNAL, spaceURI, Container.UNBOUNDED, null, new LabelCoordinator());
+			} catch(MzsCoreException e1) {
+				container = capi.lookupContainer(CONTAINER_START_SIGNAL, spaceURI, RequestTimeout.INFINITE, null);
+			}
 		}
 		return container;
 	}

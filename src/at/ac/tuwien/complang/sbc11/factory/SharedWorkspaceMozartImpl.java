@@ -1131,7 +1131,8 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	public void startBalancing() throws SharedWorkspaceException {
 		logger.info("Starting startBalancing()...");
 		try {
-			capi.take(balanceContainer, AnyCoordinator.newSelector(1), RequestTimeout.TRY_ONCE, null);
+			//capi.take(balanceContainer, AnyCoordinator.newSelector(1), RequestTimeout.TRY_ONCE, null);
+			capi.take(balanceContainer, Arrays.asList(AnyCoordinator.newSelector(1)), RequestTimeout.TRY_ONCE, null, IsolationLevel.READ_COMMITTED, null);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Balancing could not be started: Error in MzsCore (" + e.getMessage() + ")");
 		}
@@ -1145,7 +1146,8 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	public void stopBalancing() throws SharedWorkspaceException {
 		logger.info("Starting stopBalancing()...");
 		try {
-			capi.write(new Entry(new String("Whatever"), AnyCoordinator.newCoordinationData()), balanceContainer);
+			//capi.write(new Entry(new String("Whatever"), AnyCoordinator.newCoordinationData()), balanceContainer);
+			capi.write(Arrays.asList(new Entry(new String("Whatever"), AnyCoordinator.newCoordinationData())), balanceContainer, RequestTimeout.DEFAULT, null, IsolationLevel.READ_COMMITTED, null);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Balancing could not be started: Error in MzsCore (" + e.getMessage() + ")");
 		}
@@ -1159,7 +1161,9 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	public void waitForBalancing() throws SharedWorkspaceException {
 		logger.info("Starting waitForBalancing()...");
 		try {
-			capi.test(balanceContainer, AnyCoordinator.newSelector(1), RequestTimeout.INFINITE, null);
+			//capi.test(balanceContainer, AnyCoordinator.newSelector(1), RequestTimeout.INFINITE, null);
+		
+			capi.test(balanceContainer, Arrays.asList(AnyCoordinator.newSelector(1)), RequestTimeout.INFINITE, null, IsolationLevel.READ_COMMITTED, null);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Balancing could not be started: Error in MzsCore (" + e.getMessage() + ")");
 		}
@@ -1172,9 +1176,11 @@ public class SharedWorkspaceMozartImpl extends SharedWorkspace {
 	@Override
 	public boolean isCurrentlyBalancing() throws SharedWorkspaceException {
 		logger.info("Starting waitForBalancing()...");
-		int result;
+		int result = 1;
 		try {
-			result = capi.test(balanceContainer, AnyCoordinator.newSelector(1), RequestTimeout.TRY_ONCE, null);
+			//result = capi.test(balanceContainer, AnyCoordinator.newSelector(1), RequestTimeout.TRY_ONCE, null);
+			
+			result =  capi.test(balanceContainer, Arrays.asList(AnyCoordinator.newSelector(1)), RequestTimeout.TRY_ONCE, null, IsolationLevel.READ_COMMITTED, null);
 		} catch (MzsCoreException e) {
 			throw new SharedWorkspaceException("Balancing could not be started: Error in MzsCore (" + e.getMessage() + ")");
 		}
