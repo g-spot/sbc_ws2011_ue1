@@ -203,6 +203,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			 * 
 			 */
 			session.createQueue("orders");
+			session.createQueue("finished");
 			session.createQueue("balanceContainer");
 		} catch (JMSException e) 
 		{
@@ -377,13 +378,14 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	{
 		ArrayList<CPU> result = new ArrayList<CPU>();
 		String filter;
+		CPU p;
 
 		filter = "JMSType='"+CPU.class.toString()+"'";
 		
 		filter += " AND CPUType='"+cpuType.toString()+"'"; 
 		
 		//"JMSType = 'car' AND color = 'blue' AND weight > 2500"
-		Part p;
+		
 		for(int i = 0; i < partCount; i++)
 		{
 			p = (CPU) receiveMessage(filter);
