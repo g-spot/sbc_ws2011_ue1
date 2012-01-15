@@ -25,6 +25,27 @@
 	<classpathentry kind="lib" path="lib/spice-jndikit-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/xerces-2.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis-1.0.b2.jar"/>
-	<classpathentry kind="lib" path="/Users/gerhard/Develop/sbc_ws2011_ue1/lib/mozartspaces-dist-2.1-SNAPSHOT-r11169-all-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="lib/activation-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/activemq-camel-5.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/activemq-console-5.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/activemq-core-5.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/activemq-jaas-5.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/activemq-protobuf-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/activemq-web-5.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/camel-core-2.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/camel-jetty-2.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/camel-jms-2.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/camel-spring-2.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-j2ee-management_1.1_spec-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-jms_1.1_spec-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-jta_1.0.1B_spec-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-api-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-impl-2.1.6.jar"/>
+	<classpathentry kind="lib" path="lib/jcl-over-slf4j-1.5.11.jar"/>
+	<classpathentry kind="lib" path="lib/kahadb-5.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/mozartspaces-dist-2.1-SNAPSHOT-r11169-all-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.5.11.jar"/>
+	<classpathentry kind="lib" path="lib/stax-1.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/stax-api-1.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
