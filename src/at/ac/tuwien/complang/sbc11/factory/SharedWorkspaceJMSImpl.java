@@ -5,14 +5,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.jms.Connection;
 import javax.jms.DeliveryMode;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
-import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnection;
@@ -473,6 +470,9 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			else
 				message.setBooleanProperty("CorrectnessTested", true);
 			
+			if(computer.getOrder() != null)
+				message.setLongProperty("orderid", computer.getOrder().getId());
+			
 			message.setBooleanProperty("CompletelyTested", computer.isCompletelyTested());
 			
 			message.setBooleanProperty("Deconstructed", computer.isDeconstructed());
@@ -651,13 +651,61 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		return result;
 	}
 	
-	/**************** NOT DONE YET ****************/
+	@Override
+	public void addOrder(Order order) throws SharedWorkspaceException 
+	{
+		try 
+		{
+			destination = (ActiveMQDestination) session.createQueue("orders");
 
+			ObjectMessage message = session.createObjectMessage(order);
+			message.setLongProperty("orderid", order.getId());
+			
+			sendMessage(message);
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void finishOrder(Order order) throws SharedWorkspaceException 
+	{
+		try 
+		{
+			//Grep from oders
+			destination = (ActiveMQDestination) session.createQueue("orders");
+			ObjectMessage message = receiveMessage("oerderid = " + String.valueOf(order.getId()));
+			
+			//move to finished
+			destination = (ActiveMQDestination) session.createQueue("finished"); 
+			sendMessage(message);
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	public List<Order> getUnfinishedOrders() throws SharedWorkspaceException 
 	{
 		ArrayList<Order> result = new ArrayList<Order>();
-		
+		ActiveMQQueueBrowser qb;
+		try 
+		{
+			//session.createQueue("parts");
+			qb = (ActiveMQQueueBrowser) session.createBrowser(session.createQueue("orders"),"");
+			while(qb.hasMoreElements())
+			{	
+				result.add((Order) qb.nextElement());
+			}
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return result;
 	}
 
@@ -665,37 +713,80 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	public List<Order> getFinishedOrders() throws SharedWorkspaceException 
 	{
 		ArrayList<Order> result = new ArrayList<Order>();
-		
+		ActiveMQQueueBrowser qb;
+		try 
+		{
+			//session.createQueue("parts");
+			qb = (ActiveMQQueueBrowser) session.createBrowser(session.createQueue("finished"),"");
+			while(qb.hasMoreElements())
+			{	
+				result.add((Order) qb.nextElement());
+			}
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return result;
 	}
 
 	@Override
 	public boolean testOrderCountMet(Order order) throws SharedWorkspaceException 
 	{
-		// TODO Auto-generated method stub
-		return false;
+		boolean result = false;
+		int resultCount = 0;
+		
+		ActiveMQQueueBrowser qb;
+		try 
+		{
+			//session.createQueue("parts");
+			qb = (ActiveMQQueueBrowser) session.createBrowser(session.createQueue("Computer"),"order = " + String.valueOf(order.getId()));
+			while(qb.hasMoreElements())
+			{	
+				resultCount++;
+			}
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(resultCount < order.getComputerCount())
+			result = false;
+		else
+			result = true;
+		
+		return result;
 	}
-
+	
 	@Override
 	public List<Computer> takeAllOrderedComputers(Order order) throws SharedWorkspaceException 
 	{
 		ArrayList<Computer> result = new ArrayList<Computer>();
-		
+		String filter = "";
+		ObjectMessage message;
+		try 
+		{
+			//session.createQueue("parts");
+			destination = (ActiveMQDestination) session.createQueue("computers");
+			
+			filter = "oderid = "+String.valueOf(order.getId());
+			
+			for(int i = 0; i < order.getComputerCount(); i++)
+			{
+				message = receiveMessage(filter);
+
+				result.add((Computer) message.getObject());
+			}
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return result;
 	}
-
-	@Override
-	public void addOrder(Order order) throws SharedWorkspaceException 
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void finishOrder(Order order) throws SharedWorkspaceException 
-	{
-		// TODO Auto-generated method stub
-	}
+	
+	
+	/**************** NOT DONE YET ****************/
 	
 	/**************** NOT CLEAR HOW ****************/
 
