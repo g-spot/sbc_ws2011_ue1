@@ -1,8 +1,5 @@
 package at.ac.tuwien.complang.sbc11.factory;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -11,11 +8,8 @@ import java.util.logging.Logger;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
@@ -23,10 +17,6 @@ import javax.jms.Session;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
-import org.mozartspaces.core.AsyncCapi;
-import org.mozartspaces.core.Capi;
-import org.mozartspaces.core.DefaultMzsCore;
-import org.mozartspaces.core.MzsCoreException;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
@@ -36,6 +26,7 @@ import at.ac.tuwien.complang.sbc11.parts.Order;
 import at.ac.tuwien.complang.sbc11.parts.Part;
 import at.ac.tuwien.complang.sbc11.ui.Factory;
 import at.ac.tuwien.complang.sbc11.workers.AsyncAssembler;
+import at.ac.tuwien.complang.sbc11.workers.Tester.TestState;
 import at.ac.tuwien.complang.sbc11.workers.Tester.TestType;
 
 /* Implements the shared workspace with an alternative technology.
@@ -56,6 +47,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	private Connection connection;
 	private Session session;
 	private Destination destination;
+	private int serverPort;
 	
 	public SharedWorkspaceJMSImpl() throws SharedWorkspaceException 
 	{
@@ -67,6 +59,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		// ActiveMQ init		
 		BrokerService broker = new BrokerService();
 		broker.setUseJmx(true);
+		serverPort = 0;
 		try 
 		{
 			broker.addConnector("tcp://localhost:61616");
@@ -108,6 +101,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		
 		try 
 		{
+			this.serverPort = serverPort;
 			broker.addConnector("tcp://localhost:" + String.valueOf(serverPort));
 			broker.start();
 			
@@ -134,7 +128,6 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		}
 		logger.info("Initialization done.");
 	}
-
 	public SharedWorkspaceJMSImpl(Factory factory) throws SharedWorkspaceException 
 	{
 		super(factory);
@@ -145,6 +138,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		// ActiveMQ init		
 		BrokerService broker = new BrokerService();
 		broker.setUseJmx(true);
+		serverPort = 0;
+		
 		try 
 		{
 			broker.addConnector("tcp://localhost:61616");
@@ -191,6 +186,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			/* computer properties:
 			 *  - CompletenessTested: bool
 			 *  - CorrectnessTested: bool
+			 *  - CompletelyTested: bool
 			 *  - Deconstructed: bool
 			 * 
 			 */
@@ -199,12 +195,12 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			session.createQueue("shipped");
 			/* oder properties:
 			 *  - completelytested: bool
-			 *  - finished : bool
 			 * 
 			 */
 			session.createQueue("orders");
 			session.createQueue("finished");
 			session.createQueue("balanceContainer");
+			
 		} catch (JMSException e) 
 		{
 			// TODO Auto-generated catch block
@@ -396,7 +392,6 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		return result;
 	}
 	
-
 	@Override
 	public void addParts(List<Part> parts) throws SharedWorkspaceException 
 	{
@@ -406,15 +401,142 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		}
 	}
 	
-	/**************** NOT DONE YET ****************/
-	
 	@Override
 	public String getWorkspaceID() 
 	{
-		// ????
-		// TODO Auto-generated method stub
-		return null;
+		if(serverPort != 0)
+			return String.valueOf(serverPort);
+		else
+			return null;
 	}
+	
+	@Override
+	public void shipComputer(Computer computer) throws SharedWorkspaceException 
+	{
+		try 
+		{
+			destination = session.createQueue("shipped");
+
+			ObjectMessage message = session.createObjectMessage(computer);
+			message.setBooleanProperty("Deconstructed", computer.isDeconstructed());
+			
+			sendMessage(message);
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void addComputerToTrash(Computer computer) throws SharedWorkspaceException 
+	{
+		try 
+		{
+			destination = session.createQueue("trashed");
+
+			ObjectMessage message = session.createObjectMessage(computer);
+			message.setBooleanProperty("Deconstructed", computer.isDeconstructed());
+			
+			sendMessage(message);
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void addComputer(Computer computer) throws SharedWorkspaceException 
+	{
+		try 
+		{
+			destination = session.createQueue("computers");
+
+			ObjectMessage message = session.createObjectMessage(computer);
+			if(computer.getCompletenessTested().equals(TestState.NOT_TESTED))
+				message.setBooleanProperty("CompletenessTested", false);
+			else
+				message.setBooleanProperty("CompletenessTested", true);
+			
+			if(computer.getCorrectnessTested().equals(TestState.NOT_TESTED))
+				message.setBooleanProperty("CorrectnessTested", false);
+			else
+				message.setBooleanProperty("CorrectnessTested", true);
+			
+			message.setBooleanProperty("CompletelyTested", computer.isCompletelyTested());
+			
+			message.setBooleanProperty("Deconstructed", computer.isDeconstructed());
+			
+			sendMessage(message);
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public Computer takeUntestedComputer(TestType untestedFor) throws SharedWorkspaceException 
+	{
+		Computer computer = null;
+		String filter = "";
+		try 
+		{
+			destination = session.createQueue("computers");
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(untestedFor.equals(TestType.COMPLETENESS)) {
+			filter = "NOT CompletenessTested";
+		} else if(untestedFor.equals(TestType.CORRECTNESS)) {
+			filter = "NOT CorrectnessTested";
+		}
+		ObjectMessage message = receiveMessage(filter);
+		try 
+		{
+			computer = (Computer) message.getObject();
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return computer;
+	}
+
+	@Override
+	public Computer takeNormalCompletelyTestedComputer() throws SharedWorkspaceException 
+	{
+		Computer computer = null;
+		String filter = "";
+		try 
+		{
+			destination = session.createQueue("computers");
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		filter = "CompletelyTested";
+
+		ObjectMessage message = receiveMessage(filter);
+		try 
+		{
+			computer = (Computer) message.getObject();
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return computer;
+	}
+	
+	/**************** NOT DONE YET ****************/
 
 	@Override
 	public List<Part> getAvailableParts() throws SharedWorkspaceException 
@@ -473,27 +595,6 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	}
 
 	@Override
-	public void addComputer(Computer computer) throws SharedWorkspaceException 
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Computer takeUntestedComputer(TestType untestedFor) throws SharedWorkspaceException 
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Computer takeNormalCompletelyTestedComputer() throws SharedWorkspaceException 
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean testOrderCountMet(Order order) throws SharedWorkspaceException 
 	{
 		// TODO Auto-generated method stub
@@ -503,22 +604,9 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	@Override
 	public List<Computer> takeAllOrderedComputers(Order order) throws SharedWorkspaceException 
 	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void shipComputer(Computer computer) throws SharedWorkspaceException 
-	{
-		// TODO Auto-generated method stub
+		ArrayList<Computer> result = new ArrayList<Computer>();
 		
-	}
-
-	@Override
-	public void addComputerToTrash(Computer computer) throws SharedWorkspaceException 
-	{
-		// TODO Auto-generated method stub
-		
+		return result;
 	}
 
 	@Override
@@ -532,7 +620,6 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	public void finishOrder(Order order) throws SharedWorkspaceException 
 	{
 		// TODO Auto-generated method stub
-		
 	}
 	
 	/**************** NOT CLEAR HOW ****************/
