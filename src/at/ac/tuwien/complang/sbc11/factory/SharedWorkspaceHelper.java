@@ -157,17 +157,6 @@ public class SharedWorkspaceHelper {
 			properties.load(inputStream);
 			if(properties.getProperty(WAIT_FOR_START_SIGNAL).equals(WAIT_FOR_START_SIGNAL_YES))
 			{
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("GEHT JO EH DO EINA");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
 				// BLOCK AND WAIT FOR START SIGNAL
 				URI spaceURI = new URI("xvsm://localhost:" + String.valueOf(Benchmark.PORT_START_SIGNAL));
 				MzsCore core = DefaultMzsCore.newInstance(0);
@@ -175,32 +164,7 @@ public class SharedWorkspaceHelper {
 				ContainerReference signalContainer = SpaceUtils.getOrCreateStartSignalContainer(spaceURI, capi);
 				capi.read(signalContainer, LabelCoordinator.newSelector(LABEL_SIGNAL_START, 1), RequestTimeout.INFINITE, null);
 			}
-			else
-			{
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("SO A DRECKKKKKKKKKKKKKKKK");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-				System.out.println("========================");
-			}
 		} catch (Exception e) {
-			System.out.println("========================");
-			System.out.println("========================");
-			System.out.println("========================");
-			System.out.println("========================");
-			System.out.println("PROPERTIES FILE NOT READ");
-			System.out.println("========================");
-			System.out.println("========================");
-			System.out.println("========================");
-			System.out.println("========================");
-			System.out.println("========================");
-			System.out.println("========================");
 			Logger.getAnonymousLogger().severe(e.getMessage());
 		}
 	}
