@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
@@ -356,6 +355,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if(factory != null)
+			factory.updatePartList();
 	}
 	
 	@Override
@@ -380,6 +381,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 				result.add(p);
 		}
 		logger.info("takeParts done.");
+		if(factory != null)
+			factory.updatePartList();
 		return result;
 	}
 
@@ -403,6 +406,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 				result.add(p);
 		}
 		logger.info("takeCPU done.");
+		if(factory != null)
+			factory.updatePartList();
 		return result;
 	}
 	
@@ -414,6 +419,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		{
 			addPart(part);
 		}
+		if(factory != null)
+			factory.updatePartList();
 		logger.info("addParts done.");
 	}
 	
@@ -444,6 +451,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if(factory != null)
+			factory.updateShippedList();
 		logger.info("shipComputer done.");
 	}
 
@@ -464,6 +473,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if(factory != null)
+			factory.updateComputerList();
 		logger.info("addComputerToTrash done.");
 	}
 
@@ -499,6 +510,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if(factory != null)
+			factory.updateComputerList();
 		logger.info("addComputer done.");
 	}
 	
@@ -532,6 +545,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			e.printStackTrace();
 		}
 		logger.info("takeUntestedComputer done.");
+		if(factory != null)
+			factory.updateComputerList();
 		return computer;
 	}
 
@@ -562,6 +577,9 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if(factory != null)
+			factory.updateComputerList();
+		
 		logger.info("takeNormalCompletelyTestedComputer done.");
 		return computer;
 	}
@@ -587,6 +605,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			e.printStackTrace();
 		}
 		logger.info("getAvailableParts done.");
+
 		return result;
 	}
 
@@ -705,6 +724,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if(factory != null)
+			factory.updateUnfinishedOrderList();
 		logger.info("addOrder done.");
 	}
 
@@ -727,7 +748,10 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		if(factory != null)
+			factory.updateUnfinishedOrderList();
+		if(factory != null)
+			factory.updateFinishedOrderList();
 		logger.info("finishOrder done.");
 	}
 	
@@ -840,15 +864,14 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			e.printStackTrace();
 		}
 		logger.info("takeAllOrderedComputers done.");
-		
+		if(factory != null)
+			factory.updateComputerList();
 		return result;
 	}
-	
-	
-	/**************** NOT DONE YET ****************/
-	
-	/**************** NOT CLEAR HOW ****************/
 
+
+	
+	
 	@Override
 	public void startBalancing() throws SharedWorkspaceException 
 	{
