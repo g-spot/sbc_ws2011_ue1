@@ -871,7 +871,6 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 
 
 	
-	
 	@Override
 	public void startBalancing() throws SharedWorkspaceException 
 	{
