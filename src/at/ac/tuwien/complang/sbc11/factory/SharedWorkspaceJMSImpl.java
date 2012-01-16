@@ -12,11 +12,15 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
+import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.ActiveMQQueueBrowser;
+import org.apache.activemq.ActiveMQSession;
 import org.apache.activemq.broker.BrokerService;
+import org.apache.activemq.command.ActiveMQDestination;
 
 import at.ac.tuwien.complang.sbc11.factory.exception.SharedWorkspaceException;
 import at.ac.tuwien.complang.sbc11.parts.CPU;
@@ -44,10 +48,15 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	
 	//ActiveMQ
 	private ActiveMQConnectionFactory connectionFactory;
-	private Connection connection;
-	private Session session;
-	private Destination destination;
+	private ActiveMQConnection connection;
+	private ActiveMQSession session;
+	private ActiveMQDestination destination;
 	private int serverPort;
+	
+	/*
+	 * Functions here do the same as in SharedWorkspaceMozartImpl but with ActiveMQ
+	 * 
+	 */
 	
 	public SharedWorkspaceJMSImpl() throws SharedWorkspaceException 
 	{
@@ -70,7 +79,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 					                  ActiveMQConnection.DEFAULT_PASSWORD,
 					                  ActiveMQConnection.DEFAULT_BROKER_URL);
 			
-			connection = (Connection) connectionFactory.createConnection();
+			connection = (ActiveMQConnection) connectionFactory.createConnection();
 	
 			connection.start();
 			
@@ -110,7 +119,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 					                  ActiveMQConnection.DEFAULT_PASSWORD,
 					                  ActiveMQConnection.DEFAULT_BROKER_URL);
 			
-			connection = (Connection) connectionFactory.createConnection();
+			connection = (ActiveMQConnection) connectionFactory.createConnection();
 	
 			connection.start();
 			
@@ -150,10 +159,10 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 					                ActiveMQConnection.DEFAULT_PASSWORD,
 					                ActiveMQConnection.DEFAULT_BROKER_URL);
 			
-			connection = (Connection) connectionFactory.createConnection();
+			connection = (ActiveMQConnection) connectionFactory.createConnection();
 	
 			connection.start();
-			session = connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
+			session = (ActiveMQSession) connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
 			
 			initDestinations();
 			
@@ -248,7 +257,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	{
 		try 
 		{
-			session = connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
+			session = (ActiveMQSession) connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
 		} catch (JMSException e) 
 		{
 			// TODO Auto-generated catch block
@@ -333,7 +342,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 				message.setStringProperty("CPUType", ((CPU)part).getCpuType().toString());
 			}
 			
-			destination = session.createQueue("parts");
+			destination = (ActiveMQDestination) session.createQueue("parts");
 			
 			sendMessage(message);
 			
@@ -415,7 +424,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	{
 		try 
 		{
-			destination = session.createQueue("shipped");
+			destination = (ActiveMQDestination) session.createQueue("shipped");
 
 			ObjectMessage message = session.createObjectMessage(computer);
 			message.setBooleanProperty("Deconstructed", computer.isDeconstructed());
@@ -433,7 +442,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	{
 		try 
 		{
-			destination = session.createQueue("trashed");
+			destination = (ActiveMQDestination) session.createQueue("trashed");
 
 			ObjectMessage message = session.createObjectMessage(computer);
 			message.setBooleanProperty("Deconstructed", computer.isDeconstructed());
@@ -451,7 +460,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	{
 		try 
 		{
-			destination = session.createQueue("computers");
+			destination = (ActiveMQDestination) session.createQueue("computers");
 
 			ObjectMessage message = session.createObjectMessage(computer);
 			if(computer.getCompletenessTested().equals(TestState.NOT_TESTED))
@@ -483,7 +492,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		String filter = "";
 		try 
 		{
-			destination = session.createQueue("computers");
+			destination = (ActiveMQDestination) session.createQueue("computers");
 		} catch (JMSException e) 
 		{
 			// TODO Auto-generated catch block
@@ -514,7 +523,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		String filter = "";
 		try 
 		{
-			destination = session.createQueue("computers");
+			destination = (ActiveMQDestination) session.createQueue("computers");
 		} catch (JMSException e) 
 		{
 			// TODO Auto-generated catch block
@@ -536,12 +545,24 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		return computer;
 	}
 	
-	/**************** NOT DONE YET ****************/
-
 	@Override
 	public List<Part> getAvailableParts() throws SharedWorkspaceException 
 	{
 		ArrayList<Part> result = new ArrayList<Part>();
+		ActiveMQQueueBrowser qb;
+		try 
+		{
+			//session.createQueue("parts");
+			qb = (ActiveMQQueueBrowser) session.createBrowser(session.createQueue("parts"),"");
+			while(qb.hasMoreElements())
+			{
+				result.add((Part)qb.nextElement());
+			}
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		return result;
 	}
@@ -550,7 +571,20 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	public List<Computer> getIncompleteComputers() throws SharedWorkspaceException 
 	{
 		ArrayList<Computer> result = new ArrayList<Computer>();
-		
+		ActiveMQQueueBrowser qb;
+		try 
+		{
+			//session.createQueue("parts");
+			qb = (ActiveMQQueueBrowser) session.createBrowser(session.createQueue("computers"),"NOT Deconstructed");
+			while(qb.hasMoreElements())
+			{	
+				result.add((Computer) qb.nextElement());
+			}
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return result;
 	}
 
@@ -558,7 +592,20 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	public List<Computer> getShippedComputers() throws SharedWorkspaceException 
 	{
 		ArrayList<Computer> result = new ArrayList<Computer>();
-		
+		ActiveMQQueueBrowser qb;
+		try 
+		{
+			//session.createQueue("parts");
+			qb = (ActiveMQQueueBrowser) session.createBrowser(session.createQueue("shipped"),"");
+			while(qb.hasMoreElements())
+			{	
+				result.add((Computer) qb.nextElement());
+			}
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return result;
 	}
 
@@ -566,7 +613,20 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	public List<Computer> getTrashedComputers() throws SharedWorkspaceException 
 	{
 		ArrayList<Computer> result = new ArrayList<Computer>();
-		
+		ActiveMQQueueBrowser qb;
+		try 
+		{
+			//session.createQueue("parts");
+			qb = (ActiveMQQueueBrowser) session.createBrowser(session.createQueue("trashed"),"");
+			while(qb.hasMoreElements())
+			{	
+				result.add((Computer) qb.nextElement());
+			}
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return result;
 	}
 
@@ -574,9 +634,24 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	public List<Computer> getDeconstructedComputers() throws SharedWorkspaceException 
 	{
 		ArrayList<Computer> result = new ArrayList<Computer>();
-		
+		ActiveMQQueueBrowser qb;
+		try 
+		{
+			//session.createQueue("parts");
+			qb = (ActiveMQQueueBrowser) session.createBrowser(session.createQueue("computers"),"Deconstructed");
+			while(qb.hasMoreElements())
+			{	
+				result.add((Computer) qb.nextElement());
+			}
+		} catch (JMSException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return result;
 	}
+	
+	/**************** NOT DONE YET ****************/
 
 	@Override
 	public List<Order> getUnfinishedOrders() throws SharedWorkspaceException 
