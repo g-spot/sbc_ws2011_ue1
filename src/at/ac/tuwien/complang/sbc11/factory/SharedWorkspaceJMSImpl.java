@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
@@ -161,10 +162,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			connection.start();
 			session = (ActiveMQSession) connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
 			
-			initDestinations();
-			
-			//destination = session.createQueue("mmy first active mq queue");
-			
+			initDestinations();		
 			
 		} catch (JMSException e) 
 		{
@@ -212,11 +210,13 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("initDestinations done.");
 	}
 	
 	private long getNextId()
 	{
 		Date theDate = new Date();
+		logger.info("getNextId done.");
 		return theDate.getTime();
 	}
 	
@@ -241,6 +241,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			session.rollback();
 			session.close();
 			connection.close();
+			logger.info("Shutdown complete.");
 		} catch (JMSException e) 
 		{
 			// TODO Auto-generated catch block
@@ -252,6 +253,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	@Override
 	public void startTransaction() throws SharedWorkspaceException 
 	{
+		logger.info("startTransaction...");
 		try 
 		{
 			session = (ActiveMQSession) connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
@@ -260,12 +262,13 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		logger.info("startTransaction done.");
 	}
 
 	@Override
 	public void commitTransaction() throws SharedWorkspaceException 
 	{
+		logger.info("commitTransaction...");
 		try 
 		{
 			session.commit();
@@ -274,11 +277,13 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("commitTransaction done.");
 	}
 
 	@Override
 	public void rollbackTransaction() throws SharedWorkspaceException 
 	{
+		logger.info("rollbackTransaction...");
 		try 
 		{
 			session.rollback();
@@ -287,6 +292,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("rollbackTransaction done.");
 	}
 	
 	private void sendMessage(ObjectMessage objMessage)
@@ -316,6 +322,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			MessageConsumer consumer = session.createConsumer(destination, filter);
 			message = (ObjectMessage) consumer.receive();
 			message.clearBody();
+			logger.info("receiveing message...");
 		} catch (JMSException e) 
 		{
 			// TODO Auto-generated catch block
@@ -331,6 +338,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		ObjectMessage message;
 		try 
 		{
+			logger.info("addPart...");
 			message = session.createObjectMessage(part);
 			message.setJMSType(part.getClass().toString()); //set standard type
 			
@@ -342,7 +350,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			destination = (ActiveMQDestination) session.createQueue("parts");
 			
 			sendMessage(message);
-			
+			logger.info("addPart done.");
 		} catch (JMSException e) 
 		{
 			// TODO Auto-generated catch block
@@ -356,7 +364,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		ArrayList<Part> result = new ArrayList<Part>();
 		String filter;
 		Part p;
-
+		logger.info("takeParts...");
 		filter = "JMSType='"+partType.getClass()+"'";
 		
 //		if(partType.getClass().equals(CPU.class))
@@ -371,7 +379,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			if(p!=null)
 				result.add(p);
 		}
-		
+		logger.info("takeParts done.");
 		return result;
 	}
 
@@ -381,7 +389,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		ArrayList<CPU> result = new ArrayList<CPU>();
 		String filter;
 		CPU p;
-
+		logger.info("takeCPU...");
 		filter = "JMSType='"+CPU.class.toString()+"'";
 		
 		filter += " AND CPUType='"+cpuType.toString()+"'"; 
@@ -394,22 +402,25 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			if(p!=null)
 				result.add(p);
 		}
-		
+		logger.info("takeCPU done.");
 		return result;
 	}
 	
 	@Override
 	public void addParts(List<Part> parts) throws SharedWorkspaceException 
 	{
+		logger.info("addParts...");
 		for(Part part:parts)
 		{
 			addPart(part);
 		}
+		logger.info("addParts done.");
 	}
 	
 	@Override
 	public String getWorkspaceID() 
 	{
+		logger.info("getWorkspaceID done.");
 		if(serverPort != 0)
 			return String.valueOf(serverPort);
 		else
@@ -419,6 +430,7 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 	@Override
 	public void shipComputer(Computer computer) throws SharedWorkspaceException 
 	{
+		logger.info("shipComputer...");
 		try 
 		{
 			destination = (ActiveMQDestination) session.createQueue("shipped");
@@ -432,11 +444,13 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("shipComputer done.");
 	}
 
 	@Override
 	public void addComputerToTrash(Computer computer) throws SharedWorkspaceException 
 	{
+		logger.info("addComputerToTrash...");
 		try 
 		{
 			destination = (ActiveMQDestination) session.createQueue("trashed");
@@ -450,11 +464,13 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("addComputerToTrash done.");
 	}
 
 	@Override
 	public void addComputer(Computer computer) throws SharedWorkspaceException 
 	{
+		logger.info("addComputer...");
 		try 
 		{
 			destination = (ActiveMQDestination) session.createQueue("computers");
@@ -483,11 +499,14 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("addComputer done.");
 	}
 	
 	@Override
 	public Computer takeUntestedComputer(TestType untestedFor) throws SharedWorkspaceException 
 	{
+		logger.info("takeUntestedComputer...");
+		
 		Computer computer = null;
 		String filter = "";
 		try 
@@ -512,13 +531,15 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		logger.info("takeUntestedComputer done.");
 		return computer;
 	}
 
 	@Override
 	public Computer takeNormalCompletelyTestedComputer() throws SharedWorkspaceException 
 	{
+		logger.info("takeNormalCompletelyTestedComputer...");
+		
 		Computer computer = null;
 		String filter = "";
 		try 
@@ -541,13 +562,15 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		logger.info("takeNormalCompletelyTestedComputer done.");
 		return computer;
 	}
 	
 	@Override
 	public List<Part> getAvailableParts() throws SharedWorkspaceException 
 	{
+		logger.info("getAvailableParts...");
+		
 		ArrayList<Part> result = new ArrayList<Part>();
 		ActiveMQQueueBrowser qb;
 		try 
@@ -563,13 +586,15 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		logger.info("getAvailableParts done.");
 		return result;
 	}
 
 	@Override
 	public List<Computer> getIncompleteComputers() throws SharedWorkspaceException 
 	{
+		logger.info("getIncompleteComputers...");
+		
 		ArrayList<Computer> result = new ArrayList<Computer>();
 		ActiveMQQueueBrowser qb;
 		try 
@@ -585,12 +610,16 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("getIncompleteComputers done.");
+		
 		return result;
 	}
 
 	@Override
 	public List<Computer> getShippedComputers() throws SharedWorkspaceException 
 	{
+		logger.info("getShippedComputers...");
+		
 		ArrayList<Computer> result = new ArrayList<Computer>();
 		ActiveMQQueueBrowser qb;
 		try 
@@ -606,12 +635,16 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("getShippedComputers done.");
+		
 		return result;
 	}
 
 	@Override
 	public List<Computer> getTrashedComputers() throws SharedWorkspaceException 
 	{
+		logger.info("getTrashedComputers...");
+		
 		ArrayList<Computer> result = new ArrayList<Computer>();
 		ActiveMQQueueBrowser qb;
 		try 
@@ -627,12 +660,15 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("getTrashedComputers done.");
+		
 		return result;
 	}
 
 	@Override
 	public List<Computer> getDeconstructedComputers() throws SharedWorkspaceException 
 	{
+		logger.info("getDeconstructedComputers...");
 		ArrayList<Computer> result = new ArrayList<Computer>();
 		ActiveMQQueueBrowser qb;
 		try 
@@ -648,12 +684,14 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("getDeconstructedComputers done.");
 		return result;
 	}
 	
 	@Override
 	public void addOrder(Order order) throws SharedWorkspaceException 
 	{
+		logger.info("addOrder...");
 		try 
 		{
 			destination = (ActiveMQDestination) session.createQueue("orders");
@@ -667,11 +705,14 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("addOrder done.");
 	}
 
 	@Override
 	public void finishOrder(Order order) throws SharedWorkspaceException 
 	{
+		logger.info("finishOrder...");
+		
 		try 
 		{
 			//Grep from oders
@@ -686,11 +727,15 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		logger.info("finishOrder done.");
 	}
 	
 	@Override
 	public List<Order> getUnfinishedOrders() throws SharedWorkspaceException 
 	{
+		logger.info("getUnfinishedOrders...");
+		
 		ArrayList<Order> result = new ArrayList<Order>();
 		ActiveMQQueueBrowser qb;
 		try 
@@ -706,12 +751,16 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("getUnfinishedOrders done.");
+		
 		return result;
 	}
 
 	@Override
 	public List<Order> getFinishedOrders() throws SharedWorkspaceException 
 	{
+		logger.info("getFinishedOrders...");
+		
 		ArrayList<Order> result = new ArrayList<Order>();
 		ActiveMQQueueBrowser qb;
 		try 
@@ -727,12 +776,16 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("getFinishedOrders done.");
+		
 		return result;
 	}
 
 	@Override
 	public boolean testOrderCountMet(Order order) throws SharedWorkspaceException 
 	{
+		logger.info("testOrderCountMet...");
+		
 		boolean result = false;
 		int resultCount = 0;
 		
@@ -755,12 +808,16 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 		else
 			result = true;
 		
+		logger.info("testOrderCountMet done.");
+		
 		return result;
 	}
 	
 	@Override
 	public List<Computer> takeAllOrderedComputers(Order order) throws SharedWorkspaceException 
 	{
+		logger.info("takeAllOrderedComputers...");
+		
 		ArrayList<Computer> result = new ArrayList<Computer>();
 		String filter = "";
 		ObjectMessage message;
@@ -782,6 +839,8 @@ public class SharedWorkspaceJMSImpl extends SharedWorkspace
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logger.info("takeAllOrderedComputers done.");
+		
 		return result;
 	}
 	
